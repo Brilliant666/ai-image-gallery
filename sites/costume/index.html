@@ -217,12 +217,15 @@ main{max-width:1680px;margin:0 auto;padding:22px clamp(16px,4vw,48px) 90px}
   background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--sh)}
 .mimg{position:relative;background:var(--imgbg);border-radius:12px;display:flex;align-items:center;
   justify-content:center;min-height:0;height:min(80vh,940px);overflow:hidden}
-.mimg img{position:absolute;inset:0;width:100%;height:100%;
+/* 舞台按原图比例精确贴合画面，两层都铺满它：
+   底层 blur 溢出的部分会被舞台裁掉，淡入结束隐藏底层时边缘不会跳 */
+.mstage{position:relative;overflow:hidden;border-radius:10px;flex:none}
+.mstage img{position:absolute;inset:0;width:100%;height:100%;
   object-fit:contain;display:block}
 /* 底层缩略图模糊垫底，中图加载完淡入 */
-.mimg .lo{filter:blur(18px);transform:scale(1.04)}
-.mimg .hi{opacity:0;transition:opacity .32s ease}
-.mimg .hi.rd{opacity:1}
+.mstage .lo{filter:blur(18px)}
+.mstage .hi{opacity:0;transition:opacity .32s ease}
+.mstage .hi.rd{opacity:1}
 .nav{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;border:0;
   background:var(--nav-bg);color:#fff;font-size:21px;cursor:pointer;transition:.15s;
   display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
@@ -333,8 +336,10 @@ footer a:hover{color:var(--ac)}
   <div class="mbox">
     <button class="mclose" id="mclose" aria-label="close">×</button>
     <div class="mimg">
-      <img id="mimgLo" class="lo" alt="" aria-hidden="true">
-      <img id="mimg" class="hi" alt="">
+      <div class="mstage" id="mstage">
+        <img id="mimgLo" class="lo" alt="" aria-hidden="true">
+        <img id="mimg" class="hi" alt="">
+      </div>
       <button class="nav l" id="mprev" aria-label="prev">‹</button>
       <button class="nav r" id="mnext" aria-label="next">›</button>
     </div>
@@ -576,8 +581,20 @@ grid.addEventListener('keydown', e=>{
 
 /* ── 灯箱 ── */
 const modal=$('#modal'), mimg=$('#mimg'), mimgLo=$('#mimgLo');
+const mstage=$('#mstage'), mwrap=$('.mimg');
 let loT=0;   // 底层模糊图隐藏定时器，连翻时需可取消
 let MI = 0;
+
+// 把舞台缩到原图 contain 后的真实矩形：两层完全重合，底层 blur 的外溢被舞台裁掉
+function fitStage(){
+  const nw=mimgLo.naturalWidth||360, nh=mimgLo.naturalHeight||540;   // 本站缩略图 360x540
+  const bw=mwrap.clientWidth, bh=mwrap.clientHeight;
+  if(!bw||!bh) return;
+  const s=Math.min(bw/nw, bh/nh);
+  mstage.style.width=Math.round(nw*s)+'px';
+  mstage.style.height=Math.round(nh*s)+'px';
+}
+addEventListener('resize', ()=>{ if(modal.classList.contains('open')) fitStage(); });
 
 function openM(i){
   MI = i;
@@ -598,10 +615,13 @@ function showM(){
   // 先缩略图，再换中图（渐进加载）
   // 双层：缩略图模糊垫底，中图加载完淡入
   mimgLo.src = x.th;
+  // 舞台尺寸跟着缩略图比例走（缩略图与原图同比例，误差 <0.1%）
+  fitStage();
+  mimgLo.onload = fitStage;
   mimg.alt = x.i;
   mimg.classList.remove('rd');
   mimgLo.style.opacity = '1';
-  // 淡入完成后隐藏底层：lo 有 scale(1.04)，不隐藏会在原图周围留一圈模糊光晕
+  // 淡入完成后收起底层。舞台已把 blur 外溢裁掉，这一步在视觉上无变化
   const settle = () => {
     mimg.classList.add('rd');
     clearTimeout(loT);

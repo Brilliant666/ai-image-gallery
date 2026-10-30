@@ -243,12 +243,15 @@ img{max-width:100%}
 .lightbox[hidden]{display:none}
 .lb-figure{margin:0;max-width:92vw;max-height:94vh;display:flex;flex-direction:column;
   align-items:center;gap:14px}
-.lb-stage{display:grid;place-items:center;max-width:92vw;max-height:calc(94vh - 72px)}
-.lb-stage img{grid-area:1/1;max-width:92vw;max-height:calc(94vh - 72px);width:auto;height:auto;
-  object-fit:contain;border-radius:10px;display:block}
+/* 舞台按原图比例精确贴合画面，两层都铺满它：
+   底层 blur 溢出的部分会被舞台裁掉，淡入结束隐藏底层时边缘不会跳 */
+.lb-stage{position:relative;overflow:hidden;border-radius:10px;
+  max-width:92vw;max-height:calc(94vh - 72px)}
+.lb-stage img{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;display:block}
 /* 底层缩略图模糊垫底，原图加载完淡入 */
 /* transform 会创建层叠上下文，会盖住未定位的 .hi —— 必须显式定层序 */
-.lb-stage .lo{filter:blur(20px);transform:scale(1.03);z-index:1}
+.lb-stage .lo{filter:blur(20px);z-index:1}
 .lb-stage .hi{opacity:0;transition:opacity .32s ease;z-index:2}
 .lb-stage .hi.rd{opacity:1}
 .lb-figure figcaption{display:flex;align-items:center;gap:16px;color:#eee;
@@ -370,7 +373,7 @@ img{max-width:100%}
   <button id="lb-prev" class="lb-btn lb-prev" type="button" aria-label="上一张">‹</button>
   <button id="lb-next" class="lb-btn lb-next" type="button" aria-label="下一张">›</button>
   <figure class="lb-figure">
-    <div class="lb-stage">
+    <div class="lb-stage" id="lb-stage">
       <img id="lb-img-lo" class="lo" alt="" aria-hidden="true">
       <img id="lb-img" class="hi" alt="">
     </div>
@@ -520,6 +523,20 @@ function syncMore(){
 /* ── 灯箱 ── */
 let LB = { list: [], idx: 0, last: null };
 let loT = 0;   // 底层模糊图隐藏定时器，连翻时需可取消
+
+// 把舞台缩到原图 contain 后的真实矩形：两层完全重合，底层 blur 的外溢被舞台裁掉。
+// 上限沿用 CSS 的 max-width / max-height，避免两处数字各写一遍。
+function fitLbStage(){
+  const stage = $('#lb-stage'), lo = $('#lb-img-lo');
+  const cs = getComputedStyle(stage);
+  const availW = parseFloat(cs.maxWidth), availH = parseFloat(cs.maxHeight);
+  if (!availW || !availH) return;
+  const nw = lo.naturalWidth || 400, nh = lo.naturalHeight || 500;   // 本站缩略图 400x500
+  const s = Math.min(availW / nw, availH / nh);
+  stage.style.width = Math.round(nw * s) + 'px';
+  stage.style.height = Math.round(nh * s) + 'px';
+}
+addEventListener('resize', () => { if (!$('#lightbox').hidden) fitLbStage(); });
 function openLb(it, list){
   LB.list = list && list.length ? list : VIEW;
   LB.idx = Math.max(0, LB.list.indexOf(it));
@@ -534,6 +551,9 @@ function showLb(){
   const img = $('#lb-img'), lo = $('#lb-img-lo');
   // 双层：缩略图模糊垫底，原图加载完淡入
   lo.src = it.t;
+  // 舞台尺寸跟着缩略图比例走（缩略图与原图同比例，误差 <0.1%）
+  fitLbStage();
+  lo.onload = fitLbStage;
   img.alt = labelOf(it);
   $('#lb-label').textContent = labelOf(it) + '　' + it.w + '×' + it.h;
   const dl = $('#lb-dl');
@@ -545,7 +565,7 @@ function showLb(){
   lo.style.opacity = '1';
   const settle = () => {
     img.classList.add('rd');
-    // 淡入完成后隐藏底层：lo 有 scale(1.03)，不隐藏会在原图周围留一圈模糊光晕
+    // 淡入完成后收起底层。舞台已把 blur 外溢裁掉，这一步在视觉上无变化
     clearTimeout(loT);
     loT = setTimeout(() => { lo.style.opacity = '0'; }, 340);
   };
