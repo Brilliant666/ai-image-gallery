@@ -1,16 +1,24 @@
-# AI Image Reference Library · photoai.life
+<div align="center">
 
-**Four AI art reference galleries, built from one repo and served from one directory.** Portraits, poses, pose depth maps and costumes: 12,975 reference images, Chinese and Japanese UI, light and dark themes.
+# AI Image Reference Library
 
-[![Live site](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
-[![License: MIT](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](LICENSE)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square)](#quick-start)
+**Four AI art reference galleries, built from one repo and served from one directory**
+
+Portrait · Pose · Pose Depth · Costume · 12,975 images · Chinese / Japanese UI · Light / Dark
+
+[![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
+[![sites](https://img.shields.io/badge/sites-4-0ea5e9?style=flat-square)](#sites)
+[![images](https://img.shields.io/badge/images-12%2C975-8b5cf6?style=flat-square)](#sites)
+[![Python](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square&logo=python&logoColor=white)](#quick-start)
+[![License](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](#license-and-credits)
+
+### [Browse online · photoai.life →](https://photoai.life/)
 
 [简体中文](README.md) · **English** · [日本語](README_ja.md)
 
 [Sites](#sites) · [Quick start](#quick-start) · [Image loading](#image-loading) · [Deployment](#deployment) · [Documentation](#documentation)
 
-Browse everything at [photoai.life](https://photoai.life/); no download or setup needed. This repo contains no image files. To self-host, `tools/fetch.py` downloads them from each original site.
+</div>
 
 ![Hub](docs/screenshots/hub-light.jpg)
 
@@ -50,7 +58,7 @@ Every site has paginated grids, filters and search, a lightbox (`←` `→` to s
 
 ## Quick start
 
-Requires **Python 3.8+**. `tools/mid.py`, which generates lightbox previews, also needs Pillow (`pip install pillow`); every other script uses only the standard library.
+This repo contains no image files; `tools/fetch.py` downloads them from each original site. Requires **Python 3.8+**. `tools/mid.py`, which generates lightbox previews, also needs Pillow (`pip install pillow`); every other script uses only the standard library.
 
 ```bash
 git clone https://github.com/Brilliant666/ai-image-gallery.git

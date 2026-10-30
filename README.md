@@ -1,16 +1,24 @@
-# AI 图片素材库 · photoai.life
+<div align="center">
 
-**四个 AI 绘画参考图库，一个仓库构建，一个目录部署。** 人像、姿势、深度姿势、服装，共 12,975 张参考图，中日双语，浅色 / 深色主题。
+# AI 图片素材库 · 单仓多站
 
-[![在线站点](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
-[![License: MIT](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](LICENSE)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square)](#快速开始)
+**四个 AI 绘画参考图库，一个仓库构建，一个目录部署**
+
+人像 · 姿势 · 深度姿势 · 服装 · 12,975 张参考图 · 中日双语 · 浅色 / 深色
+
+[![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
+[![sites](https://img.shields.io/badge/sites-4-0ea5e9?style=flat-square)](#四个站点)
+[![images](https://img.shields.io/badge/images-12%2C975-8b5cf6?style=flat-square)](#四个站点)
+[![Python](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square&logo=python&logoColor=white)](#快速开始)
+[![License](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](#许可与致谢)
+
+### [在线浏览 · photoai.life →](https://photoai.life/)
 
 **简体中文** · [English](README_en.md) · [日本語](README_ja.md)
 
 [四个站点](#四个站点) · [快速开始](#快速开始) · [图片加载](#图片加载) · [部署](#部署) · [文档](#文档)
 
-打开 [photoai.life](https://photoai.life/) 即可浏览，不需要下载素材，也不需要自己部署。本仓库不含图片文件，自己部署时由 `tools/fetch.py` 从各原站下载。
+</div>
 
 ![入口页](docs/screenshots/hub-light.jpg)
 
@@ -50,7 +58,7 @@
 
 ## 快速开始
 
-需要 **Python 3.8+**。生成中图的 `tools/mid.py` 另需 Pillow（`pip install pillow`），其余脚本只用标准库。
+本仓库不含图片文件，由 `tools/fetch.py` 从各原站下载。需要 **Python 3.8+**。生成中图的 `tools/mid.py` 另需 Pillow（`pip install pillow`），其余脚本只用标准库。
 
 ```bash
 git clone https://github.com/Brilliant666/ai-image-gallery.git
