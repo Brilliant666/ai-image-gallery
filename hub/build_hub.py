@@ -315,7 +315,11 @@ def main():
         f.write(html)
 
     print(f"\n写出 index.html  {os.path.getsize(OUT)/1024:.1f} KB")
-    return 1 if bad else 0
+    if bad:
+        # 封面缺失不阻断生成：新克隆的仓库还没下图片，先出页面，
+        # 下载素材后重跑即可。只有 --check 模式才以非零退出提示。
+        print("提示：封面缺失的卡片会显示空图，运行 tools/fetch.py 后重新生成。")
+    return 0
 
 
 if __name__ == "__main__":
