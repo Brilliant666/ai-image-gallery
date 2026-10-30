@@ -49,14 +49,10 @@ def build(root, cfg):
     series_list = [s for s in SERIES_ORDER if any(p["s"] == s for p in data)]
     cats = sorted({p["c"] for p in data})
 
-    flat = []
-    for p in data:
-        for v in p["v"]:
-            flat.append({"s": p["s"], "c": p["c"], "p": p["p"], "n": p["n"], "z": p["z"],
-                         "a": v["a"], "t": v["t"], "f": v["f"]})
+    n_images = sum(len(p["v"]) for p in data)
 
     payload = json.dumps({
-        "poses": data, "flat": flat, "series": series_list, "cats": cats, "angs": ANG_ORDER,
+        "poses": data, "series": series_list, "cats": cats, "angs": ANG_ORDER,
         "seriesZh": SERIES_ZH, "catZh": CAT_ZH, "angZh": ANG_ZH,
         "ui": UI,
     }, ensure_ascii=False, separators=(",", ":"))
@@ -869,7 +865,7 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
     out = os.path.join(root, "index.html")
     open(out, "w", encoding="utf-8").write(html)
     print("wrote index.html", "%.1f KB" % (os.path.getsize(out) / 1024))
-    print("poses:", len(data), "| flat:", len(flat), "| series:", len(series_list), "| cats:", len(cats))
+    print("poses:", len(data), "| images:", n_images, "| series:", len(series_list), "| cats:", len(cats))
 
     # ── 导出可复用的数据文件 ─────────────────────────────
     data_dir = os.path.join(root, "data")
@@ -897,7 +893,7 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
         "source": cfg["source"],
         "author": "ギア (@giaaibusi)",
         "poses": len(data),
-        "images": len(flat),
+        "images": n_images,
         "系列": [{"ja": s, "zh": SERIES_ZH.get(s, s),
                   "poses": sum(1 for p in data if p["s"] == s)} for s in series_list],
         "分类": [{"ja": c, "zh": CAT_ZH.get(c, c),
