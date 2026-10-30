@@ -1,17 +1,64 @@
+<div align="center">
+
 # AI 图片素材库 · 单仓多站
 
-一个仓库收纳全部图库站点，一个命令构建，一个目录部署。
+**四个 AI 绘画参考图库 · 12,975 张图 · 一个仓库构建，一个目录部署**
 
-**当前 4 个站点 · 105 个文件 · 12 MB（不含图片）· 6.8 GB 图片不入库**
+[![在线站点](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
+[![子站](https://img.shields.io/badge/sites-4-0ea5e9?style=flat-square)](#四个站点)
+[![参考图](https://img.shields.io/badge/images-12%2C975-8b5cf6?style=flat-square)](#四个站点)
+[![依赖](https://img.shields.io/badge/deps-zero-22c55e?style=flat-square)](#)
+[![Python](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square&logo=python&logoColor=white)](#)
+[![License](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](#授权)
 
-| 站点 | 编号 | 内容 | 授权 |
-|---|---|---|---|
-| [人像集](sites/portrait/) | PORTRAIT-DB-01 | 1499 张人脸参考（893 面部 + 606 造型） | **CC0** |
-| [姿势集](sites/pose/) | POSE-DB-01 | 288 姿势 × 5 视角 = 1439 张线稿 | 禁止再分发 |
-| [深度姿势集](sites/pose-depth/) | POSE-DB-02 | 同批姿势的 1439 张深度图 | 禁止再分发 |
-| [服装集](sites/costume/) | COSTUME-DB-01 | 1407 件服装 / 4221 张图 | 禁止再分发 |
+[在线浏览](https://photoai.life/) · [四个站点](#四个站点) · [快速开始](#快速开始) · [加第 N 个站](#加第-n-个站) · [部署](#部署)
 
-入口页见 `hub/`，部署手册见 [deploy/DEPLOY.md](deploy/DEPLOY.md)。
+</div>
+
+![入口页](docs/preview-hub.jpg)
+
+---
+
+## 这是什么
+
+四个面向 AI 绘画的参考图库——人像、姿势、深度姿势、服装——原先分散在四个独立仓库，
+每个仓库复制了同一套页面模板。现在合并成一个仓库：**一份代码、一份构建脚本、一个发布目录**。
+
+合并后代码从 4 份共 3,400 行降到 1,100 行，新增第 5 个站只需要建一个目录、往 `sites.json` 追加一条记录。
+
+| | 合并前 | 合并后 |
+|---|---:|---:|
+| 仓库数 | 4 | **1** |
+| 生成脚本 | 3,400 行（98.8% 重复） | **1,100 行** |
+| 加一个站 | 复制 860 行脚本再改 | **建目录 + 加一条 JSON** |
+| 部署 | 4 套 nginx / 4 个目录 | **1 个 `dist/`，路径区分** |
+
+## 四个站点
+
+| 站点 | 内容 | 规模 | 授权 | 单独仓库 |
+|---|---|---|---:|---|
+| [人像集](https://photoai.life/portrait/) | 保持角色脸部一致性的人脸参考 | 1499 张 | **CC0** | [ai-portrait-gallery-cn](https://github.com/Brilliant666/ai-portrait-gallery-cn) |
+| [姿势集](https://photoai.life/pose/) | 无脸部灰色人体线稿，每姿势 5 视角 | 1439 张 | 禁止再分发 | [ai-pose-gallery-cn](https://github.com/Brilliant666/ai-pose-gallery-cn) |
+| [深度姿势集](https://photoai.life/pose-depth/) | 同批姿势的灰度深度图，适合 ControlNet | 1439 张 | 禁止再分发 | [ai-pose-depth-gallery-cn](https://github.com/Brilliant666/ai-pose-depth-gallery-cn) |
+| [服装集](https://photoai.life/costume/) | 8 分类 / 86 标签分面筛选 | 1407 件 4221 张 | 禁止再分发 | [ai-costume-gallery-cn](https://github.com/Brilliant666/ai-costume-gallery-cn) |
+
+> **四个站里只有人像集是 CC0**，其余三个禁止再分发图片数据。入口页卡片右下角的徽章标出了区别。
+
+![人像集](docs/preview-portrait.jpg)
+
+## 技术上的几个取舍
+
+**图片不进 git。** 6.8 GB 二进制素材放仓库里，clone 一次就是灾难。`tools/fetch.py` 幂等下载——
+首次部署拉一次，之后只补缺失文件，不会重复访问原站。
+
+**发布用硬链接。** `tools/release.py` 把图片硬链接进 `dist/`，同文件系统下零额外占盘
+（实测 12,975 个文件全部硬链接，`dist/` 报告 6.8 GB 但磁盘增量接近 0）。
+
+**零依赖。** 无框架、无 CDN、无外部字体，单个 `index.html` 数据内嵌，`file://` 双击就能看。
+构建脚本只用 Python 标准库，服务器上不需要 `pip install`。
+
+**三档图片。** 缩略图 7–18 KB / 中图 83–95 KB / 原图 0.5–3 MB。
+网格只加载缩略图，首屏约 10 MB；灯箱才拉原图，且用双层模糊淡入避免闪烁。
 
 ---
 
