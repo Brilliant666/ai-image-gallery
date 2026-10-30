@@ -48,7 +48,22 @@ TEMPLATE = r"""<!doctype html>
 <title>__TITLE__</title>
 <meta name="description" content="__DESC__">
 <meta name="color-scheme" content="light dark">
-<meta name="robots" content="noindex">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="__BASE__/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="参考素材库">
+<meta property="og:title" content="__TITLE__">
+<meta property="og:description" content="__DESC__">
+<meta property="og:url" content="__BASE__/">
+<meta property="og:image" content="__BASE__/og-cover.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="__TITLE__">
+<meta name="twitter:description" content="__DESC__">
+<meta name="twitter:image" content="__BASE__/og-cover.jpg">
+<script type="application/ld+json">__LD__</script>
 <script>
 (function(){try{
   var t=localStorage.getItem('hub.theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme=t;
@@ -289,6 +304,14 @@ def main():
     cfg = load()
     only_check = "--check" in sys.argv
 
+    base = "https://example.com"
+    for i, a in enumerate(sys.argv):
+        if a == "--base" and i + 1 < len(sys.argv):
+            base = sys.argv[i + 1]
+        elif a.startswith("--base="):
+            base = a.split("=", 1)[1]
+    base = base.rstrip("/")
+
     print(f"读取 sites.json：{len(cfg['sites'])} 个站点")
     bad = check(cfg)
     if bad:
@@ -305,16 +328,50 @@ def main():
     title = cfg["meta"]["title"]["zh"] + " · " + str(len(cfg["sites"])) + " 站"
     desc = cfg["meta"]["lead"]["zh"]
 
+    # 结构化数据：告诉搜索引擎/AI 引擎这是一组并列的子站点
+    ld = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": title,
+        "description": desc,
+        "url": base + "/",
+        "inLanguage": "zh-CN",
+        "hasPart": [
+            {"@type": "WebSite", "name": s["name"]["zh"], "url": f"{base}/{s['id']}/"}
+            for s in cfg["sites"]
+        ],
+    }, ensure_ascii=False, separators=(",", ":"))
+
     html = (TEMPLATE
             .replace("__TITLE__", title)
             .replace("__DESC__", desc)
             .replace("__LIC__", lic_js)
+            .replace("__LD__", ld)
+            .replace("__BASE__", base)
             .replace("__DATA__", data))
 
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:
         f.write(html)
 
     print(f"\n写出 index.html  {os.path.getsize(OUT)/1024:.1f} KB")
+
+    # 根 sitemap：入口页 + 各子站
+    urls = [base + "/"] + [f"{base}/{s['id']}/" for s in cfg["sites"]]
+    sm = ['<?xml version="1.0" encoding="UTF-8"?>',
+          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for u in urls:
+        sm.append(f"  <url><loc>{u}</loc><changefreq>weekly</changefreq></url>")
+    sm.append("</urlset>")
+    with open(os.path.join(HUB, "sitemap.xml"), "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(sm) + "\n")
+
+    # 根 robots：显式允许抓取并指向 sitemap
+    with open(os.path.join(HUB, "robots.txt"), "w", encoding="utf-8", newline="\n") as f:
+        f.write("User-agent: *\nAllow: /\n\n"
+                f"Sitemap: {base}/sitemap.xml\n")
+
+    print(f"写出 sitemap.xml（{len(urls)} 条）与 robots.txt  base = {base}")
+
     if bad:
         # 封面缺失不阻断生成：新克隆的仓库还没下图片，先出页面，
         # 下载素材后重跑即可。只有 --check 模式才以非零退出提示。

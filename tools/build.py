@@ -45,7 +45,8 @@ def main():
 
     if not args.get("no-hub"):
         print("  [hub] 重建入口页")
-        run([sys.executable, os.path.join(ROOT, "hub", "build_hub.py")], cwd=ROOT, quiet=True)
+        run([sys.executable, os.path.join(ROOT, "hub", "build_hub.py"), "--base", base],
+            cwd=ROOT, quiet=True)
 
     print("完成")
 

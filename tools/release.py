@@ -30,6 +30,9 @@ SITE_FILES = ["index.html", "robots.txt", "sitemap.xml", "404.html", "og-cover.j
 # 站点根目录下的子目录
 SITE_DIRS = ["data"]
 
+# 入口页与根级文件（sitemap / robots / 社交分享图）
+HUB_FILES = ["index.html", "sitemap.xml", "robots.txt", "og-cover.jpg"]
+
 
 def link_or_copy(src, dst):
     """优先硬链接，失败则复制。返回 'link' / 'copy'。"""
@@ -120,11 +123,16 @@ def main():
         size = dir_size(dst)
         print(f"  [{sid}] {n_files} 个站点文件{img_note}  → {human(size)}")
 
-    # 入口页
-    hub = os.path.join(ROOT, "hub", "index.html")
-    if os.path.exists(hub) and not args.get("site"):
-        shutil.copy2(hub, os.path.join(out, "index.html"))
-        print("\n  [hub] index.html 已复制")
+    # 入口页与根级 SEO 文件
+    if not args.get("site"):
+        n = 0
+        for fn in HUB_FILES:
+            src = os.path.join(ROOT, "hub", fn)
+            if os.path.exists(src):
+                shutil.copy2(src, os.path.join(out, fn))
+                n += 1
+        if n:
+            print(f"\n  [hub] {n} 个根级文件已复制（{', '.join(HUB_FILES)}）")
 
     print(f"\n发布目录: {out}")
     print(f"总体积: {human(dir_size(out))}")
