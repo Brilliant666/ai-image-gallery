@@ -122,6 +122,9 @@ nginx -t && systemctl reload nginx
 ## 3. 验收
 
 ```bash
+# 图片完整性（release.py 发布前也会自动跑一遍）
+python3 tools/verify.py
+
 # 文件与体积
 du -sh /srv/ai-image-gallery/dist
 find /srv/ai-image-gallery/dist -name '*.jpg' -o -name '*.webp' -o -name '*.png' | wc -l
@@ -258,7 +261,8 @@ python3 tools/release.py --out dist-stage
 | 子站 404 | `dist/` 未生成对应目录 | 重跑 `tools/release.py` |
 | canonical 还是 example.com | 构建时没传 `--base` | 带 `--base` 重跑 `tools/build.py` |
 | 磁盘暴涨 | 图片被复制而非硬链接 | `df -h` 对比 `du -sh dist`；确认同盘 |
-| `fetch.py` 大量失败 | 原站不可达或被限速 | 降并发 `--workers 4` |
+| `fetch.py` 大量失败 | 原站不可达或被限速 | 降并发 `--workers 4`；失败条目写在 `sites/<id>/failed_<档位>.json`，重跑只补失败的 |
+| `release.py` 报「图片校验未通过」 | 有图片缺失或损坏 | `python3 tools/verify.py` 看具体文件；中图缺失跑 `tools/mid.py`，其余跑 `tools/fetch.py` |
 | `detected dubious ownership` | 目录属主与执行用户不一致（常见于从别处 rsync 过来的目录） | `git config --global --add safe.directory /srv/ai-image-gallery` |
 | `git pull` 报本地改动冲突 | 构建产物被 `--base` 重写过 | 改用 `python3 tools/update.py`（见 §4） |
 | `update.py` 中止并列出文件 | 服务器上有手改的源码或配置 | 需要保留就提交进仓库；确认可丢弃再加 `--force`（会先备份） |

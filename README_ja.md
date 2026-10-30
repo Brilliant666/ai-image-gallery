@@ -82,12 +82,13 @@ python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 | --- | --- |
 | `python tools/fetch.py --site pose` | 1 サイトだけダウンロード |
 | `python tools/mid.py --site portrait` | 1 サイトだけ中サイズ画像を生成 |
+| `python tools/verify.py` | 画像を検証：存在・サイズ・寸法・中サイズの有無 |
 | `python tools/build.py --site pose` | 1 サイトだけ再ビルド |
 | `python tools/build.py --base https://x.com` | 公開ドメインを canonical / og / sitemap に反映 |
 | `python tools/release.py --out <dir>` | 別のディレクトリへリリース |
 | `python tools/serve.py --root sites/pose` | 1 サイトだけプレビュー |
 
-`release.py` は対象サイトのディレクトリを削除してから作り直します。`--no-images` はサイトファイルのみをコピーするもので、既存の画像を残す用途には使えません。
+`release.py` は先に画像を検証し、欠けていれば中止します（一部の段階だけ取得した場合は `--skip-verify`）。対象サイトのディレクトリは削除してから作り直します。`--no-images` はサイトファイルのみをコピーするもので、既存の画像を残す用途には使えません。
 
 </details>
 
@@ -127,9 +128,9 @@ python3 tools/release.py --out dist-stage   # まず一時ディレクトリへ�
 ai-image-gallery/
 ├── sites.json          # 唯一の一覧：サイト、順序、ライセンス、画像の段階
 ├── sites/<id>/         # 各サイト：スクリプト、データ、ビルド成果物、NOTICE
-├── shared/             # ポーズ / デプスで共用するページ生成器と日中辞書
+├── shared/             # 全サイト共通のダウンロードと検証、ポーズ / デプス共用のページ生成器・元サイト解析・日中辞書
 ├── hub/                # トップページ生成器（ルートの sitemap / robots も出力）
-├── tools/              # fetch / mid / build / release / serve / update
+├── tools/              # fetch / mid / verify / build / release / serve / update
 ├── deploy/             # デプロイ手順と nginx テンプレート
 └── docs/               # ドキュメントとスクリーンショット
 ```

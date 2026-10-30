@@ -1,6 +1,7 @@
 # 加第 N 个站
 
-新站点只要满足下面的目录约定，`tools/fetch.py`、`tools/mid.py`、`tools/build.py`、`tools/release.py` 都不用改。
+新站点只要满足下面的约定，`tools/` 下的 fetch / mid / verify / build / release 都不用改。
+下载和校验是共用的（`shared/assets.py`），各站不需要自己的下载或校验脚本。
 
 ## 1. 建目录
 
@@ -8,8 +9,8 @@
 sites/<新站id>/
 ├── scripts/
 │   ├── build_gallery.py    # 必填
-│   ├── download.py         # 必填
-│   └── verify.py           # 建议
+│   ├── extract.py          # 按需：从原站存档解析 data/
+│   └── manifest.py         # 按需：data/ → manifest.json
 ├── data/                   # 结构化数据（入库）
 ├── index.html              # 构建产物（入库，便于直接预览）
 ├── LICENSE
@@ -17,13 +18,12 @@ sites/<新站id>/
 └── README.md
 ```
 
-| 脚本 | 约定 |
+| 文件 | 约定 |
 |---|---|
 | `scripts/build_gallery.py` | 读环境变量 `SITE_URL`，输出 `index.html`、`data/`、`robots.txt`、`sitemap.xml`、`404.html`。站点根用 `dirname(dirname(__file__))` 自己算，不依赖当前目录 |
-| `scripts/download.py <tier> [workers]` | 幂等下载：已存在且大于 1 KB 的文件跳过；失败时 `sys.exit(1)` |
-| `scripts/verify.py` | 校验完整性，失败时 `sys.exit(1)` |
+| `manifest.json` | 每条记录对 `sites.json` 里的每个档位 `<tier>` 都有 `<tier>_url` 和 `<tier>_path`（例如 `thumb_url` / `thumb_path`）。`tools/fetch.py` 和 `tools/verify.py` 只靠这条规则工作 |
 
-结构和姿势集相同的站，直接复用 `shared/pose_gallery.py`，只写一份 `config.py`（参考 `sites/pose/config.py`）。
+结构和姿势集相同的站，直接复用 `shared/pose_gallery.py` 与 `shared/pose_source.py`，只写一份 `config.py`（参考 `sites/pose/config.py`）。
 
 ## 2. 在 `sites.json` 追加一条
 
@@ -46,10 +46,11 @@ sites/<新站id>/
 | 字段 | 说明 |
 |---|---|
 | `id` | 唯一标识，同时是目录名和 URL 路径 |
+| `source` | 原站地址，下载时作为 Referer |
 | `code` | 入口页封面左下角的编号 |
 | `cover` | 相对站点目录的封面路径 |
 | `coverPos` | 封面框是 16:10，竖图必然裁切：脸部特写用 `25%`–`35%`，全身图用 `0%`–`10%`，主体居中用 `50%` |
-| `tiers` | 下载档位，对应 `download.py` 的参数 |
+| `tiers` | 下载与校验的档位，对应 manifest 里的 `<tier>_url` / `<tier>_path` |
 | `imageDirs` | `release.py` 硬链接的目录；含 `mid` 时 `mid.py` 会为该站生成中图 |
 | `license` | `cc0` / `conditional` / `restricted`，决定入口页卡片上的授权徽章 |
 
@@ -60,6 +61,7 @@ sites/<新站id>/
 ```bash
 python tools/fetch.py --site new-site
 python tools/mid.py --site new-site      # imageDirs 含 mid 时
+python tools/verify.py --site new-site
 python tools/build.py
 python tools/release.py
 python tools/serve.py

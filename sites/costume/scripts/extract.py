@@ -17,7 +17,7 @@ if not os.path.exists(SRC):
         "\n"
         "本脚本仅在需要重新从原站解析数据时使用，普通使用不需要它：\n"
         "  - 仓库已包含解析好的 data/pose.json（或 data/costume.json）\n"
-        "  - 想直接看画廊，只需运行 scripts/download.py 下载图片\n"
+        "  - 想直接看画廊，只需在仓库根目录运行 python tools/fetch.py 下载图片\n"
         "\n"
         "若确实要重新解析，请自行访问原站并保存其 HTML 到 raw/index.html。"
     )

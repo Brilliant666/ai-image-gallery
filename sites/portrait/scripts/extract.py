@@ -19,7 +19,7 @@ for p in (SRC_IMG, SRC_RANK):
             "找不到 %s。\n\n"
             "这是原站存档，因版权与体积原因不随仓库分发。\n"
             "普通使用不需要本脚本：仓库已含解析好的 data/portrait.json，\n"
-            "想直接看图库，只需运行 scripts/download.py 下载图片。" % os.path.relpath(p, root)
+            "想直接看图库，只需在仓库根目录运行 python tools/fetch.py 下载图片。" % os.path.relpath(p, root)
         )
 
 

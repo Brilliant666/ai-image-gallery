@@ -75,6 +75,7 @@
 ```
 .
 ├── index.html              # 单页画廊（数据内嵌，file:// 可直开）
+├── config.py               # 本站文案、SEO 与原站域名
 ├── robots.txt / sitemap.xml / 404.html
 ├── og-cover.jpg            # 1200×630 社交分享封面
 ├── manifest.json / .csv    # 全量清单（含原站 URL 与本地路径）
@@ -84,13 +85,9 @@
 │   ├── meta.json           # 系列 / 分类 / 视角元数据
 │   └── translations.csv    # 日⇄中对照表
 ├── scripts/
-│   ├── extract.py          # 从原站存档解析数据
-│   ├── manifest.py         # 生成清单
-│   ├── download.py         # 并发下载器（断点续传）
-│   ├── translations.py     # 日→中词典
-│   ├── build_gallery.py    # 构建 index.html + data/ + SEO 文件
-│   ├── build_dist.sh       # 生成部署目录 dist/
-│   └── verify.py           # 校验完整性
+│   ├── extract.py          # 从原站存档解析数据（逻辑在 shared/pose_source.py）
+│   ├── manifest.py         # 生成清单（同上，域名取 config.py）
+│   └── build_gallery.py    # 构建入口，页面由 shared/pose_gallery.py 生成
 ├── thumbs/                 # 缩略图（gitignored）
 ├── mid/                    # 中图，由 tools/mid.py 生成（gitignored）
 ├── img/                    # 原图（gitignored）
@@ -99,18 +96,19 @@
 
 ## 🚀 快速开始
 
+本站是 [ai-image-gallery](../../README.md) 单仓的一部分，下载、构建、发布都在仓库根目录用统一工具完成：
+
 ```bash
-git clone https://github.com/Brilliant666/ai-pose-depth-gallery-cn.git
-cd ai-pose-depth-gallery-cn
+git clone https://github.com/Brilliant666/ai-image-gallery.git
+cd ai-image-gallery
 
-python scripts/download.py thumb 16    # 缩略图 300×400，约 12 MB
-python scripts/download.py full 14     # 原图 PNG，约 133 MB
-
-# 直接打开 index.html 即可
+python tools/fetch.py --site pose-depth --tier thumb    # 缩略图 300×400，约 12 MB
+python tools/fetch.py --site pose-depth --tier full     # 原图 PNG，约 133 MB
+python tools/mid.py --site pose-depth                   # 灯箱中图（需要 Pillow）
+python tools/verify.py --site pose-depth                # 校验图片完整性
+python tools/build.py --site pose-depth
+python tools/serve.py --root sites/pose-depth           # 本地预览
 ```
-
-> ⚠️ 原站禁止批量下载。若你重视遵守作者条件，请改为逐张手动下载，
-> 本脚本仅作技术演示，使用后果自负。
 
 ## ⚙️ 环境要求
 
@@ -123,9 +121,11 @@ python scripts/download.py full 14     # 原图 PNG，约 133 MB
 
 ## 📦 生产部署
 
+四个站一起发布到同一个 `dist/`，部署、nginx、原子切换与回滚见单仓的 [deploy/DEPLOY.md](../../deploy/DEPLOY.md)。
+
 ```bash
-SITE_URL=https://your-domain.com python scripts/build_gallery.py
-bash scripts/build_dist.sh --with-images
+python tools/build.py --base https://your-domain.com   # canonical / og:url / sitemap 使用正式域名
+python tools/release.py --out dist-stage               # 发布前会自动校验图片
 ```
 
 ## 🗄️ 数据结构

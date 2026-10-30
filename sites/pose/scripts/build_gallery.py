@@ -5,7 +5,7 @@
 只有品牌文案与图源不同，那些放在 sites/pose/config.py。
 
 用法：
-  SITE_URL=https://your-domain.com python scripts/build_gallery.py
+  python tools/build.py --site pose --base https://your-domain.com   # 仓库根目录
 """
 import os, sys
 

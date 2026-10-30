@@ -103,11 +103,8 @@
 ├── scripts/
 │   ├── extract.py          # 从原站存档解析内嵌数据
 │   ├── manifest.py         # 生成清单
-│   ├── download.py         # 并发下载器（三档、断点续传）
 │   ├── translations.py     # 日→中 / 英→中 / 英→日 词典
-│   ├── build_gallery.py    # 构建 index.html + data/ + SEO 文件
-│   ├── build_dist.sh       # 生成部署目录 dist/
-│   └── verify.py           # 校验三档文件完整性
+│   └── build_gallery.py    # 构建 index.html + data/ + SEO 文件
 ├── thumbs/                 # 缩略图 360×540（gitignored）
 ├── img/                    # 中图 1366×2048（gitignored）
 ├── png/                    # 原图 1366×2048（gitignored）
@@ -125,64 +122,30 @@
 
 ## 🚀 快速开始
 
+本站是 [ai-image-gallery](../../README.md) 单仓的一部分，下载、构建、发布都在仓库根目录用统一工具完成：
+
 ```bash
-# 1. 克隆
-git clone https://github.com/Brilliant666/ai-costume-gallery-cn.git
-cd ai-costume-gallery-cn
+git clone https://github.com/Brilliant666/ai-image-gallery.git
+cd ai-image-gallery
 
-# 2. 下载素材（断点续传，已存在的自动跳过）
-python scripts/download.py thumb 16    # 缩略图 360×540 webp，约 10 MB
-python scripts/download.py img 14      # 中图   1366×2048 webp，约 114 MB
-python scripts/download.py png 14      # 原图   1366×2048 png，约 1.33 GB（可选）
-
-# 3. 打开
-#    Windows: 双击 index.html
-#    macOS:   open index.html
-#    Linux:   xdg-open index.html
+python tools/fetch.py --site costume --tier thumb   # 缩略图 360×540 webp，约 10 MB
+python tools/fetch.py --site costume --tier img     # 中图   1366×2048 webp，约 114 MB
+python tools/fetch.py --site costume --tier png     # 原图   1366×2048 png，约 1.33 GB（可选）
+python tools/verify.py --site costume               # 校验图片完整性
+python tools/build.py --site costume
+python tools/serve.py --root sites/costume          # 本地预览
 ```
 
 > 只下 `thumb` + `img` 就够日常浏览（共约 124 MB），`png` 是无损原图，按需再下。
+> 这时用 `python tools/verify.py --site costume --tier thumb` 之类按档校验；`release.py` 需加 `--skip-verify`。
 
 ## 📦 生产部署
 
-> 两个站点一起部署到 VPS 的完整流程（前置检查 / nginx / certbot / 验证清单 / 回滚）
-> 见 [ai-pose-gallery-cn 的 DEPLOY.md](https://github.com/Brilliant666/ai-pose-gallery-cn/blob/main/DEPLOY.md)。
-
-纯静态站点，任意静态托管都能跑。
-
-### Cloudflare Pages
+四个站一起发布到同一个 `dist/`，部署、nginx、原子切换与回滚见单仓的 [deploy/DEPLOY.md](../../deploy/DEPLOY.md)。
 
 ```bash
-bash scripts/build_dist.sh
-npx wrangler pages deploy dist --project-name ai-costume-gallery-cn
-```
-
-### 自有 VPS + nginx
-
-```bash
-# 构建（SITE_URL 决定 canonical / og:url / sitemap 的绝对地址）
-SITE_URL=https://your-domain.com python scripts/build_gallery.py
-
-# 上传
-rsync -avz --exclude raw --exclude dist ./ user@host:/var/www/costume/
-```
-
-nginx 关键配置：
-
-```nginx
-# 图片内容永不变 → 一年强缓存
-location ~ ^/(thumbs|img|png)/ {
-    add_header Cache-Control "public, max-age=31536000, immutable" always;
-    access_log off;
-}
-
-# HTML 每次验证
-location ~* \.(html|json|csv)$ {
-    add_header Cache-Control "no-cache, must-revalidate" always;
-}
-
-# 4200+ 小文件，开元数据缓存
-open_file_cache max=10000 inactive=60s;
+python tools/build.py --base https://your-domain.com   # canonical / og:url / sitemap 使用正式域名
+python tools/release.py --out dist-stage               # 发布前会自动校验图片
 ```
 
 ## 🗄️ 数据结构
@@ -227,7 +190,7 @@ open_file_cache max=10000 inactive=60s;
 | 缩略图有、点开无大图 | 只下了 `thumb` | 补下 `img` 或 `png` |
 | 筛选不出结果 | 多选标签是 AND 逻辑 | 减少标签或点「清除全部标签」 |
 | 中文模式看到日文 | 该标签缺译 | 正常回退，不会报错；可提 PR 补译 |
-| 想改域名 | canonical 是占位值 | `SITE_URL=... python scripts/build_gallery.py` |
+| 想改域名 | canonical 是占位值 | 仓库根目录运行 `python tools/build.py --base https://你的域名` |
 
 ## 📝 更新日志
 
@@ -240,8 +203,8 @@ open_file_cache max=10000 inactive=60s;
 
 欢迎补充译文、修正错译、报告 bug。
 
-- 译文在 `scripts/translations.py`（`CAT_ZH` / `TAG_ZH` / `TAG_JA`），改完跑 `python scripts/build_gallery.py` 重新生成
-- 提交前请确保 `python scripts/verify.py` 通过
+- 译文在 `scripts/translations.py`（`CAT_ZH` / `TAG_ZH` / `TAG_JA`），改完在仓库根目录跑 `python tools/build.py --site costume` 重新生成
+- 提交前请在仓库根目录运行 `python tools/build.py`，并确认 `git status` 里构建产物已一并提交
 - **请勿提交任何图片文件**，`thumbs/` `img/` `png/` `raw/` 已在 `.gitignore` 中
 
 ## 📄 开源协议
@@ -303,14 +266,14 @@ open_file_cache max=10000 inactive=60s;
 ## 🚀 クイックスタート
 
 ```bash
-git clone https://github.com/Brilliant666/ai-costume-gallery-cn.git
-cd ai-costume-gallery-cn
-
-python scripts/download.py thumb 16   # サムネイル 約 10 MB
-python scripts/download.py img 14     # 中サイズ 約 114 MB
-python scripts/download.py png 14     # 原寸 PNG 約 1.33 GB（任意）
-
-# index.html をブラウザで開くだけ（サーバー不要）
+git clone https://github.com/Brilliant666/ai-image-gallery.git
+cd ai-image-gallery
+# リポジトリ直下で実行
+python tools/fetch.py --site costume --tier thumb   # サムネイル 約 10 MB
+python tools/fetch.py --site costume --tier img     # 中サイズ 約 114 MB
+python tools/fetch.py --site costume --tier png     # 原寸 PNG 約 1.33 GB（任意）
+python tools/build.py --site costume
+python tools/serve.py --root sites/costume
 ```
 
 ## 🔒 ライセンス
@@ -369,14 +332,14 @@ Original author: ギア（[@giaaibusi](https://x.com/giaaibusi)）
 ## 🚀 Quick start
 
 ```bash
-git clone https://github.com/Brilliant666/ai-costume-gallery-cn.git
-cd ai-costume-gallery-cn
-
-python scripts/download.py thumb 16   # thumbnails, ~10 MB
-python scripts/download.py img 14     # mid-size webp, ~114 MB
-python scripts/download.py png 14     # full-size PNGs, ~1.33 GB (optional)
-
-# then just open index.html in a browser
+git clone https://github.com/Brilliant666/ai-image-gallery.git
+cd ai-image-gallery
+# run from the repository root
+python tools/fetch.py --site costume --tier thumb   # thumbnails, ~10 MB
+python tools/fetch.py --site costume --tier img     # mid-size webp, ~114 MB
+python tools/fetch.py --site costume --tier png     # full-size PNGs, ~1.33 GB (optional)
+python tools/build.py --site costume
+python tools/serve.py --root sites/costume
 ```
 
 ## 🔒 License

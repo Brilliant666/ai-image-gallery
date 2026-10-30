@@ -6,6 +6,7 @@ sites/*/mid/
 sites/*/img/
 sites/*/png/
 sites/*/raw/
+sites/*/failed_*.json
 
 # ── 构建与发布产物 ────────────────────────────────────
 dist/

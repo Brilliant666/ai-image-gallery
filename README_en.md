@@ -82,12 +82,13 @@ Check the result through `serve.py`, not by opening `dist/index.html` directly: 
 | --- | --- |
 | `python tools/fetch.py --site pose` | Download one site |
 | `python tools/mid.py --site portrait` | Generate previews for one site |
+| `python tools/verify.py` | Check images: present, size, readable dimensions, previews complete |
 | `python tools/build.py --site pose` | Rebuild one site |
 | `python tools/build.py --base https://x.com` | Set the public domain for canonical / og / sitemap |
 | `python tools/release.py --out <dir>` | Release into another directory |
 | `python tools/serve.py --root sites/pose` | Preview one site |
 
-`release.py` deletes and recreates each target site directory. `--no-images` copies site files only; it does not keep old images in place.
+`release.py` verifies images first and stops if any are missing (add `--skip-verify` if you fetched only some tiers). It deletes and recreates each target site directory. `--no-images` copies site files only; it does not keep old images in place.
 
 </details>
 
@@ -127,9 +128,9 @@ First-time setup, nginx, atomic swaps and rollback: [deploy/DEPLOY.md](deploy/DE
 ai-image-gallery/
 ├── sites.json          # single manifest: sites, order, licenses, image tiers
 ├── sites/<id>/         # each site: scripts, data, build output, NOTICE
-├── shared/             # page generator and JA→ZH dictionary shared by Pose and Pose Depth
+├── shared/             # download and verify for all sites; page generator, source parser and JA→ZH dictionary for Pose and Pose Depth
 ├── hub/                # hub page generator (also writes root sitemap / robots)
-├── tools/              # fetch / mid / build / release / serve / update
+├── tools/              # fetch / mid / verify / build / release / serve / update
 ├── deploy/             # deployment guide and nginx template
 └── docs/               # documentation and screenshots
 ```

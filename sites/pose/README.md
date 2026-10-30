@@ -83,7 +83,7 @@
 ```
 .
 ├── index.html              # 单页画廊（数据内嵌，file:// 可直开）
-├── DEPLOY.md               # 两个站点的联合部署手册（VPS / Cloudflare）
+├── config.py               # 本站文案、SEO 与原站域名
 ├── robots.txt
 ├── sitemap.xml
 ├── 404.html
@@ -97,13 +97,9 @@
 │   ├── meta.json           # 系列 / 分类 / 视角元数据
 │   └── translations.csv    # 日⇄中对照表（323 条）
 ├── scripts/
-│   ├── extract.py          # 从原站存档解析内嵌数据
-│   ├── manifest.py         # 生成清单
-│   ├── download.py         # 并发下载器（断点续传）
-│   ├── translations.py     # 日→中词典
-│   ├── build_gallery.py    # 构建 index.html + data/ + SEO 文件
-│   ├── build_dist.sh       # 生成部署目录 dist/
-│   └── verify.py           # 校验文件完整性
+│   ├── extract.py          # 从原站存档解析数据（逻辑在 shared/pose_source.py）
+│   ├── manifest.py         # 生成清单（同上，域名取 config.py）
+│   └── build_gallery.py    # 构建入口，页面由 shared/pose_gallery.py 生成
 ├── thumbs/                 # 缩略图（gitignored）
 ├── mid/                    # 中图，由 tools/mid.py 生成（gitignored）
 ├── img/                    # 原图（gitignored）
@@ -121,60 +117,27 @@
 
 ## 🚀 快速开始
 
+本站是 [ai-image-gallery](../../README.md) 单仓的一部分，下载、构建、发布都在仓库根目录用统一工具完成：
+
 ```bash
-# 1. 克隆
-git clone https://github.com/Brilliant666/ai-pose-gallery-cn.git
-cd ai-pose-gallery-cn
+git clone https://github.com/Brilliant666/ai-image-gallery.git
+cd ai-image-gallery
 
-# 2. 下载素材（断点续传，已存在的自动跳过）
-python scripts/download.py thumb 16    # 缩略图 300×400 JPG，约 22 MB
-python scripts/download.py full 14     # 原图   900×1200 PNG，约 638 MB
-
-# 3. 打开
-#    Windows: 双击 index.html
-#    macOS:   open index.html
-#    Linux:   xdg-open index.html
+python tools/fetch.py --site pose --tier thumb    # 缩略图 300×400 JPG，约 22 MB
+python tools/fetch.py --site pose --tier full     # 原图 900×1200 PNG，约 638 MB
+python tools/mid.py --site pose                   # 灯箱中图（需要 Pillow）
+python tools/verify.py --site pose                # 校验图片完整性
+python tools/build.py --site pose
+python tools/serve.py --root sites/pose           # 本地预览
 ```
-
-> 不需要 `npm install`，不需要起 HTTP 服务。数据内嵌在 HTML 里，`file://` 协议直接可用。
 
 ## 📦 生产部署
 
-纯静态站点，任意静态托管都能跑。
-
-### Cloudflare Pages
+四个站一起发布到同一个 `dist/`，部署、nginx、原子切换与回滚见单仓的 [deploy/DEPLOY.md](../../deploy/DEPLOY.md)。
 
 ```bash
-bash scripts/build_dist.sh
-npx wrangler pages deploy dist --project-name ai-pose-gallery-cn
-```
-
-### 自有 VPS + nginx
-
-```bash
-# 构建（SITE_URL 决定 canonical / og:url / sitemap 的绝对地址）
-SITE_URL=https://your-domain.com python scripts/build_gallery.py
-
-# 上传
-rsync -avz --exclude raw --exclude dist ./ user@host:/var/www/pose/
-```
-
-nginx 关键配置：
-
-```nginx
-# 图片内容永不变 → 一年强缓存
-location ~ ^/(thumbs|img)/ {
-    add_header Cache-Control "public, max-age=31536000, immutable" always;
-    access_log off;
-}
-
-# HTML 每次验证
-location ~* \.(html|json|csv)$ {
-    add_header Cache-Control "no-cache, must-revalidate" always;
-}
-
-# 1400+ 小文件，开元数据缓存
-open_file_cache max=10000 inactive=60s;
+python tools/build.py --base https://your-domain.com   # canonical / og:url / sitemap 使用正式域名
+python tools/release.py --out dist-stage               # 发布前会自动校验图片
 ```
 
 ## 🗄️ 数据结构
@@ -219,7 +182,7 @@ open_file_cache max=10000 inactive=60s;
 | 打开是空白页 | 图片还没下载 | 先跑 `download.py` |
 | 图片显示不出来 | 目录结构被改过 | 保持 `thumbs/` `img/` 与 `index.html` 同级 |
 | 中文模式看到日文 | 该条缺译 | 正常回退，不会报错；可提 PR 补译 |
-| 想改域名 | canonical 是占位值 | `SITE_URL=... python scripts/build_gallery.py` |
+| 想改域名 | canonical 是占位值 | 仓库根目录运行 `python tools/build.py --base https://你的域名` |
 | 换设备后主题丢失 | localStorage 按域隔离 | 重新选一次即可 |
 
 ## 📝 更新日志
@@ -233,8 +196,8 @@ open_file_cache max=10000 inactive=60s;
 
 欢迎补充译文、修正错译、报告 bug。
 
-- 译文在 `scripts/translations.py`，改完跑 `python scripts/build_gallery.py` 重新生成
-- 提交前请确保 `python scripts/verify.py` 通过
+- 译文在 `shared/pose_i18n.py`（姿势集与深度姿势集共用），改完在仓库根目录跑 `python tools/build.py` 重新生成
+- 提交前请在仓库根目录运行 `python tools/build.py`，并确认 `git status` 里构建产物已一并提交
 - **请勿提交任何图片文件**，`thumbs/` `img/` `raw/` 已在 `.gitignore` 中
 
 ## 📄 开源协议
@@ -292,13 +255,13 @@ open_file_cache max=10000 inactive=60s;
 ## 🚀 クイックスタート
 
 ```bash
-git clone https://github.com/Brilliant666/ai-pose-gallery-cn.git
-cd ai-pose-gallery-cn
-
-python scripts/download.py thumb 16   # サムネイル 約 22 MB
-python scripts/download.py full 14    # 原寸 PNG 約 638 MB
-
-# index.html をブラウザで開くだけ（サーバー不要）
+git clone https://github.com/Brilliant666/ai-image-gallery.git
+cd ai-image-gallery
+# リポジトリ直下で実行
+python tools/fetch.py --site pose --tier thumb   # サムネイル 約 22 MB
+python tools/fetch.py --site pose --tier full    # 原寸 PNG 約 638 MB
+python tools/build.py --site pose
+python tools/serve.py --root sites/pose
 ```
 
 ## 🔒 ライセンス
@@ -354,13 +317,13 @@ Original author: ギア（[@giaaibusi](https://x.com/giaaibusi)）
 ## 🚀 Quick start
 
 ```bash
-git clone https://github.com/Brilliant666/ai-pose-gallery-cn.git
-cd ai-pose-gallery-cn
-
-python scripts/download.py thumb 16   # thumbnails, ~22 MB
-python scripts/download.py full 14    # full-size PNGs, ~638 MB
-
-# then just open index.html in a browser
+git clone https://github.com/Brilliant666/ai-image-gallery.git
+cd ai-image-gallery
+# run from the repository root
+python tools/fetch.py --site pose --tier thumb   # thumbnails, ~22 MB
+python tools/fetch.py --site pose --tier full    # full-size PNGs, ~638 MB
+python tools/build.py --site pose
+python tools/serve.py --root sites/pose
 ```
 
 ## 🔒 License

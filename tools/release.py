@@ -3,7 +3,8 @@
 
 用法:
   python tools/release.py                     # 站点文件 + 图片（图片用硬链接，不额外占盘）
-  python tools/release.py --no-images         # 只放站点文件，图片沿用服务器上的旧版
+  python tools/release.py --no-images         # 只放站点文件，不放图片（不会保留目标里的旧图）
+  python tools/release.py --skip-verify       # 跳过发布前的图片校验（只下了部分档位时）
   python tools/release.py --out dist          # 自定义输出目录
   python tools/release.py --site pose         # 只发布一个站
 
@@ -65,7 +66,7 @@ def copy_tree_links(src, dst):
 
 def main():
     args = parse_args(sys.argv[1:], {
-        "site": "value", "out": "value", "no-images": "flag",
+        "site": "value", "out": "value", "no-images": "flag", "skip-verify": "flag",
     })
     cfg = load_cfg()
     sites = select(cfg, args.get("site"))
@@ -73,6 +74,20 @@ def main():
     with_images = not args.get("no-images")
 
     print(f"发布 · {len(sites)} 个站点 → {out}\n")
+
+    # 发布前校验图片：缺图的版本不应该被发布出去
+    if with_images and not args.get("skip-verify"):
+        from verify import check_site
+        bad = 0
+        for s in sites:
+            m, b = check_site(s, log=lambda _: None)
+            if m or b:
+                print(f"  ✗ {s['id']}: 缺失 {m}、损坏 {b}")
+                bad += m + b
+        if bad:
+            sys.exit("\n图片校验未通过，已中止，目标目录未改动。"
+                     "\n详情: python tools/verify.py；确认要发布可加 --skip-verify")
+        print("  图片校验通过\n")
 
     # 清空目标里本次涉及的站点目录（保留其它站）
     os.makedirs(out, exist_ok=True)

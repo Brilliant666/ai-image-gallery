@@ -82,12 +82,13 @@ python tools/serve.py      # 预览 http://127.0.0.1:8080/
 | --- | --- |
 | `python tools/fetch.py --site pose` | 只下载一个站 |
 | `python tools/mid.py --site portrait` | 只生成一个站的中图 |
+| `python tools/verify.py` | 校验图片：存在、体积、可读宽高、中图是否齐全 |
 | `python tools/build.py --site pose` | 只重建一个站 |
 | `python tools/build.py --base https://x.com` | 指定正式域名，写入 canonical / og / sitemap |
 | `python tools/release.py --out <目录>` | 发布到指定目录 |
 | `python tools/serve.py --root sites/pose` | 预览单个站点 |
 
-`release.py` 会先删除再重建目标站点目录。`--no-images` 只放站点文件、不放图片，不能用来保留线上旧图。
+`release.py` 发布前会先校验图片，缺图就中止（只下了部分档位时加 `--skip-verify`）。它会先删除再重建目标站点目录。`--no-images` 只放站点文件、不放图片，不能用来保留线上旧图。
 
 </details>
 
@@ -127,9 +128,9 @@ python3 tools/release.py --out dist-stage   # 先发到暂存目录，检查后�
 ai-image-gallery/
 ├── sites.json          # 唯一清单：站点、顺序、授权、图片档位
 ├── sites/<id>/         # 各站：脚本、数据、构建产物、NOTICE
-├── shared/             # 姿势 / 深度姿势共用的页面生成器与日中词典
+├── shared/             # 四站共用的下载与校验；姿势 / 深度姿势共用的页面生成器、原站解析、日中词典
 ├── hub/                # 入口页生成器（同时生成根 sitemap / robots）
-├── tools/              # fetch / mid / build / release / serve / update
+├── tools/              # fetch / mid / verify / build / release / serve / update
 ├── deploy/             # 部署手册与 nginx 模板
 └── docs/               # 文档与截图
 ```

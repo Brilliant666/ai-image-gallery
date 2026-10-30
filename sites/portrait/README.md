@@ -83,11 +83,8 @@
 ├── scripts/
 │   ├── extract.py          # 从原站存档解析 images.js / ranking.js
 │   ├── manifest.py         # 生成清单
-│   ├── download.py         # 并发下载器（断点续传）
 │   ├── translations.py     # 日→中词典
-│   ├── build_gallery.py    # 构建 index.html + data/ + SEO 文件
-│   ├── build_dist.sh       # 生成部署目录 dist/
-│   └── verify.py           # 校验完整性
+│   └── build_gallery.py    # 构建 index.html + data/ + SEO 文件
 ├── thumbs/                 # 缩略图（gitignored）
 ├── mid/                    # 中图，由 tools/mid.py 生成（gitignored）
 ├── img/                    # 原图（gitignored）
@@ -96,19 +93,19 @@
 
 ## 🚀 快速开始
 
+本站是 [ai-image-gallery](../../README.md) 单仓的一部分，下载、构建、发布都在仓库根目录用统一工具完成：
+
 ```bash
-git clone https://github.com/Brilliant666/ai-portrait-gallery-cn.git
-cd ai-portrait-gallery-cn
+git clone https://github.com/Brilliant666/ai-image-gallery.git
+cd ai-image-gallery
 
-# 1. 下载素材（断点续传，已存在自动跳过）
-python scripts/download.py thumb 16    # 缩略图 400×500 webp，约 27 MB
-python scripts/download.py full 14     # 原图 PNG，约 4.5 GB（可选）
-
-# 2. 直接打开 index.html 即可（无需服务器）
+python tools/fetch.py --site portrait --tier thumb    # 缩略图 400×500 webp，约 27 MB
+python tools/fetch.py --site portrait --tier full     # 原图 PNG，约 4.5 GB（可选）
+python tools/mid.py --site portrait                   # 灯箱中图（需要 Pillow）
+python tools/verify.py --site portrait                # 校验图片完整性
+python tools/build.py --site portrait
+python tools/serve.py --root sites/portrait           # 本地预览
 ```
-
-> 只下 `thumb` 就能浏览网格（27 MB）。灯箱需要中图或原图：中图由 `tools/mid.py` 从原图生成，
-> 两者都没有时灯箱会提示「原图未下载」。
 
 ## ⚙️ 环境要求
 
@@ -121,16 +118,11 @@ python scripts/download.py full 14     # 原图 PNG，约 4.5 GB（可选）
 
 ## 📦 生产部署
 
-> 两个站点一起部署到 VPS 的完整流程见
-> [ai-pose-gallery-cn 的 DEPLOY.md](https://github.com/Brilliant666/ai-pose-gallery-cn/blob/main/DEPLOY.md)。
+四个站一起发布到同一个 `dist/`，部署、nginx、原子切换与回滚见单仓的 [deploy/DEPLOY.md](../../deploy/DEPLOY.md)。
 
 ```bash
-# 重建（SITE_URL 决定 canonical / og:url / sitemap 的绝对地址）
-SITE_URL=https://your-domain.com python scripts/build_gallery.py
-
-# 生成部署目录
-bash scripts/build_dist.sh               # 仅站点文件
-bash scripts/build_dist.sh --with-images # 含图片
+python tools/build.py --base https://your-domain.com   # canonical / og:url / sitemap 使用正式域名
+python tools/release.py --out dist-stage               # 发布前会自动校验图片
 ```
 
 ## 🗄️ 数据结构
@@ -181,8 +173,8 @@ CC0 允许商用、修改、再分发，无需署名。
 
 ## 🤝 贡献指南
 
-- 译文在 `scripts/translations.py`（`HAIR_ZH` / `STYLE_ZH` / `UI`），改完跑 `python scripts/build_gallery.py`
-- 提交前请确保 `python scripts/verify.py` 通过
+- 译文在 `scripts/translations.py`（`HAIR_ZH` / `STYLE_ZH` / `UI`），改完在仓库根目录跑 `python tools/build.py --site portrait`
+- 提交前请在仓库根目录运行 `python tools/build.py`，并确认 `git status` 里构建产物已一并提交
 - **请勿提交任何图片文件**，`thumbs/` `img/` `raw/` 已在 `.gitignore` 中
 
 ## 📄 开源协议
@@ -230,13 +222,13 @@ CC0 允许商用、修改、再分发，无需署名。
 ## 🚀 クイックスタート
 
 ```bash
-git clone https://github.com/Brilliant666/ai-portrait-gallery-cn.git
-cd ai-portrait-gallery-cn
-
-python scripts/download.py thumb 16   # サムネイル 約 27 MB
-python scripts/download.py full 14    # 原寸 PNG 約 4.5 GB（任意）
-
-# index.html をブラウザで開くだけ（サーバー不要）
+git clone https://github.com/Brilliant666/ai-image-gallery.git
+cd ai-image-gallery
+# リポジトリ直下で実行
+python tools/fetch.py --site portrait --tier thumb   # サムネイル 約 27 MB
+python tools/fetch.py --site portrait --tier full    # 原寸 PNG 約 4.5 GB（任意）
+python tools/build.py --site portrait
+python tools/serve.py --root sites/portrait
 ```
 
 ## 🔒 ライセンス
@@ -285,13 +277,13 @@ Thumbnails 400×500 WebP (26.7 MB) · originals up to 1597×2000 PNG (4.5 GB).
 ## 🚀 Quick start
 
 ```bash
-git clone https://github.com/Brilliant666/ai-portrait-gallery-cn.git
-cd ai-portrait-gallery-cn
-
-python scripts/download.py thumb 16   # thumbnails, ~27 MB
-python scripts/download.py full 14    # full-size PNGs, ~4.5 GB (optional)
-
-# then just open index.html in a browser
+git clone https://github.com/Brilliant666/ai-image-gallery.git
+cd ai-image-gallery
+# run from the repository root
+python tools/fetch.py --site portrait --tier thumb   # thumbnails, ~27 MB
+python tools/fetch.py --site portrait --tier full    # full-size PNGs, ~4.5 GB (optional)
+python tools/build.py --site portrait
+python tools/serve.py --root sites/portrait
 ```
 
 ## 🔒 License
