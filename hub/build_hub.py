@@ -134,11 +134,21 @@ h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text
 .lic.warn{background:var(--warn-bg);color:var(--warn-tx)}
 .lic.no{background:var(--no-bg);color:var(--no-tx)}
 
-footer{margin-top:48px;padding-top:22px;border-top:1px solid var(--line);color:var(--tx3);font-size:12px;line-height:2}
-footer .note{margin:0 0 12px;max-width:760px}
-footer .links{display:flex;flex-wrap:wrap;gap:6px 14px}
-footer a{color:var(--tx3);text-decoration:none;border-bottom:1px solid transparent}
-footer a:hover{color:var(--ac);border-color:var(--ac)}
+footer{margin-top:48px;padding-top:22px;border-top:1px solid var(--line);color:var(--tx3);font-size:12px;line-height:1.9}
+.ft{margin:0 0 10px;font-size:11.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--tx3)}
+.credits{list-style:none;margin:0 0 14px;padding:0}
+.credits li{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;
+  padding:9px 0;border-bottom:1px solid var(--line)}
+.credits li:last-child{border-bottom:0}
+.c-site{min-width:104px;color:var(--tx);font-weight:600;font-size:12.5px}
+.c-src{flex:1 1 220px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);
+  text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-src:hover{color:var(--ac)}
+.c-author{color:var(--tx2);white-space:nowrap}
+.c-author a{color:var(--tx3);text-decoration:none;border-bottom:1px solid transparent}
+.c-author a:hover{color:var(--ac);border-color:var(--ac)}
+.credits .lic{margin-left:auto}
+footer .note{margin:0;max-width:820px;color:var(--tx3)}
 
 @media(max-width:820px){ .cards{grid-template-columns:1fr} }
 @media(max-width:520px){
@@ -176,8 +186,9 @@ footer a:hover{color:var(--ac);border-color:var(--ac)}
   <div class="cards" id="cards"></div>
 
   <footer>
+    <h2 class="ft" id="ftitle"></h2>
+    <ul class="credits" id="credits"></ul>
     <p class="note" id="fnote"></p>
-    <div class="links" id="flinks"></div>
   </footer>
 </div>
 
@@ -227,11 +238,22 @@ function render(){
       '</div></a>';
   }).join('');
 
+  $('#ftitle').textContent = tx(M.creditTitle);
   $('#fnote').textContent = tx(M.licenseNote);
 
-  $('#flinks').innerHTML = DATA.sites.map(s =>
-    '<a href="' + esc(s.repo) + '" target="_blank" rel="noopener noreferrer">' + esc(s.code) + ' 仓库</a>'
-  ).join('');
+  // 素材来源与版权：链接原站、标注原作者、标出各站授权
+  $('#credits').innerHTML = DATA.sites.map(s => {
+    const lic = LIC[s.license] || LIC.restricted;
+    const host = String(s.source || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const handle = String(s.author.url || '').split('/').pop();
+    return '<li>' +
+      '<span class="c-site">' + esc(tx(s.name)) + '</span>' +
+      '<a class="c-src" href="' + esc(s.source) + '" target="_blank" rel="noopener noreferrer">' + esc(host) + '</a>' +
+      '<span class="c-author">' + esc(s.author.name) + ' <a href="' + esc(s.author.url) +
+        '" target="_blank" rel="noopener noreferrer">@' + esc(handle) + '</a></span>' +
+      '<span class="lic ' + esc(lic.cls) + '">' + esc(LIC_NAME[LANG][lic.cls]) + '</span>' +
+    '</li>';
+  }).join('');
 
   document.querySelectorAll('#themeSw button').forEach(b =>
     b.setAttribute('aria-pressed', b.dataset.t === THEME ? 'true' : 'false'));

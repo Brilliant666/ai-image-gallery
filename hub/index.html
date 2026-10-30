@@ -92,11 +92,21 @@ h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text
 .lic.warn{background:var(--warn-bg);color:var(--warn-tx)}
 .lic.no{background:var(--no-bg);color:var(--no-tx)}
 
-footer{margin-top:48px;padding-top:22px;border-top:1px solid var(--line);color:var(--tx3);font-size:12px;line-height:2}
-footer .note{margin:0 0 12px;max-width:760px}
-footer .links{display:flex;flex-wrap:wrap;gap:6px 14px}
-footer a{color:var(--tx3);text-decoration:none;border-bottom:1px solid transparent}
-footer a:hover{color:var(--ac);border-color:var(--ac)}
+footer{margin-top:48px;padding-top:22px;border-top:1px solid var(--line);color:var(--tx3);font-size:12px;line-height:1.9}
+.ft{margin:0 0 10px;font-size:11.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--tx3)}
+.credits{list-style:none;margin:0 0 14px;padding:0}
+.credits li{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;
+  padding:9px 0;border-bottom:1px solid var(--line)}
+.credits li:last-child{border-bottom:0}
+.c-site{min-width:104px;color:var(--tx);font-weight:600;font-size:12.5px}
+.c-src{flex:1 1 220px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);
+  text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-src:hover{color:var(--ac)}
+.c-author{color:var(--tx2);white-space:nowrap}
+.c-author a{color:var(--tx3);text-decoration:none;border-bottom:1px solid transparent}
+.c-author a:hover{color:var(--ac);border-color:var(--ac)}
+.credits .lic{margin-left:auto}
+footer .note{margin:0;max-width:820px;color:var(--tx3)}
 
 @media(max-width:820px){ .cards{grid-template-columns:1fr} }
 @media(max-width:520px){
@@ -134,13 +144,14 @@ footer a:hover{color:var(--ac);border-color:var(--ac)}
   <div class="cards" id="cards"></div>
 
   <footer>
+    <h2 class="ft" id="ftitle"></h2>
+    <ul class="credits" id="credits"></ul>
     <p class="note" id="fnote"></p>
-    <div class="links" id="flinks"></div>
   </footer>
 </div>
 
 <script>
-const DATA = {"meta":{"eyebrow":"REFERENCE GALLERY","title":{"zh":"参考素材库","ja":"参照素材集"},"lead":{"zh":"AI 生成的绘画参考图，可离线浏览。每个子站都能切换主题（浅色／深色）与语言（中文／日本語）。","ja":"AI生成の参照画像をオフラインで閲覧するための索引です。各サイトでテーマ（ライト／ダーク）と言語（中文／日本語）を切り替えられます。"},"licenseNote":{"zh":"各站授权条件不同，卡片右下角标注。CC0 可自由再分发；「有条件」仅限参考使用；「禁止再分发」不得转载图片。","ja":"ライセンスは各サイトで異なります（カード右下に表示）。CC0 は再配布可、「条件付き」は参照利用のみ、「再配布禁止」は画像の転載不可。"}},"sites":[{"id":"portrait","code":"PORTRAIT-DB-01","name":{"zh":"人像集","ja":"ポートレート集"},"desc":{"zh":"保持角色脸部一致性的人像参考。面部与造型两个分区，可按发型筛选。","ja":"顔の一貫性を保つための人物参考。フェイスとスタイリングの 2 セクション、髪型で絞り込み。"},"stats":[{"v":"1499","l":{"zh":"图片","ja":"画像"}},{"v":"893","l":{"zh":"面部","ja":"フェイス"}},{"v":"606","l":{"zh":"造型","ja":"スタイリング"}}],"license":"cc0","source":"https://ai-portrait-gallery.pages.dev/","cover":"thumbs/f054e7f9079.webp","coverPos":"center 30%","tiers":["thumb","full"],"imageDirs":["thumbs","img"]},{"id":"costume","code":"COSTUME-DB-01","name":{"zh":"服装集","ja":"衣装集"},"desc":{"zh":"不含真人的纯服装图，可按材质・颜色・单品标签筛选。","ja":"人物の入っていない衣装だけの画像。素材・色・アイテムのタグで絞り込めます。"},"stats":[{"v":"1407","l":{"zh":"服装","ja":"衣装"}},{"v":"4221","l":{"zh":"文件","ja":"ファイル"}},{"v":"86","l":{"zh":"标签","ja":"タグ"}}],"license":"restricted","source":"https://ai-costume-gallery.pages.dev/","cover":"thumbs/春/SPR-0001.webp","coverPos":"center 25%","tiers":["thumb","img","png"],"imageDirs":["thumbs","img","png"]},{"id":"pose","code":"POSE-DB-01","name":{"zh":"姿势集","ja":"ポーズ集"},"desc":{"zh":"无脸部灰色人偶线稿。每个姿势提供正面・侧面・斜角・俯视・仰视 5 个视角。","ja":"顔なしグレーマネキンの線画。1ポーズにつき正面・横・斜め・上から・下からの5アングル。"},"stats":[{"v":"288","l":{"zh":"姿势","ja":"ポーズ"}},{"v":"1439","l":{"zh":"图片","ja":"画像"}},{"v":"5","l":{"zh":"视角","ja":"アングル"}}],"license":"restricted","source":"https://ai-pose-gallery.pages.dev/","cover":"thumbs/全身1人・セクシー系/立ち/P001/正面.jpg","coverPos":"center 6%","tiers":["thumb","full"],"imageDirs":["thumbs","img"]},{"id":"pose-depth","code":"POSE-DB-02","name":{"zh":"深度姿势集","ja":"デプス ポーズ集"},"desc":{"zh":"同一批 288 个姿势的深度图版本。灰度表示远近，适合 ControlNet 深度控制与 3D 建模。","ja":"同じ 288 ポーズの深度マップ版。グレースケールが奥行きを表し、ControlNet の depth 制御や 3D モデリングに。"},"stats":[{"v":"288","l":{"zh":"姿势","ja":"ポーズ"}},{"v":"1439","l":{"zh":"深度图","ja":"深度図"}},{"v":"5","l":{"zh":"视角","ja":"アングル"}}],"license":"restricted","source":"https://ai-pose-depth-gallery.pages.dev/","cover":"thumbs/全身1人・セクシー系/立ち/P001/正面.jpg","coverPos":"center 6%","tiers":["thumb","full"],"imageDirs":["thumbs","img"]}]};
+const DATA = {"meta":{"eyebrow":"REFERENCE GALLERY","title":{"zh":"参考素材库","ja":"参照素材集"},"lead":{"zh":"AI 生成的绘画参考图，可离线浏览。每个子站都能切换主题（浅色／深色）与语言（中文／日本語）。","ja":"AI生成の参照画像をオフラインで閲覧するための索引です。各サイトでテーマ（ライト／ダーク）と言語（中文／日本語）を切り替えられます。"},"licenseNote":{"zh":"以上素材著作权归各原作者所有。本项目为个人学习用途的中文镜像，代码 MIT，素材按各原站条件使用。","ja":"素材の著作権は各原作者に帰属します。本プロジェクトは個人学習目的の中国語ミラーです。コードは MIT、素材は各原サイトの条件に従います。"},"creditTitle":{"zh":"素材来源与版权","ja":"素材出典と著作権"}},"sites":[{"id":"portrait","code":"PORTRAIT-DB-01","name":{"zh":"人像集","ja":"ポートレート集"},"desc":{"zh":"保持角色脸部一致性的人像参考。面部与造型两个分区，可按发型筛选。","ja":"顔の一貫性を保つための人物参考。フェイスとスタイリングの 2 セクション、髪型で絞り込み。"},"stats":[{"v":"1499","l":{"zh":"图片","ja":"画像"}},{"v":"893","l":{"zh":"面部","ja":"フェイス"}},{"v":"606","l":{"zh":"造型","ja":"スタイリング"}}],"license":"cc0","source":"https://ai-portrait-gallery.pages.dev/","cover":"thumbs/f054e7f9079.webp","coverPos":"center 30%","tiers":["thumb","full"],"imageDirs":["thumbs","img"],"author":{"name":"あぎ","url":"https://x.com/agi_aibusi"}},{"id":"costume","code":"COSTUME-DB-01","name":{"zh":"服装集","ja":"衣装集"},"desc":{"zh":"不含真人的纯服装图，可按材质・颜色・单品标签筛选。","ja":"人物の入っていない衣装だけの画像。素材・色・アイテムのタグで絞り込めます。"},"stats":[{"v":"1407","l":{"zh":"服装","ja":"衣装"}},{"v":"4221","l":{"zh":"文件","ja":"ファイル"}},{"v":"86","l":{"zh":"标签","ja":"タグ"}}],"license":"restricted","source":"https://ai-costume-gallery.pages.dev/","cover":"thumbs/春/SPR-0001.webp","coverPos":"center 25%","tiers":["thumb","img","png"],"imageDirs":["thumbs","img","png"],"author":{"name":"ギア","url":"https://x.com/giaaibusi"}},{"id":"pose","code":"POSE-DB-01","name":{"zh":"姿势集","ja":"ポーズ集"},"desc":{"zh":"无脸部灰色人偶线稿。每个姿势提供正面・侧面・斜角・俯视・仰视 5 个视角。","ja":"顔なしグレーマネキンの線画。1ポーズにつき正面・横・斜め・上から・下からの5アングル。"},"stats":[{"v":"288","l":{"zh":"姿势","ja":"ポーズ"}},{"v":"1439","l":{"zh":"图片","ja":"画像"}},{"v":"5","l":{"zh":"视角","ja":"アングル"}}],"license":"restricted","source":"https://ai-pose-gallery.pages.dev/","cover":"thumbs/全身1人・セクシー系/立ち/P001/正面.jpg","coverPos":"center 6%","tiers":["thumb","full"],"imageDirs":["thumbs","img"],"author":{"name":"ギア","url":"https://x.com/giaaibusi"}},{"id":"pose-depth","code":"POSE-DB-02","name":{"zh":"深度姿势集","ja":"デプス ポーズ集"},"desc":{"zh":"同一批 288 个姿势的深度图版本。灰度表示远近，适合 ControlNet 深度控制与 3D 建模。","ja":"同じ 288 ポーズの深度マップ版。グレースケールが奥行きを表し、ControlNet の depth 制御や 3D モデリングに。"},"stats":[{"v":"288","l":{"zh":"姿势","ja":"ポーズ"}},{"v":"1439","l":{"zh":"深度图","ja":"深度図"}},{"v":"5","l":{"zh":"视角","ja":"アングル"}}],"license":"restricted","source":"https://ai-pose-depth-gallery.pages.dev/","cover":"thumbs/全身1人・セクシー系/立ち/P001/正面.jpg","coverPos":"center 6%","tiers":["thumb","full"],"imageDirs":["thumbs","img"],"author":{"name":"ギア","url":"https://x.com/giaaibusi"}}]};
 const LIC = {"cc0":{"cls":"ok"},"conditional":{"cls":"warn"},"restricted":{"cls":"no"}};
 const LIC_NAME = {
   zh: { ok: 'CC0', warn: '有条件', no: '禁止再分发' },
@@ -185,11 +196,22 @@ function render(){
       '</div></a>';
   }).join('');
 
+  $('#ftitle').textContent = tx(M.creditTitle);
   $('#fnote').textContent = tx(M.licenseNote);
 
-  $('#flinks').innerHTML = DATA.sites.map(s =>
-    '<a href="' + esc(s.repo) + '" target="_blank" rel="noopener noreferrer">' + esc(s.code) + ' 仓库</a>'
-  ).join('');
+  // 素材来源与版权：链接原站、标注原作者、标出各站授权
+  $('#credits').innerHTML = DATA.sites.map(s => {
+    const lic = LIC[s.license] || LIC.restricted;
+    const host = String(s.source || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const handle = String(s.author.url || '').split('/').pop();
+    return '<li>' +
+      '<span class="c-site">' + esc(tx(s.name)) + '</span>' +
+      '<a class="c-src" href="' + esc(s.source) + '" target="_blank" rel="noopener noreferrer">' + esc(host) + '</a>' +
+      '<span class="c-author">' + esc(s.author.name) + ' <a href="' + esc(s.author.url) +
+        '" target="_blank" rel="noopener noreferrer">@' + esc(handle) + '</a></span>' +
+      '<span class="lic ' + esc(lic.cls) + '">' + esc(LIC_NAME[LANG][lic.cls]) + '</span>' +
+    '</li>';
+  }).join('');
 
   document.querySelectorAll('#themeSw button').forEach(b =>
     b.setAttribute('aria-pressed', b.dataset.t === THEME ? 'true' : 'false'));
