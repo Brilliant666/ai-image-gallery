@@ -523,6 +523,8 @@ function syncMore(){
 /* ── 灯箱 ── */
 let LB = { list: [], idx: 0, last: null };
 let loT = 0;   // 底层模糊图隐藏定时器，连翻时需可取消
+// img/x.png → mid/x.webp，规则与 tools/mid.py 的 mid_rel() 一致
+const midOf = f => f.replace(/^img\//, 'mid/').replace(/\.[^./]+$/, '.webp');
 
 // 把舞台缩到原图 contain 后的真实矩形：两层完全重合，底层 blur 的外溢被舞台裁掉。
 // 上限沿用 CSS 的 max-width / max-height，避免两处数字各写一遍。
@@ -570,8 +572,12 @@ function showLb(){
     loT = setTimeout(() => { lo.style.opacity = '0'; }, 340);
   };
   img.onload = settle;
-  img.onerror = () => { $('#lb-note').textContent = LANG === 'ja' ? '（原寸未取得）' : '（原图未下载）'; };
-  img.src = it.f;
+  // 灯箱用中图（tools/mid.py 生成，约为原图的 1/30）；没有中图时退回原图
+  img.onerror = () => {
+    img.onerror = () => { $('#lb-note').textContent = LANG === 'ja' ? '（原寸未取得）' : '（原图未下载）'; };
+    img.src = it.f;
+  };
+  img.src = midOf(it.f);
   if (img.complete && img.naturalWidth) settle();
   $('#lb-prev').style.visibility = LB.idx > 0 ? 'visible' : 'hidden';
   $('#lb-next').style.visibility = LB.idx < LB.list.length - 1 ? 'visible' : 'hidden';

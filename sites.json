@@ -63,6 +63,7 @@
       ],
       "imageDirs": [
         "thumbs",
+        "mid",
         "img"
       ],
       "author": {
@@ -167,6 +168,7 @@
       ],
       "imageDirs": [
         "thumbs",
+        "mid",
         "img"
       ],
       "author": {
@@ -218,6 +220,7 @@
       ],
       "imageDirs": [
         "thumbs",
+        "mid",
         "img"
       ],
       "author": {

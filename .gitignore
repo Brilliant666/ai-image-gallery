@@ -2,6 +2,7 @@
 # 首次部署时用 python tools/fetch.py 下载，之后幂等跳过。
 # 站点目录与发布目录都排除。
 sites/*/thumbs/
+sites/*/mid/
 sites/*/img/
 sites/*/png/
 sites/*/raw/

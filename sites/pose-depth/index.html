@@ -624,6 +624,8 @@ const modal=$('#modal'), mimg=$('#mimg'), mimgLo=$('#mimgLo');
 const mstage=$('#mstage'), mwrap=$('.mimg');
 let loT=0;   // 底层模糊图隐藏定时器，连翻时需可取消
 let M={i:0, d:null};
+// img/a/b.png → mid/a/b.webp，规则与 tools/mid.py 的 mid_rel() 一致
+const midOf = f => f.replace(/^img\//, 'mid/').replace(/\.[^./]+$/, '.webp');
 
 // 把舞台缩到原图 contain 后的真实矩形：两层完全重合，底层 blur 的外溢被舞台裁掉
 function fitStage(){
@@ -646,6 +648,7 @@ function openM(i, v){
 function closeM(){
   modal.classList.remove('open');
   document.body.style.overflow='';
+  mimg.onerror = null;
   mimg.removeAttribute('src');
   const c=document.querySelector('.card[data-i="'+M.i+'"]');
   if(c) c.focus();
@@ -672,7 +675,9 @@ function showM(){
   };
   mimgLo.style.opacity = '1';
   mimg.onload = settle;
-  mimg.src = v.f;
+  // 灯箱用中图（tools/mid.py 生成，约为原图的 1/10～1/30）；没有中图时退回原图
+  mimg.onerror = () => { mimg.onerror = null; mimg.src = v.f; };
+  mimg.src = midOf(v.f);
   if (mimg.complete && mimg.naturalWidth) settle();
 
   $('#mtitle').textContent = nN(p);

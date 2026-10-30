@@ -12,7 +12,7 @@
 |---|---|
 | 系统 | Ubuntu 20.04+ / Debian 11+ |
 | git | 任意版本（更新走 `git fetch` + `reset --hard`，见 §4） |
-| Python | 3.8+（仅标准库，无需 pip install） |
+| Python | 3.8+；`tools/mid.py` 需要 Pillow（`apt install python3-pil`），其余只用标准库 |
 | 磁盘 | ≥ 10 GB 可用（图片 6.8 GB + 硬链接余量） |
 | 内存 | ≥ 512 MB |
 | 域名 | 已解析到本机 IP |
@@ -30,7 +30,7 @@ free -m | head -2
 
 ```bash
 apt update
-apt install -y git python3 nginx
+apt install -y git python3 python3-pil nginx
 
 git clone https://github.com/Brilliant666/ai-image-gallery.git /srv/ai-image-gallery
 cd /srv/ai-image-gallery
@@ -38,10 +38,13 @@ cd /srv/ai-image-gallery
 # ① 下载图片（约 6.8 GB，只需一次）
 python3 tools/fetch.py
 
-# ② 用正式域名构建
+# ② 生成灯箱中图（约 290 MB，几分钟；之后只补缺失）
+python3 tools/mid.py
+
+# ③ 用正式域名构建
 python3 tools/build.py --base https://你的域名.com
 
-# ③ 组装发布目录
+# ④ 组装发布目录
 python3 tools/release.py
 ```
 
@@ -122,7 +125,7 @@ nginx -t && systemctl reload nginx
 # 文件与体积
 du -sh /srv/ai-image-gallery/dist
 find /srv/ai-image-gallery/dist -name '*.jpg' -o -name '*.webp' -o -name '*.png' | wc -l
-# 期望 12975 张图片
+# 期望 17352 张图片（含 4377 张中图）
 
 # HTTP
 for p in / /portrait/ /pose/ /pose-depth/ /costume/; do
@@ -173,6 +176,9 @@ python3 tools/release.py
 
 **图片不需要重新下载** —— `fetch.py` 幂等，已存在文件跳过。
 新增站点时才需要再跑一次 `python3 tools/fetch.py --site <新站id>`。
+
+**本次更新新增了中图档**：第一次拉到这个版本时，在 `build.py` 之前跑一次 `python3 tools/mid.py`。
+漏跑也不会坏，灯箱会在中图 404 后退回加载原图，只是慢。
 
 只改了一个站时：
 

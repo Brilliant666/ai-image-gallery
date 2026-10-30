@@ -64,9 +64,10 @@
 （实测 12,975 个文件全部硬链接，`dist/` 报告 6.8 GB 但磁盘增量接近 0）。
 
 **零依赖。** 无框架、无 CDN、无外部字体，单个 `index.html` 数据内嵌，`file://` 双击就能看。
-构建脚本只用 Python 标准库，服务器上不需要 `pip install`。
+构建脚本只用 Python 标准库。唯一例外是生成中图的 `tools/mid.py`，需要 Pillow。
 
-**三档图片。** 缩略图 7–18 KB / 中图 83–95 KB / 原图 0.5–3 MB。
+**三档图片。** 缩略图 7–18 KB / 中图 10–200 KB / 原图 0.1–6 MB。
+服装集的中图来自原站；人像、姿势、深度姿势三站的中图由 `tools/mid.py` 从原图生成（最长边 1600px，WebP q82）。
 网格只加载缩略图，首屏约 10 MB；灯箱才拉原图，且用双层模糊淡入避免闪烁。
 
 ---
@@ -90,6 +91,7 @@ ai-image-gallery/
 ├── tools/                  ← 统一工具
 │   ├── _common.py
 │   ├── fetch.py            ← 下载图片
+│   ├── mid.py              ← 从原图生成灯箱中图
 │   ├── build.py            ← 构建页面
 │   ├── release.py          ← 组装发布目录
 │   └── serve.py            ← 本地 HTTP 预览
@@ -106,6 +108,7 @@ git clone https://github.com/Brilliant666/ai-image-gallery.git
 cd ai-image-gallery
 
 python tools/fetch.py            # 下载全部图片（首次，约 6.8 GB）
+python tools/mid.py              # 生成灯箱中图（需要 Pillow，约 290 MB）
 python tools/build.py            # 构建四个站 + 入口页
 python tools/release.py          # 组装 dist/（图片用硬链接，不额外占盘）
 
@@ -124,6 +127,7 @@ python tools/serve.py            # http://127.0.0.1:8080/
 | `python tools/fetch.py` | 下载全部站点图片，已存在自动跳过 |
 | `python tools/fetch.py --site pose` | 只下载姿势集 |
 | `python tools/fetch.py --tier thumb` | 只下载缩略图（约 90 MB，够浏览） |
+| `python tools/mid.py` | 生成人像 / 姿势 / 深度姿势的灯箱中图，已生成的跳过 |
 | `python tools/build.py` | 构建全部站点 + 入口页 |
 | `python tools/build.py --site pose` | 只重建一个站（快） |
 | `python tools/build.py --base https://x.com` | 指定正式域名，写入 canonical / og / sitemap |
@@ -255,6 +259,8 @@ python tools/release.py
 git clone https://github.com/Brilliant666/ai-image-gallery.git /srv/ai-image-gallery
 cd /srv/ai-image-gallery
 python3 tools/fetch.py          # 图片只下载这一次
+apt install -y python3-pil
+python3 tools/mid.py            # 生成灯箱中图，之后只补新增的
 ```
 
 ### 每次更新
