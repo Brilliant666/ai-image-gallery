@@ -33,7 +33,7 @@
 - 🗂️ **4 个系列**：全身单人・性感系 399 / 全身单人・标准系 365 / 上半身单人 400 / 双人交缠 275
 - 🏷️ **26 个分类**：站立、坐姿、跪姿、卧姿、特殊姿势等
 - 📄 **分页加载**：每页 60 组，滚动预取 800px 自动追加
-- 🖼️ **灯箱**：缩略图 → 原图渐进加载，`←` `→` 翻页，`Esc` 关闭
+- 🖼️ **灯箱**：先显示清晰缩略图，再淡入中图（约 10 KB，WebP），悬停卡片时预取；`←` `→` 翻页，`Esc` 关闭
 - ⬇️ **下载原图**：卡片与灯箱都可直接下载原尺寸 PNG
 - 🌗 **主题切换**：浅色（默认）／深色
 - 🌐 **中日双语**：界面、系列名、分类名、姿势名全部双语，偏好本地记忆
@@ -53,11 +53,14 @@
 |---|---:|---:|---:|---:|---:|
 | 张数 | 288 | 288 | 287 | 288 | 288 |
 
-| 规格 | 缩略图 | 原图 |
-|---|---|---|
-| 格式 | JPEG（灰度） | PNG（灰度） |
-| 尺寸 | 300×400 | 900×1200 |
-| 体积 | 12.2 MB | 133.0 MB |
+| 规格 | 缩略图 | 中图（灯箱） | 原图（下载） |
+|---|---|---|---|
+| 格式 | JPEG（灰度） | WebP（灰度） | PNG（灰度） |
+| 尺寸 | 300×400 | 900×1200 | 900×1200 |
+| 体积 | 12.2 MB | 约 14 MB | 133.0 MB |
+
+> 中图不由本站脚本下载，在单仓根目录用 `python tools/mid.py` 从原图生成（最长边 1600px，WebP 质量 82）。
+> 没有中图时灯箱退回加载原图。
 
 ## 🛠️ 技术栈
 
@@ -89,6 +92,7 @@
 │   ├── build_dist.sh       # 生成部署目录 dist/
 │   └── verify.py           # 校验完整性
 ├── thumbs/                 # 缩略图（gitignored）
+├── mid/                    # 中图，由 tools/mid.py 生成（gitignored）
 ├── img/                    # 原图（gitignored）
 └── raw/                    # 原站存档（gitignored）
 ```
@@ -190,7 +194,7 @@ bash scripts/build_dist.sh --with-images
 - 🎯 **288 ポーズ** × 5 アングル（正面・上から・下から・横・斜め）
 - 🗂️ **4 シリーズ** / 🏷️ **26 分類**
 - 📄 **ページング**：60 枚ずつ、800px 手前で自動追加
-- 🖼️ **ライトボックス**：サムネ → 原寸の段階読み込み
+- 🖼️ **ライトボックス**：鮮明なサムネを先に表示し、中サイズ WebP をフェードイン（ホバーで先読み）
 - ⬇️ **原寸ダウンロード**：カードからもライトボックスからも
 - 🌗 **テーマ切替**（ライト既定）／🌐 **中日 2 言語**
 
@@ -236,7 +240,7 @@ Original author: ギア（[@giaaibusi](https://x.com/giaaibusi)）
 - 🎯 **288 poses** × 5 angles (front / high / low / side / diagonal)
 - 🗂️ 4 series · 🏷️ 26 categories
 - 📄 Pagination: 60 per page, auto-loads 800px early
-- 🖼️ Lightbox with progressive thumb → full loading
+- 🖼️ Lightbox shows the sharp thumbnail first, then a small WebP preview (prefetched on hover)
 - ⬇️ Original PNG download from card or lightbox
 - 🌗 Theme toggle (light default) · 🌐 Chinese / Japanese UI
 - 📦 Zero dependencies, single HTML file

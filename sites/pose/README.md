@@ -28,7 +28,7 @@
 - 📐 **双视图**：按姿势分组（288 卡）/ 逐张浏览（1439 张），一键切换
 - 🔀 **四种排序**：系列 → 编号（默认，同原站）/ 编号 / 分类 / 姿势名
 - 🔍 **双向搜索**：输入中文或日文都能命中，编号、姿势名、分类皆可
-- 🔎 **灯箱**：缩略图 → 原图渐进加载，`←` `→` 切视角，`↑` `↓` 换姿势，`Esc` 关闭，触摸可滑动
+- 🔎 **灯箱**：先显示清晰缩略图，再淡入中图（约 33 KB，WebP），悬停卡片时预取、打开后预取其余视角；`←` `→` 切视角，`↑` `↓` 换姿势，`Esc` 关闭，触摸可滑动
 - 🌗 **双主题**：浅色 / 深色，CSS 变量驱动，localStorage 记忆，首帧前套用不闪白
 - 🌐 **双语切换**：日本語 / 中文实时切换，无需刷新
 - 📦 **零依赖**：单个 HTML 文件，数据内嵌，**`file://` 双击即开**，不需要起服务器
@@ -42,7 +42,7 @@
 |:---:|:---:|
 | ![暗色主题](docs/preview-1.jpg) | ![浅色主题](docs/preview-2.jpg) |
 
-> 截图中的素材已做模糊处理，仅演示界面结构。
+> 截图来自线上页面，素材著作权归原作者所有，仅用于演示界面。
 
 ## 📊 数据规模
 
@@ -88,7 +88,7 @@
 ├── sitemap.xml
 ├── 404.html
 ├── og-cover.jpg            # 1200×630 社交分享封面（自制纯排版）
-├── docs/                   # 界面预览截图（素材已模糊）
+├── docs/                   # 界面预览截图
 ├── manifest.json           # 全量清单（含原始 URL 与本地路径）
 ├── manifest.csv            # 同上，Excel 可直接打开
 ├── data/
@@ -105,6 +105,7 @@
 │   ├── build_dist.sh       # 生成部署目录 dist/
 │   └── verify.py           # 校验文件完整性
 ├── thumbs/                 # 缩略图（gitignored）
+├── mid/                    # 中图，由 tools/mid.py 生成（gitignored）
 ├── img/                    # 原图（gitignored）
 └── raw/                    # 原站存档（gitignored）
 ```
@@ -276,7 +277,7 @@ open_file_cache max=10000 inactive=60s;
 |:---:|:---:|
 | ![ダーク](docs/preview-1.jpg) | ![ライト](docs/preview-2.jpg) |
 
-> スクリーンショット内の素材はぼかし処理済みです（UI 構造の説明用）。
+> スクリーンショットは公開サイトのもので、素材の著作権は原作者に帰属します（UI 説明用）。
 
 ## 📊 データ規模
 
@@ -327,7 +328,7 @@ Original author: ギア（[@giaaibusi](https://x.com/giaaibusi)）
 - 🖼️ **Angle strip**: 5 real thumbnails under each card; hover swaps the main image, click opens that angle
 - 📐 **Two views**: grouped by pose (288 cards) or one card per image (1439)
 - 🔀 **Four sort modes**, 🔍 **bidirectional search** (Chinese ↔ Japanese)
-- 🔎 **Lightbox**: progressive thumb → full image, `←` `→` angle, `↑` `↓` pose, `Esc` close, touch swipe
+- 🔎 **Lightbox**: sharp thumbnail first, then a ~33 KB WebP preview; other angles are prefetched; `←` `→` angle, `↑` `↓` pose, `Esc` close, touch swipe
 - 🌗 **Dual theme** and 🌐 **bilingual UI** with persisted preferences
 - 📦 **Zero dependencies**: one HTML file with embedded data — opens via `file://`, no server needed
 
@@ -338,7 +339,7 @@ Original author: ギア（[@giaaibusi](https://x.com/giaaibusi)）
 |:---:|:---:|
 | ![dark](docs/preview-1.jpg) | ![light](docs/preview-2.jpg) |
 
-> Artwork in the screenshots is blurred; they only illustrate the UI structure.
+> Screenshots are taken from the live site to illustrate the UI. The artwork belongs to its original author.
 
 ## 📊 Scale
 

@@ -27,7 +27,7 @@
 - 🏷️ **分面筛选**：86 个标签按语义分 6 组 —— 颜色(22) / 单品(21) / 鞋袜(9) / 配饰(14) / 材质・图案(17) / 长度(3)，多选为 AND 逻辑，每枚标签带命中数
 - 🔍 **三向搜索**：输入中文、日文或英文原文都能命中
 - 🔀 **三种排序**：分类 → 编号（默认）/ 编号 / 标签数
-- 🔎 **灯箱**：缩略图 → 中图渐进加载，`←` `→` 前后切换，`Esc` 关闭，触摸可滑动；点击标签可直接追加筛选
+- 🔎 **灯箱**：先显示清晰缩略图，再淡入中图，悬停卡片时预取；`←` `→` 前后切换，`Esc` 关闭，触摸可滑动；点击标签可直接追加筛选
 - 🌗 **双主题**：浅色 / 深色，CSS 变量驱动，localStorage 记忆，首帧前套用不闪白
 - 🌐 **双语切换**：日本語 / 中文实时切换，无需刷新
 - 📦 **零依赖**：单个 HTML 文件，数据内嵌，**`file://` 双击即开**，不需要起服务器
@@ -42,7 +42,7 @@
 |:---:|:---:|
 | ![暗色主题](docs/preview-1.jpg) | ![筛选面板](docs/preview-2.jpg) |
 
-> 截图中的素材已做模糊处理，仅演示界面结构。
+> 截图来自线上页面，素材著作权归原作者所有，仅用于演示界面。
 
 ## 📊 数据规模
 
@@ -92,7 +92,7 @@
 ├── sitemap.xml
 ├── 404.html
 ├── og-cover.jpg            # 1200×630 社交分享封面（自制纯排版）
-├── docs/                   # 界面预览截图（素材已模糊）
+├── docs/                   # 界面预览截图
 ├── manifest.json           # 全量清单（含原始 URL 与本地路径）
 ├── manifest.csv            # 同上，Excel 可直接打开
 ├── data/
@@ -284,7 +284,7 @@ open_file_cache max=10000 inactive=60s;
 |:---:|:---:|
 | ![ダーク](docs/preview-1.jpg) | ![絞り込み](docs/preview-2.jpg) |
 
-> スクリーンショット内の素材はぼかし処理済みです（UI 構造の説明用）。
+> スクリーンショットは公開サイトのもので、素材の著作権は原作者に帰属します（UI 説明用）。
 
 ## 📊 データ規模
 
@@ -350,7 +350,7 @@ Original author: ギア（[@giaaibusi](https://x.com/giaaibusi)）
 |:---:|:---:|
 | ![dark](docs/preview-1.jpg) | ![facets](docs/preview-2.jpg) |
 
-> Artwork in the screenshots is blurred; they only illustrate the UI structure.
+> Screenshots are taken from the live site to illustrate the UI. The artwork belongs to its original author.
 
 ## 📊 Scale
 

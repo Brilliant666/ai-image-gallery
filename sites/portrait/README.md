@@ -27,7 +27,7 @@
 - 💇 **按发型筛选**：短发 727 / 中发 376 / 中长发 260 / 长发 136
 - 🏷️ **50 条风格描述汉化**：日本美发术语逐条译为中文（如「くびれショート」→「内收短发」）
 - 📄 **分页加载**：每页 60 张，滚动预取 800px 自动追加，与原站一致
-- 🖼️ **灯箱**：缩略图 → 原图渐进加载，`←` `→` 翻页，`Esc` 关闭
+- 🖼️ **灯箱**：先显示清晰缩略图，再淡入中图（约 115 KB，WebP），悬停卡片时预取；`←` `→` 翻页，`Esc` 关闭
 - 🏷️ **卡片信息**：仅显示发型 + PNG 下载按钮，保持图片视觉占比
 - ⬇️ **一键下载原图**：卡片上直接下载（带体积提示），灯箱内也可下载
 - 🌗 **跟随系统深浅色**：暖纸色 / 深墨色，无需手动切换
@@ -43,11 +43,14 @@
 | 造型 styling | 294 | 147 | 106 | 59 | **606** |
 | **合计** | **727** | **376** | **260** | **136** | **1499** |
 
-| 规格 | 缩略图 | 原图 |
-|---|---|---|
-| 格式 | WebP | PNG |
-| 尺寸 | 400×500（少量 400×501 / 400×224） | 1122×1402 ～ 1597×2000 |
-| 体积 | 26.7 MB（1499 张） | 4.5 GB（1499 张，平均 3.1 MB） |
+| 规格 | 缩略图 | 中图（灯箱） | 原图（下载） |
+|---|---|---|---|
+| 格式 | WebP | WebP | PNG |
+| 尺寸 | 400×500（少量 400×501 / 400×224） | 最长边 1600 | 1122×1402 ～ 1597×2000 |
+| 体积 | 26.7 MB（1499 张） | 约 220 MB（平均约 150 KB） | 4.5 GB（平均 3.1 MB） |
+
+> 中图不由本站脚本下载，在单仓根目录用 `python tools/mid.py` 从原图生成（最长边 1600px，WebP 质量 82）。
+> 没有中图时灯箱退回加载原图。
 
 ## 🛠️ 技术栈
 
@@ -86,6 +89,7 @@
 │   ├── build_dist.sh       # 生成部署目录 dist/
 │   └── verify.py           # 校验完整性
 ├── thumbs/                 # 缩略图（gitignored）
+├── mid/                    # 中图，由 tools/mid.py 生成（gitignored）
 ├── img/                    # 原图（gitignored）
 └── raw/                    # 原站存档（gitignored）
 ```
@@ -103,8 +107,8 @@ python scripts/download.py full 14     # 原图 PNG，约 4.5 GB（可选）
 # 2. 直接打开 index.html 即可（无需服务器）
 ```
 
-> 只下 `thumb` 就能正常浏览（27 MB）；`full` 仅影响灯箱里「下载原图」按钮，
-> 未下载时灯箱会提示「原图未下载」。
+> 只下 `thumb` 就能浏览网格（27 MB）。灯箱需要中图或原图：中图由 `tools/mid.py` 从原图生成，
+> 两者都没有时灯箱会提示「原图未下载」。
 
 ## ⚙️ 环境要求
 
@@ -210,7 +214,7 @@ CC0 允许商用、修改、再分发，无需署名。
 - 🎯 **2 セクション**：フェイス 893 枚 / スタイリング 606 枚
 - 💇 **髪型で絞り込み**：ショート 727 / ミディアム 376 / セミロング 260 / ロング 136
 - 📄 **ページング**：60 枚ずつ、800px 手前で自動追加
-- 🖼️ **ライトボックス**：サムネ → 原寸の段階読み込み、`←` `→` で移動
+- 🖼️ **ライトボックス**：鮮明なサムネを先に表示し、中サイズ WebP（約 115 KB）をフェードイン。ホバーで先読み、`←` `→` で移動
 - ⬇️ **原寸ダウンロード**：カードからも、ライトボックス内からも直接
 - 🌗 **システムの配色に追従**、🌐 **中日 2 言語**
 - 📦 **依存ゼロ**：単一 HTML、`file://` でそのまま開ける
@@ -263,7 +267,7 @@ Original author: あぎ（[@agi_aibusi](https://x.com/agi_aibusi)）
 - 🎯 **Two sections**: `face` (893, front-facing on plain background) and `styling` (606, full look with outfit)
 - 💇 **Filter by hair**: short 727 / medium 376 / semi-long 260 / long 136
 - 📄 **Pagination**: 60 per page, auto-loads 800px before the bottom
-- 🖼️ **Lightbox**: progressive thumb → full load, `←` `→` to step, `Esc` to close
+- 🖼️ **Lightbox**: sharp thumbnail first, then a ~115 KB WebP preview fades in; prefetched on hover; `←` `→` to step, `Esc` to close
 - ⬇️ **One-click original download** from each card, or from the lightbox
 - 🌗 **Follows system color scheme**, 🌐 **Chinese / Japanese UI**
 - 📦 **Zero dependencies**: single HTML file, opens via `file://`

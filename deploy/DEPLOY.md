@@ -1,8 +1,8 @@
 # 部署手册 · 单仓多站
 
 > 站点根 = `tools/release.py` 生成的 `dist/`。
-> 与旧方案的区别：不再用 `releases/<版本>/public` + `current` 软链，
-> 改为**git commit 即版本**，回滚 = `git checkout <commit>` 后重新 release。
+> 与旧方案的区别：不再用 `releases/<版本>/public` + `current` 软链，改为 **git commit 即版本**。
+> 线上更新时先发布到暂存目录，检查后再逐个站点原子换入 `dist/`（见 §4），旧版留作回滚。
 
 ---
 
@@ -13,7 +13,7 @@
 | 系统 | Ubuntu 20.04+ / Debian 11+ |
 | git | 任意版本（更新走 `git fetch` + `reset --hard`，见 §4） |
 | Python | 3.8+；`tools/mid.py` 需要 Pillow（`apt install python3-pil`），其余只用标准库 |
-| 磁盘 | ≥ 10 GB 可用（图片 6.8 GB + 硬链接余量） |
+| 磁盘 | ≥ 10 GB 可用（图片 6.8 GB + 中图约 290 MB；硬链接不额外占盘） |
 | 内存 | ≥ 512 MB |
 | 域名 | 已解析到本机 IP |
 
@@ -52,15 +52,15 @@ python3 tools/release.py
 
 ```
 发布 · 4 个站点 → /srv/ai-image-gallery/dist
-  [portrait] 12 个站点文件  图片 2998 链接  → 4.6 GB
-  [pose] 11 个站点文件  图片 2878 链接  → 662.6 MB
-  [pose-depth] 11 个站点文件  图片 2878 链接  → 148.3 MB
+  [portrait] 12 个站点文件  图片 4497 链接  → 4.8 GB
   [costume] 11 个站点文件  图片 4221 链接  → 1.4 GB
-  [hub] index.html 已复制
-其中 12975 个图片文件为硬链接，不额外占盘
+  [pose] 11 个站点文件  图片 4317 链接  → 710.4 MB
+  [pose-depth] 11 个站点文件  图片 4317 链接  → 162.6 MB
+  [hub] 4 个根级文件已复制（index.html, sitemap.xml, robots.txt, og-cover.jpg）
+其中 17352 个图片文件为硬链接，不额外占盘
 ```
 
-> `dist/` 报告 6.8 GB，但因为是硬链接，**实际磁盘增量接近 0**。
+> `dist/` 报告 7.0 GB，但因为是硬链接，**实际磁盘增量接近 0**。
 > 若出现「退化为复制」警告，说明 `dist/` 与 `sites/` 不在同一文件系统。
 
 ---
@@ -134,7 +134,7 @@ done
 
 # 缓存头
 curl -sI "https://实际域名.com/pose/thumbs/全身1人・セクシー系/立ち/P001/正面.jpg" | grep -i cache-control
-# 期望 public, max-age=31536000, immutable
+# 期望 public, max-age=604800（7 天；图片 URL 不带内容哈希，所以不用一年 immutable）
 
 curl -sI "https://实际域名.com/pose/" | grep -i cache-control
 # 期望 no-cache, must-revalidate
@@ -150,7 +150,8 @@ curl -s https://实际域名.com/pose/ | grep -o 'rel="canonical" href="[^"]*"'
 - [ ] 点击进入各站，图片能加载
 - [ ] 主题切换 ☀/☾ 有效，默认浅色
 - [ ] 语言切换 中文/日本語 有效，默认中文
-- [ ] 卡片点开灯箱，`←` `→` 翻页，`Esc` 关闭
+- [ ] 卡片点开灯箱：立即显示清晰缩略图，随后换成中图（开发者工具 Network 里应是 `mid/*.webp`，不是 `img/*.png`）
+- [ ] 灯箱 `←` `→` 翻页，`Esc` 关闭；连续翻页时不会闪出上一张图
 - [ ] 滚到底部能自动加载下一页
 
 ---
@@ -167,53 +168,77 @@ curl -s https://实际域名.com/pose/ | grep -o 'rel="canonical" href="[^"]*"'
 cd /srv/ai-image-gallery
 git fetch origin
 git reset --hard origin/main      # 丢弃上次构建产物，源码对齐到远端
+python3 tools/mid.py              # 只补新增的中图
 python3 tools/build.py --base https://实际域名.com
-python3 tools/release.py
+python3 tools/release.py --out dist-stage
 ```
 
-`git reset --hard` 只作用于仓库跟踪的 110 个文件，
-**不会碰图片目录**——`sites/*/{thumbs,img,png,raw}` 都在 `.gitignore` 里。
+**不要直接 `release.py` 到线上 `dist/`。** 它会先删除再重建站点目录，重建期间该站会 404。
+先发布到暂存目录，检查 canonical、图片数量和页面后，再逐个站点原子对调：
+
+```bash
+test ! -e dist-prev || exit 1
+for x in index.html portrait costume pose pose-depth; do
+  mv -T --exchange "dist-stage/$x" "dist/$x" || break
+done
+mv -T dist-stage dist-prev        # 对调后暂存目录里是旧版，留作回滚
+```
+
+`mv --exchange` 需要 GNU coreutils 9.5+（Debian 13 自带 9.7），而且**必须带 `-T`**，
+否则目标会被当成父目录，命令报错退出。只更新了部分站点时，循环里只写那几个。
+对调完成后不需要 reload nginx。
+
+`git reset --hard` 只作用于仓库跟踪的文件，
+**不会碰图片目录**——`sites/*/{thumbs,mid,img,png,raw}` 都在 `.gitignore` 里。
 
 **图片不需要重新下载** —— `fetch.py` 幂等，已存在文件跳过。
 新增站点时才需要再跑一次 `python3 tools/fetch.py --site <新站id>`。
 
-**本次更新新增了中图档**：第一次拉到这个版本时，在 `build.py` 之前跑一次 `python3 tools/mid.py`。
-漏跑也不会坏，灯箱会在中图 404 后退回加载原图，只是慢。
+漏跑 `mid.py` 也不会坏：灯箱会在中图 404 后退回加载原图，只是慢。
 
 只改了一个站时：
 
 ```bash
-python3 tools/build.py --site pose --base https://实际域名.com
-python3 tools/release.py --site pose
+python3 tools/build.py --site pose --base https://实际域名.com --no-hub
+python3 tools/release.py --site pose --out dist-stage
+# 然后按上面的方法只对调 pose
 ```
 
 ---
 
 ## 5. 回滚
 
+上一次更新留下的 `dist-prev` 就是回滚源，对调回去即可，秒级、不用重建：
+
 ```bash
 cd /srv/ai-image-gallery
-git log --oneline -5
-git reset --hard <目标提交>
-python3 tools/build.py --base https://实际域名.com
-python3 tools/release.py
-git reset --hard origin/main      # 验证完回到最新
+for x in index.html portrait costume pose pose-depth; do
+  mv -T --exchange "dist-prev/$x" "dist/$x" || break
+done
 ```
 
-因为 `release.py` 会重建 `dist/`，回滚就是重建一次，几十秒。
+需要回到更早的版本时，按提交重建再对调：
+
+```bash
+git reset --hard <目标提交>
+python3 tools/build.py --base https://实际域名.com
+python3 tools/release.py --out dist-stage
+# 检查后按 §4 对调
+```
 
 ---
 
 ## 6. 加新站之后
 
 ```bash
-git pull
+git fetch origin && git reset --hard origin/main
 python3 tools/fetch.py --site <新站id>      # 只下新站的图
+python3 tools/mid.py --site <新站id>        # imageDirs 含 mid 时
 python3 tools/build.py --base https://实际域名.com
-python3 tools/release.py
+python3 tools/release.py --out dist-stage
 ```
 
-`release.py` 会重建全部站点目录（图片仍是硬链接，很快）。
+新站在线上 `dist/` 里还不存在，直接 `mv -T dist-stage/<新站id> dist/<新站id>` 即可；入口页 `index.html` 和根级 `sitemap.xml` 也要对调，否则首页不显示新卡片。
 
 ---
 
@@ -221,7 +246,7 @@ python3 tools/release.py
 
 | 现象 | 原因 | 解决 |
 |---|---|---|
-| `dist/` 里有「退化为复制」 | 跨文件系统 | 把 `dist/` 放到 `sites/` 同盘，或改用 `--no-images` 让服务器保留旧图 |
+| `dist/` 里有「退化为复制」 | 跨文件系统 | 把 `dist/` 放到 `sites/` 同盘。不要用 `--no-images` 代替：它不会保留旧图，站点目录会先被删掉 |
 | 入口页封面空白 | 对应站的图片没下载 | `python3 tools/fetch.py --site <id> --tier thumb` |
 | 子站 404 | `dist/` 未生成对应目录 | 重跑 `tools/release.py` |
 | canonical 还是 example.com | 构建时没传 `--base` | 带 `--base` 重跑 `tools/build.py` |
@@ -230,7 +255,8 @@ python3 tools/release.py
 | `detected dubious ownership` | 目录属主与执行用户不一致（常见于从别处 rsync 过来的目录） | `git config --global --add safe.directory /srv/ai-image-gallery` |
 | `git pull` 报本地改动冲突 | 构建产物被 `--base` 重写过 | 改用 `git fetch && git reset --hard origin/main`（见 §4） |
 | `git: command not found` | 服务器没装 git | `apt-get update && apt-get install -y git` |
-| `Connecting to … port 22` 后立刻 `kex_exchange_identification: Connection closed` | 连的不是当前源站 IP（别名指向了旧地址） | 核对 `~/.ssh/config` 里该 Host 的 `HostName` 是不是当前源站 IP |
+| `Connecting to … port 22` 后立刻 `kex_exchange_identification: Connection closed` | ① 连的不是当前源站 IP；② 本机开着 Clash 等 TUN 模式，SSH 被代理断开 | ① 核对 `~/.ssh/config` 的 `HostName`；② 临时关闭 TUN，或让 SSH 直连物理网卡 |
+| 灯箱一直显示缩略图、Network 里 `mid/*.webp` 404 | 没跑 `mid.py`，或 `sites.json` 的 `imageDirs` 没有 `mid` | 跑 `python3 tools/mid.py` 后重新 release |
 
 ---
 
