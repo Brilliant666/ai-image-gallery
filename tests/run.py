@@ -7,7 +7,7 @@
 
 只用标准库 + 可选的 node（检查内联 JS 语法；没有 node 时跳过这一项）。
 """
-import collections, json, os, re, shutil, subprocess, sys, tempfile, unittest
+import collections, html, json, os, re, shutil, subprocess, sys, tempfile, unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
@@ -19,8 +19,32 @@ from mid import mid_rel  # noqa: E402
 CFG = load_cfg()
 SITES = [s["id"] for s in CFG["sites"]]
 PAGES = ["hub/index.html"] + [f"sites/{s}/{f}" for s in SITES for f in ("index.html", "404.html")]
-BUILD_OUTPUT = ["hub/index.html", "hub/robots.txt", "hub/sitemap.xml"] + [
-    f"sites/{s}/{f}" for s in SITES for f in ("index.html", "404.html", "robots.txt", "sitemap.xml")]
+BUILD_OUTPUT = ["hub/index.html", "hub/robots.txt", "hub/sitemap.xml", "hub/llms.txt"] + [
+    f"sites/{s}/{f}" for s in SITES for f in ("index.html", "404.html", "robots.txt", "sitemap.xml")] + [
+    f"sites/{s}/data/landing.json" for s in SITES]
+
+
+def landing_meta(root, sid):
+    p = os.path.join(root, "sites", sid, "data", "landing.json")
+    if not os.path.exists(p):
+        return {"dirs": [], "pages": []}
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def landing_pages(root=ROOT):
+    """各站 data/landing.json 记录的静态落地页（相对仓库根的路径）"""
+    return [f"sites/{s}/{pg}/index.html" for s in SITES for pg in landing_meta(root, s)["pages"]]
+
+
+def generated_files(root):
+    """落地页目录里实际存在的全部文件，用来发现多出或缺少的页面"""
+    out = set()
+    for s in SITES:
+        for d in landing_meta(root, s)["dirs"]:
+            for dp, _, fns in os.walk(os.path.join(root, "sites", s, d)):
+                out |= {os.path.relpath(os.path.join(dp, fn), root).replace(os.sep, "/") for fn in fns}
+    return out
 
 
 def read(rel):
@@ -52,11 +76,17 @@ class Build(unittest.TestCase):
                                             "__pycache__", "failed_*.json")
             dst = os.path.join(tmp, "repo")
             shutil.copytree(ROOT, dst, ignore=ignore)
+            # 删掉复制过去的落地页，确认它们完全由构建重新生成
+            for f in generated_files(dst):
+                os.remove(os.path.join(dst, f))
             r = subprocess.run([sys.executable, os.path.join("tools", "build.py")], cwd=dst,
                                capture_output=True, text=True, encoding="utf-8")
             self.assertEqual(r.returncode, 0, r.stdout[-2000:] + r.stderr[-2000:])
+            committed, fresh = generated_files(ROOT), generated_files(dst)
+            self.assertEqual(sorted(committed - fresh), [], "这些落地页已不再生成，请重新构建并删掉旧文件")
+            self.assertEqual(sorted(fresh - committed), [], "这些落地页还没提交，请运行 python tools/build.py")
             stale = []
-            for rel in BUILD_OUTPUT:
+            for rel in BUILD_OUTPUT + sorted(fresh):
                 with open(os.path.join(ROOT, rel), encoding="utf-8") as a, \
                         open(os.path.join(dst, rel), encoding="utf-8") as b:
                     if a.read().replace("\r\n", "\n") != b.read().replace("\r\n", "\n"):
@@ -123,6 +153,110 @@ class Pages(unittest.TestCase):
                     self.assertEqual(r.returncode, 0, f"{rel} 第 {i + 1} 段脚本语法错误:\n{r.stderr[-800:]}")
                 finally:
                     os.remove(f.name)
+
+
+class Landing(unittest.TestCase):
+    """shared/landing.py 生成的静态落地页"""
+
+    def setUp(self):
+        self.pages = landing_pages()
+
+    def site_pages(self, sid):
+        return [p for p in self.pages if p.startswith(f"sites/{sid}/")]
+
+    def test_every_site_has_landing_pages(self):
+        for s in SITES:
+            self.assertTrue(self.site_pages(s), f"{s} 没有落地页")
+
+    def test_head_and_body_basics(self):
+        titles = collections.Counter()
+        for rel in self.pages:
+            h = read(rel)
+            sid, path = rel.split("/")[1], "/".join(rel.split("/")[2:-1])
+            t = re.search(r"<title>(.*?)</title>", h)
+            self.assertTrue(t and 10 <= len(t.group(1)) <= 80, f"{rel} title 缺失或长度异常")
+            titles[t.group(1)] += 1
+            d = re.search(r'name="description" content="([^"]*)"', h)
+            self.assertTrue(d and 40 <= len(d.group(1)) <= 220, f"{rel} description 缺失或长度异常")
+            self.assertIn(f'rel="canonical" href="https://example.com/{sid}/{path}/"', h, rel)
+            self.assertEqual(h.count("<h1>"), 1, f"{rel} 应有且只有一个 h1")
+            for img in re.findall(r"<img[^>]*>", h):
+                self.assertRegex(img, r'alt="[^"]{6,}"', f"{rel} 有缺 alt 的图片")
+        self.assertEqual([t for t, n in titles.items() if n > 1], [], "落地页 title 重复")
+
+    def test_links_resolve(self):
+        # 页面里的相对链接都要指向仓库里存在的页面；sites/ 之上就是 photoai.life 根，对应仓库的 hub/
+        problems = []
+        sites_dir = os.path.normpath(os.path.join(ROOT, "sites"))
+        for rel in self.pages:
+            base = os.path.dirname(os.path.join(ROOT, rel))
+            for href in re.findall(r'href="([^"#]+)', read(rel)):
+                if re.match(r"[a-z]+:", href):
+                    continue
+                target = os.path.normpath(os.path.join(base, html.unescape(href)))
+                if target == sites_dir:
+                    target = os.path.join(ROOT, "hub")
+                if href.endswith("/"):
+                    target = os.path.join(target, "index.html")
+                if not os.path.exists(target):
+                    problems.append(f"{rel} → {href}")
+        self.assertEqual(problems, [])
+
+    def test_thumbs_are_in_manifest(self):
+        for s in SITES:
+            thumbs = {r["thumb_path"] for r in json.loads(read(f"sites/{s}/manifest.json"))}
+            for rel in self.site_pages(s):
+                up = "../" * (rel.count("/") - 2)
+                for src in re.findall(r'<img src="([^"]+)"', read(rel)):
+                    self.assertTrue(src.startswith(up), f"{rel} 图片路径层级不对: {src}")
+                    self.assertIn(src[len(up):], thumbs, f"{rel} 引用了不在 manifest 的图: {src}")
+
+    def test_only_thumbnails_exposed(self):
+        # 落地页只用缩略图，不暴露中图和原图（三站禁止再分发）
+        for rel in self.pages:
+            self.assertFalse(re.findall(r'<img src="[^"]*/(mid|img|png)/', read(rel)), rel)
+
+    def test_gallery_hash_params_known(self):
+        # 「在画廊中查看」带的 #参数必须是画廊能识别的
+        for rel in self.pages:
+            for hsh in re.findall(r'class="cta" href="[^"]*#([^"]+)"', read(rel)):
+                for kv in html.unescape(hsh).split("&"):
+                    self.assertIn(kv.split("=")[0], {"cat", "tag", "series", "sec", "hair"}, f"{rel}: {hsh}")
+
+    def test_adult_series_not_expanded(self):
+        # 姿势两站：双人系列不生成落地页，性感系与上半身不展开到分类
+        for s in ("pose", "pose-depth"):
+            pages = self.site_pages(s)
+            self.assertFalse([p for p in pages if "2人絡み" in p], f"{s} 不应有双人系列落地页")
+            for series in ("全身1人・セクシー系", "上半身1人"):
+                deep = [p for p in pages if f"/series/{series}/" in p and not p.endswith(f"/series/{series}/index.html")]
+                self.assertFalse(deep, f"{s} 的 {series} 不应展开到分类页")
+
+    def test_sitemaps_cover_landing_pages(self):
+        root_sm = read("hub/sitemap.xml")
+        for s in SITES:
+            sm = read(f"sites/{s}/sitemap.xml")
+            for rel in self.site_pages(s):
+                url = "https://example.com/" + rel[len("sites/"):-len("index.html")]
+                self.assertIn(url, sm, f"{s}/sitemap.xml 缺 {url}")
+                self.assertIn(url, root_sm, f"根 sitemap 缺 {url}")
+
+    def test_llms_txt(self):
+        t = read("hub/llms.txt")
+        self.assertTrue(t.startswith("# photoai.life\n"))
+        for s in SITES:
+            self.assertIn(f"https://example.com/{s}/", t)
+        self.assertIn("CC0", t)
+        self.assertIn("禁止再分发", t)
+
+    def test_static_intro_on_gallery_pages(self):
+        # 主画廊页在不执行 JS 时也要有可读内容和 FAQ 结构化数据
+        for rel in ["hub/index.html"] + [f"sites/{s}/index.html" for s in SITES]:
+            h = read(rel)
+            body = re.sub(r"<script.*?</script>|<style.*?</style>", "", h, flags=re.S)
+            text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body))
+            self.assertGreater(len(text), 500, f"{rel} 去掉 JS 后可读文字太少")
+            self.assertIn('"@type":"FAQPage"', h, f"{rel} 缺 FAQPage")
 
 
 class Manifests(unittest.TestCase):

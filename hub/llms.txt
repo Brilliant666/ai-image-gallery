@@ -1,0 +1,31 @@
+# photoai.life
+
+> AI 绘画参考图库合集：人像、人体姿势、ControlNet 姿势深度图、服装，共 12,975 张，全部为 AI 生成。中文索引镜像，界面支持中文与日本語。
+
+每个图库都是一个可筛选的画廊页，另有按分类 / 标签 / 发型生成的静态落地页（见各图库的 browse/ 目录与 sitemap）。图片著作权归各原作者，授权各不相同，引用时请注明对应图库的授权。
+
+## 图库
+
+- [人像集](https://example.com/portrait/)：1499 张 AI 生成人像：面部 893 张（正面、纯色背景），造型 606 张。用于 AI 绘画中保持角色脸部一致，按发型分类。 授权：CC0 1.0 公有领域，可商用、可再分发。 原站：https://ai-portrait-gallery.pages.dev/
+- [服装集](https://example.com/costume/)：1407 套 AI 生成服装、4221 张图，8 个分类、86 个标签；标签为英文关键词，可直接用作提示词。 授权：允许免费用于作品制作（含商用与参考）；禁止再分发、转载、转售图片文件本身。 原站：https://ai-costume-gallery.pages.dev/
+- [姿势集](https://example.com/pose/)：288 个人体姿势、1439 张无脸灰色人偶线稿，每个姿势正面、侧面、斜角、俯视、仰视 5 个视角。 授权：允许免费用于作品制作（含商用与参考）；禁止再分发、转载、转售图片文件本身。 原站：https://ai-pose-gallery.pages.dev/
+- [深度姿势集](https://example.com/pose-depth/)：同一批 288 个姿势的 1439 张灰度深度图，可直接作为 ControlNet depth 控制图。 授权：同姿势集；原站另禁止批量下载或用工具自动获取。 原站：https://ai-pose-depth-gallery.pages.dev/
+
+## 分类与标签索引
+
+- [人像集 · 全部分类](https://example.com/portrait/browse/)
+- [服装集 · 全部分类](https://example.com/costume/browse/)
+- [姿势集 · 全部分类](https://example.com/pose/browse/)
+- [深度姿势集 · 全部分类](https://example.com/pose-depth/browse/)
+
+## 常见问题
+
+- **photoai.life 是什么？** 一组面向 AI 绘画的参考图库：人像集（角色脸部一致性参考）、姿势集（人体姿势线稿）、深度姿势集（ControlNet 深度图）和服装集（服装与穿搭参考），共 12,975 张，全部为 AI 生成，中日双语。
+- **图片可以商用吗？** 要看图库。人像集为 CC0 1.0 公有领域，可以免费商用和再分发。姿势集、深度姿势集、服装集的原作者允许免费用于作品制作（包括商用与参考），但禁止再分发、转载或转售图片文件本身；深度姿势集另禁止批量下载。
+- **这些图是真人吗？** 不是。人像是 AI 生成的虚构人物，姿势是无脸灰色人偶，服装图由文字生成图像制作，都不对应真实人物或商品。
+- **和原站是什么关系？** 这里是各原站的中文索引镜像：把日文分类、标签和姿势名译成中文，加了组合筛选、搜索和中日切换。图片著作权归原作者，每个图库页脚都有原站和作者链接。
+
+## 其他
+
+- [站点地图](https://example.com/sitemap.xml)
+- [源代码（MIT）](https://github.com/Brilliant666/ai-image-gallery)

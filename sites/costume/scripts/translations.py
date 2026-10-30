@@ -108,7 +108,7 @@ TAG_JA = {
 
 UI = {
     "ja": {
-        "title": "衣装集 COSTUME-DB-01 · オフライン索引",
+        "title": "AI イラスト向け衣装参考画像集：1407 着の衣装とタグ検索 · COSTUME-DB-01",
         "home": "参照素材集", "homeAria": "参照素材集のトップへ",
         "eyebrow": "COSTUME-DB-01 · 画像参照用衣装集 · ローカルミラー",
         "brand1": "衣装集",
@@ -137,7 +137,7 @@ UI = {
         "tagUnit": "個",
     },
     "zh": {
-        "title": "服装集 COSTUME-DB-01 · 离线索引",
+        "title": "AI 绘画服装参考图库：1407 套服装、86 个标签分面筛选 · 服装集",
         "home": "参考素材库", "homeAria": "返回参考素材库首页",
         "eyebrow": "COSTUME-DB-01 · 图像参照用服装集 · 本地镜像",
         "brand1": "服装集",

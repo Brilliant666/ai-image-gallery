@@ -20,7 +20,7 @@
   图片使用硬链接（同文件系统），不复制、不额外占盘。若跨文件系统则退化为复制。
   站点文件（html/json/csv/og-cover）每次覆盖。
 """
-import os, shutil, sys
+import json, os, shutil, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import ROOT, load_cfg, select, site_dir, dir_size, human, parse_args
@@ -31,8 +31,17 @@ SITE_FILES = ["index.html", "robots.txt", "sitemap.xml", "404.html", "og-cover.j
 # 站点根目录下的子目录
 SITE_DIRS = ["data"]
 
+
+def landing_dirs(sd):
+    """shared/landing.py 生成的静态落地页目录（browse/、tag/、category/ …），记录在 data/landing.json"""
+    p = os.path.join(sd, "data", "landing.json")
+    if not os.path.exists(p):
+        return []
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)["dirs"]
+
 # 入口页与根级文件（sitemap / robots / 社交分享图）
-HUB_FILES = ["index.html", "sitemap.xml", "robots.txt", "og-cover.jpg"]
+HUB_FILES = ["index.html", "sitemap.xml", "robots.txt", "og-cover.jpg", "llms.txt"]
 
 
 def link_or_copy(src, dst):
@@ -113,7 +122,7 @@ def main():
             if os.path.exists(src):
                 shutil.copy2(src, os.path.join(dst, fn))
                 n_files += 1
-        for dn in SITE_DIRS:
+        for dn in SITE_DIRS + landing_dirs(sd):
             src = os.path.join(sd, dn)
             if os.path.isdir(src):
                 shutil.copytree(src, os.path.join(dst, dn))

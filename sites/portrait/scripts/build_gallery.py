@@ -14,8 +14,10 @@
 import json, os, sys, csv
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "shared"))
 from translations import (HAIR_ZH, HAIR_ORDER, SECTION_ZH, SECTION_NOTE_ZH, SECTION_NOTE_JA,
                           STYLE_ZH, UI, TIPS, RULES, RULES_NOTE, hair_zh, style_zh)
+import landing  # noqa: E402
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 rows = json.load(open(os.path.join(root, "manifest.json"), encoding="utf-8"))
@@ -52,16 +54,16 @@ html = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AI 模特脸库 · 免费人脸参考图库</title>
+<title>AI 绘画角色脸部一致性参考图库：1499 张 AI 人像，CC0 免费商用 · 人像集</title>
 <meta name="description" content="AI 绘画与视频创作的角色脸部一致性参考图库：893 张正面对齐的面部参考 + 606 张完整造型原图，按发型筛选，CC0 协议免费使用。">
-<meta name="keywords" content="AI脸部参考,角色一致性,人脸参考图,AI绘画参考,发型参考,face reference,CC0">
+<meta name="keywords" content="AI绘画人脸参考,角色脸部一致性,AI人像参考图,发型参考,免费商用人像,CC0人像,face reference,character consistency">
 <meta name="author" content="Brilliant666">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <meta name="color-scheme" content="light dark">
 <link rel="canonical" href="__SITE__/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="AI 模特脸库">
-<meta property="og:title" content="AI 模特脸库 · 1499 张人脸参考图">
+<meta property="og:title" content="AI 绘画角色脸部参考 · 1499 张 AI 人像，CC0 免费商用">
 <meta property="og:description" content="让 AI 生成的角色保持同一张脸。893 张面部参考 + 606 张造型原图，按发型筛选，CC0 免费。">
 <meta property="og:url" content="__SITE__/">
 <meta property="og:image" content="__SITE__/og-cover.jpg">
@@ -70,7 +72,7 @@ html = r"""<!doctype html>
 <meta property="og:locale" content="zh_CN">
 <meta property="og:locale:alternate" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="AI 模特脸库 · 1499 张人脸参考图">
+<meta name="twitter:title" content="AI 绘画角色脸部参考 · 1499 张 AI 人像，CC0">
 <meta name="twitter:description" content="让 AI 生成的角色保持同一张脸。CC0 免费使用。">
 <meta name="twitter:image" content="__SITE__/og-cover.jpg">
 <script>
@@ -292,6 +294,8 @@ img{max-width:100%}
   .seg{padding:9px 14px}
 }
 </style>
+<style>__SEO_CSS__</style>
+__FAQ_LD__
 </head>
 <body>
 
@@ -368,6 +372,7 @@ img{max-width:100%}
     <span>CC0 1.0</span>
   </div>
 </footer>
+__SEO_INTRO__
 
 <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="图片预览" hidden>
   <button id="lb-close" class="lb-btn lb-close" type="button" aria-label="关闭">×</button>
@@ -735,6 +740,12 @@ draw();
 </body>
 </html>"""
 
+# 静态落地页（分区、分区 × 发型、发型风格）与主页里不依赖 JS 的介绍、FAQ
+import seo  # noqa: E402
+landing_urls, seo_intro, FAQ = seo.build(root, SITE_URL, items)
+html = (html.replace("__SEO_INTRO__", seo_intro).replace("__SEO_CSS__", landing.SEO_INTRO_CSS)
+            .replace("__FAQ_LD__", landing.faq_ld_script(FAQ)))
+
 html = html.replace("__PAYLOAD__", payload).replace("__SITE__", SITE_URL)
 out = os.path.join(root, "index.html")
 open(out, "w", encoding="utf-8").write(html)
@@ -787,11 +798,7 @@ print("wrote data/portrait-zh.json, data/meta.json, data/translations.csv")
 # ── SEO 附属 ──────────────────────────────────────────
 with open(os.path.join(root, "robots.txt"), "w", encoding="utf-8") as f:
     f.write("User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % SITE_URL)
-with open(os.path.join(root, "sitemap.xml"), "w", encoding="utf-8") as f:
-    f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-    f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
-    f.write('  <url><loc>%s/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>\n' % SITE_URL)
-    f.write('</urlset>\n')
+landing.sitemap(SITE_URL, landing_urls, os.path.join(root, "sitemap.xml"))
 with open(os.path.join(root, "404.html"), "w", encoding="utf-8") as f:
     f.write("""<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8">

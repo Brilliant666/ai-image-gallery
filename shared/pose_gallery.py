@@ -338,6 +338,8 @@ footer a:hover{color:var(--ac)}
   .switch button{padding:0 7px;font-size:11px}
 }
 </style>
+<style>__SEO_CSS__</style>
+__FAQ_LD__
 </head>
 <body>
 
@@ -395,6 +397,7 @@ footer a:hover{color:var(--ac)}
 <main><div class="grid" id="grid"></div><button class="loadmore" id="load-more" hidden></button></main>
 
 <footer id="foot"></footer>
+__SEO_INTRO__
 
 <div class="modal" id="modal" role="dialog" aria-modal="true">
   <div class="mbox">
@@ -437,6 +440,12 @@ let THEME = document.documentElement.dataset.theme || 'light';
 const PAGE_POSE = 60;    // 每组卡片含 6 张图，60 组 = 360 请求
 const PAGE_IMG  = 120;   // 单图视图每卡 1 张
 const S = {series:null, cat:null, ang:null, sort:'series', view:'pose', q:'', n:PAGE_POSE};
+// 落地页「在画廊中查看」带过来的筛选：#series=…&cat=…
+(function(){
+  const h = new URLSearchParams(location.hash.slice(1));
+  const s = h.get('series'); if (s && SERIES.includes(s)) S.series = s;
+  const c = h.get('cat');    if (c && CATS.includes(c) && POSES.some(p => p.c === c && (!S.series || p.s === S.series))) S.cat = c;
+})();
 
 /* ══ 语言工具 ══ */
 const t = k => (UI[LANG] && UI[LANG][k]) || (UI.ja[k] || k);
@@ -849,6 +858,16 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
 </body>
 </html>"""
 
+    # 静态落地页与主页里不依赖 JS 的介绍、FAQ（只有配置了 seoPages 的站点才生成）
+    landing_urls = []
+    if cfg.get("seoPages"):
+        import landing, pose_seo
+        landing_urls, seo_intro, FAQ = pose_seo.build(root, SITE_URL, cfg, data, series_list, cats)
+        html = (html.replace("__SEO_INTRO__", seo_intro).replace("__SEO_CSS__", landing.SEO_INTRO_CSS)
+                    .replace("__FAQ_LD__", landing.faq_ld_script(FAQ)))
+    else:
+        html = html.replace("__SEO_INTRO__", "").replace("__SEO_CSS__", "").replace("__FAQ_LD__", "")
+
     html = (html.replace("__PAYLOAD__", payload)
                 .replace("__SITE__", SITE_URL)
                 .replace("__CODE__", cfg["code"])
@@ -921,11 +940,8 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
     with open(os.path.join(root, "robots.txt"), "w", encoding="utf-8") as f:
         f.write("User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % SITE_URL)
 
-    with open(os.path.join(root, "sitemap.xml"), "w", encoding="utf-8") as f:
-        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
-        f.write('  <url><loc>%s/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>\n' % SITE_URL)
-        f.write('</urlset>\n')
+    import landing
+    landing.sitemap(SITE_URL, landing_urls, os.path.join(root, "sitemap.xml"))
 
     with open(os.path.join(root, "404.html"), "w", encoding="utf-8") as f:
         f.write("""<!doctype html>

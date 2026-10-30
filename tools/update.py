@@ -25,9 +25,11 @@ from _common import ROOT, parse_args
 
 # build.py 会重写的已跟踪文件。改了构建脚本、多出新的产物时同步这里。
 BUILD_OUTPUT = re.compile(
-    r"^(hub/(index\.html|robots\.txt|sitemap\.xml)"
+    r"^(hub/(index\.html|robots\.txt|sitemap\.xml|llms\.txt)"
     r"|sites/[^/]+/(index\.html|404\.html|robots\.txt|sitemap\.xml"
-    r"|data/(meta\.json|translations\.csv|[a-z-]+-zh\.json)))$"
+    r"|data/(meta\.json|translations\.csv|landing\.json|[a-z-]+-zh\.json)"
+    # shared/landing.py 生成的静态落地页
+    r"|(browse|tag|category|series|section|style)/.*index\.html))$"
 )
 
 

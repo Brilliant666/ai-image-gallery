@@ -14,7 +14,9 @@
 import json, os, sys, csv
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "shared"))
 from translations import CAT_ZH, TAG_ZH, TAG_JA, TAG_GROUPS, UI
+import landing  # noqa: E402
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 rows = json.load(open(os.path.join(root, "manifest.json"), encoding="utf-8"))
@@ -48,15 +50,15 @@ html = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>服装集 COSTUME-DB-01 · 离线索引</title>
+<title>AI 绘画服装参考图库：1407 套服装、86 个标签分面筛选 · 服装集</title>
 <meta name="description" content="AI 绘画服装参考图库中文版：1407 件服装、8 个分类、86 个材质与单品标签，可按颜色・单品・鞋袜・配饰・材质・长度分面筛选，支持中日双语与浅深主题。">
-<meta name="keywords" content="AI服装参考,服装图库,穿搭参考,绘画参考,服装设计,服装タグ,costume reference">
+<meta name="keywords" content="AI绘画服装参考,服装参考图,穿搭参考,Stable Diffusion 服装提示词,AI服装提示词,服装设计参考,衣装 参考,costume reference">
 <meta name="author" content="Brilliant666">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="__SITE__/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="服装集 COSTUME-DB-01">
-<meta property="og:title" content="服装集 COSTUME-DB-01 · 1407 件服装 / 86 个标签">
+<meta property="og:title" content="AI 绘画服装参考图库 · 1407 套服装 / 86 个标签">
 <meta property="og:description" content="AI 绘画服装参考图库中文版。按颜色・单品・鞋袜・配饰・材质・长度六组分面筛选。">
 <meta property="og:url" content="__SITE__/">
 <meta property="og:image" content="__SITE__/og-cover.jpg">
@@ -65,7 +67,7 @@ html = r"""<!doctype html>
 <meta property="og:locale" content="zh_CN">
 <meta property="og:locale:alternate" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="服装集 COSTUME-DB-01 · 1407 件服装">
+<meta name="twitter:title" content="AI 绘画服装参考图库 · 1407 套服装">
 <meta name="twitter:description" content="AI 绘画服装参考图库中文版，按材质・颜色・单品标签分面筛选。">
 <meta name="twitter:image" content="__SITE__/og-cover.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%238fb4ff'/%3E%3Ctext x='16' y='23' font-size='19' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='%230d0f12'%3EC%3C/text%3E%3C/svg%3E">
@@ -321,6 +323,8 @@ footer a:hover{color:var(--ac)}
   .chip{font-size:11px;padding:4px 9px}
 }
 </style>
+<style>__SEO_CSS__</style>
+__FAQ_LD__
 </head>
 <body>
 
@@ -377,6 +381,7 @@ footer a:hover{color:var(--ac)}
 <main><div class="grid" id="grid"></div><button class="loadmore" id="more" hidden></button></main>
 
 <footer id="foot"></footer>
+__SEO_INTRO__
 
 <div class="modal" id="modal" role="dialog" aria-modal="true">
   <div class="mbox">
@@ -415,6 +420,13 @@ let LANG  = document.documentElement.dataset.lang  || 'zh';
 let THEME = document.documentElement.dataset.theme || 'light';
 const PAGE = 120;   // 与原站一致
 const S = {cat:null, sort:'cat', q:'', tags:new Set(), n:PAGE};
+// 落地页「在画廊中查看」带过来的筛选：#cat=春 / #tag=knit（可多个，逗号分隔）
+(function(){
+  const h = new URLSearchParams(location.hash.slice(1));
+  const c = h.get('cat'); if (c && DB.cats.includes(c)) S.cat = c;
+  const all = new Set(DB.groups.flatMap(g => g.tags));
+  (h.get('tag') || '').split(',').filter(x => all.has(x)).forEach(x => S.tags.add(x));
+})();
 
 const t = k => (UI[LANG] && UI[LANG][k]) || (UI.ja[k] || k);
 const isZh = () => LANG === 'zh';
@@ -762,6 +774,12 @@ applyStatic(); drawTabs(); drawCatSel(); drawTagGroups(); draw();
 </body>
 </html>"""
 
+# 静态落地页（8 个分类 + 86 个标签）与主页里不依赖 JS 的介绍、FAQ
+import seo  # noqa: E402
+landing_urls, seo_intro, FAQ = seo.build(root, SITE_URL, items, cats)
+html = (html.replace("__SEO_INTRO__", seo_intro).replace("__SEO_CSS__", landing.SEO_INTRO_CSS)
+            .replace("__FAQ_LD__", landing.faq_ld_script(FAQ)))
+
 html = html.replace("__PAYLOAD__", payload).replace("__SITE__", SITE_URL)
 out = os.path.join(root, "index.html")
 open(out, "w", encoding="utf-8").write(html)
@@ -813,11 +831,7 @@ print("wrote data/costume-zh.json, data/meta.json, data/translations.csv")
 with open(os.path.join(root, "robots.txt"), "w", encoding="utf-8") as f:
     f.write("User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % SITE_URL)
 
-with open(os.path.join(root, "sitemap.xml"), "w", encoding="utf-8") as f:
-    f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-    f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
-    f.write('  <url><loc>%s/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>\n' % SITE_URL)
-    f.write('</urlset>\n')
+landing.sitemap(SITE_URL, landing_urls, os.path.join(root, "sitemap.xml"))
 
 with open(os.path.join(root, "404.html"), "w", encoding="utf-8") as f:
     f.write("""<!doctype html>

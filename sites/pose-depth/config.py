@@ -10,12 +10,12 @@ SOURCE = "https://ai-pose-depth-gallery.pages.dev/"
 
 # SEO 与社交分享文案（中文，页面 lang 为 zh-CN）
 SEO = {
-        "title": "深度姿势集 POSE-DB-02 · 离线索引",
+    "title": "AI 绘画姿势深度图库：288 个姿势、1439 张 ControlNet 深度图 · 深度姿势集",
     "desc": "AI 绘画人体姿势深度图库中文版：288 个姿势、1439 张多视角深度图，含正面・侧面・斜角・俯视・仰视，适用于 ControlNet 深度控制与 3D 建模参考。",
     "ogSite": "深度姿势集 POSE-DB-02",
-    "ogTitle": "深度姿势集 POSE-DB-02 · 288 姿势 / 1439 张深度图",
+    "ogTitle": "ControlNet 姿势深度图 · 288 个姿势 / 1439 张五视角深度图",
     "ogDesc": "AI 绘画人体姿势深度图库中文版。每个姿势提供五个视角的灰度深度图。",
-    "twTitle": "深度姿势集 POSE-DB-02 · 288 姿势 / 1439 张深度图",
+    "twTitle": "ControlNet 姿势深度图 · 288 个姿势 / 1439 张",
     "twDesc": "AI 绘画人体姿势深度图库中文版。每个姿势提供五个视角的灰度深度图。",
     "schemaName": "深度姿势集 POSE-DB-02",
     "schemaAlt": "AI Pose Depth Gallery 中文版",
@@ -25,7 +25,7 @@ SEO = {
 # 界面文案（中/日双语）
 UI = {
     "ja": {
-        "title": "デプス ポーズ集 POSE-DB-02 · オフライン索引",
+        "title": "ControlNet 向けポーズ深度マップ集：288 ポーズ・1439 枚・5 アングル · POSE-DB-02",
         "home": "参照素材集", "homeAria": "参照素材集のトップへ",
         "eyebrow": "POSE-DB-02 · 深度参照用ポーズ集 · ローカルミラー",
         "brand1": "デプス",
@@ -50,13 +50,13 @@ UI = {
         "dlPng": "PNG をダウンロード", "openFull": "原寸 PNG を開く",
         "copyLink": "画像リンクをコピー", "copied": "コピーしました", "copyFail": "コピー失敗",
         "hint": "<kbd>←</kbd><kbd>→</kbd> アングル　<kbd>↑</kbd><kbd>↓</kbd> ポーズ　<kbd>Esc</kbd> 閉じる",
-        "footer": "素材元：<a href=\"https://ai-pose-gallery.pages.dev/\" target=\"_blank\" rel=\"noopener noreferrer\">ai-pose-gallery.pages.dev</a>（POSE-DB-01）。ローカルミラーは個人の参照用です。元画像の再配布・転売はご遠慮ください。",
+        "footer": "素材元：<a href=\"https://ai-pose-depth-gallery.pages.dev/\" target=\"_blank\" rel=\"noopener noreferrer\">ai-pose-depth-gallery.pages.dev</a>（POSE-DB-02）。ローカルミラーは個人の参照用です。元画像の再配布・転売はご遠慮ください。",
         "themeLight": "ライト", "themeDark": "ダーク",
         "langJa": "日本語", "langZh": "中文",
         "themeAria": "表示テーマ", "langAria": "言語",
     },
     "zh": {
-        "title": "姿势集 POSE-DB-01 · 离线索引",
+        "title": "AI 绘画姿势深度图库：288 个姿势、1439 张 ControlNet 深度图 · 深度姿势集",
         "home": "参考素材库", "homeAria": "返回参考素材库首页",
         "eyebrow": "POSE-DB-02 · 深度参照用姿势集 · 本地镜像",
         "brand1": "深度",
@@ -81,11 +81,40 @@ UI = {
         "dlPng": "下载 PNG", "openFull": "打开原寸 PNG",
         "copyLink": "复制图片链接", "copied": "已复制", "copyFail": "复制失败",
         "hint": "<kbd>←</kbd><kbd>→</kbd> 切视角　<kbd>↑</kbd><kbd>↓</kbd> 换姿势　<kbd>Esc</kbd> 关闭",
-        "footer": "素材来源：<a href=\"https://ai-pose-gallery.pages.dev/\" target=\"_blank\" rel=\"noopener noreferrer\">ai-pose-gallery.pages.dev</a>（POSE-DB-01）。本地镜像仅供个人参考，请勿再分发或转售原始图片。",
+        "footer": "素材来源：<a href=\"https://ai-pose-depth-gallery.pages.dev/\" target=\"_blank\" rel=\"noopener noreferrer\">ai-pose-depth-gallery.pages.dev</a>（POSE-DB-02）。本地镜像仅供个人参考，请勿再分发或转售原始图片。",
         "themeLight": "浅色", "themeDark": "深色",
         "langJa": "日本語", "langZh": "中文",
         "themeAria": "主题", "langAria": "语言",
     },
+}
+
+def _faq(kind, use):
+    return [
+        ("这些图是真人吗？", f"不是。全部是 AI 生成的无脸灰色人偶{kind}，不含真实人物，也没有面部特征。"),
+        ("可以用在自己的作品或商用项目里吗？",
+         "原作者ギア允许免费用于作品制作，包括商用、编辑和作为参考；但禁止把图片文件本身再分发、转载或转售。"
+         "本站是中文索引镜像，图片著作权归原作者，以原站条款为准。"),
+        ("怎么用在 AI 绘画里？", use),
+        ("每个姿势有几张图？", "每个姿势提供正面、侧面、斜角、俯视、仰视 5 个视角（P018 缺仰视），在画廊里可以逐个切换、放大和下载 PNG。"),
+        ("和原站有什么不同？", "原站为日文。本站把系列、分类、视角和 288 个姿势名全部译成中文，支持中日双语切换、组合筛选和关键词搜索。"),
+    ]
+
+
+SEO_PAGES = {
+    "id": "pose-depth", "name": "深度姿势集", "short": "深度图", "kind": "姿势深度图",
+    "tagline": "AI 绘画 ControlNet 姿势深度图库",
+    "licenseNote": "图片为 AI 生成，著作权归原作者，禁止再分发图片文件本身，原站另禁止批量下载。",
+    "descTail": "灰度深度图可直接用于 ControlNet depth 控制。",
+    "accent": "#6b7280",
+    # 只为标准系展开到分类页；性感系、上半身只保留系列页，双人系列不生成落地页（见 shared/pose_seo.py）
+    "expandSeries": ["全身1人・標準系"],
+    "skipSeries": ["2人絡み"],
+    "introParas": lambda n, m: [
+        f"深度姿势集是一个 AI 绘画姿势深度图库：收录 {n} 个姿势、{m} 张无脸灰色人偶的灰度深度图（depth map），"
+        "越亮表示越靠近镜头，可直接作为 Stable Diffusion ControlNet depth 的控制图，也适合 3D 建模与布光参考。",
+        "每个姿势有正面、侧面、斜角、俯视、仰视 5 个视角，系列、分类和姿势名全部译为中文。"],
+    "faq": _faq("深度图", "把深度图作为 ControlNet depth 的控制图载入，提示词里描述人物和服装即可沿用姿势与前后关系；"
+                "手指和交叠双腿的边界在深度图里较弱，需要时配合线稿版（姿势集）使用。"),
 }
 
 CONFIG = {
@@ -93,4 +122,5 @@ CONFIG = {
     "source": SOURCE,
     **SEO,
     "ui": UI,
+    "seoPages": SEO_PAGES,
 }

@@ -9,6 +9,9 @@
 """
 import json, os, sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "shared"))
+import landing  # noqa: E402
+
 HUB  = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HUB)
 CFG  = os.path.join(ROOT, "sites.json")
@@ -206,6 +209,7 @@ footer .note{margin:0;color:var(--tx3);opacity:.85}
     <ul class="credits" id="credits"></ul>
     <p class="note" id="fnote"></p>
   </footer>
+  __SEO_INTRO__
 </div>
 
 <script>
@@ -231,7 +235,7 @@ function render(){
   $('#lead').textContent = tx(M.lead);
   $('#cnt').textContent = String(DATA.sites.length).padStart(2, '0');
   $('#cntLbl').textContent = LANG === 'zh' ? '个站点' : 'サイト';
-  document.title = tx(M.title) + ' · ' + DATA.sites.length + (LANG === 'zh' ? ' 站' : ' サイト');
+  document.title = LANG === 'zh' ? __TITLE_JS__ : tx(M.title) + ' · ' + DATA.sites.length + ' サイト';
 
   $('#cards').innerHTML = DATA.sites.map(s => {
     const lic = LIC[s.license] || LIC.restricted;
@@ -300,6 +304,59 @@ render();
 """
 
 
+def hub_seo(cfg, base):
+    """入口页静态介绍、FAQ 与 llms.txt。事实只取自 sites.json 与固定的授权说明。"""
+    sites = {s["id"]: s for s in cfg["sites"]}
+    stat = lambda sid, i: sites[sid]["stats"][i]["v"]
+    faq = [
+        ("photoai.life 是什么？",
+         "一组面向 AI 绘画的参考图库：人像集（角色脸部一致性参考）、姿势集（人体姿势线稿）、"
+         "深度姿势集（ControlNet 深度图）和服装集（服装与穿搭参考），共 12,975 张，全部为 AI 生成，中日双语。"),
+        ("图片可以商用吗？",
+         "要看图库。人像集为 CC0 1.0 公有领域，可以免费商用和再分发。姿势集、深度姿势集、服装集的原作者"
+         "允许免费用于作品制作（包括商用与参考），但禁止再分发、转载或转售图片文件本身；深度姿势集另禁止批量下载。"),
+        ("这些图是真人吗？",
+         "不是。人像是 AI 生成的虚构人物，姿势是无脸灰色人偶，服装图由文字生成图像制作，都不对应真实人物或商品。"),
+        ("和原站是什么关系？",
+         "这里是各原站的中文索引镜像：把日文分类、标签和姿势名译成中文，加了组合筛选、搜索和中日切换。"
+         "图片著作权归原作者，每个图库页脚都有原站和作者链接。"),
+    ]
+    links = [(f"{s['id']}/", s["name"]["zh"]) for s in cfg["sites"]]
+    intro = landing.static_intro(
+        ["photoai.life 收录四个 AI 绘画参考图库，共 12,975 张 AI 生成的参考图，可在线浏览、按标签筛选和下载。",
+         f"人像集 {stat('portrait', 0)} 张，用来让 AI 生成的角色保持同一张脸，CC0 可商用；"
+         f"姿势集与深度姿势集各 {stat('pose', 0)} 个姿势、{stat('pose', 1)} 张，每个姿势 5 个视角，深度图可直接用于 ControlNet；"
+         f"服装集 {stat('costume', 0)} 套服装、{stat('costume', 2)} 个标签，标签保留英文关键词，可直接作提示词。"],
+        [("图库", "4 个"), ("图片", "12,975 张"), ("语言", "中文 / 日本語"), ("素材", "全部 AI 生成")],
+        links, faq).replace('<a href="browse/">全部分类与标签</a>',
+                            " · ".join(f'<a href="{s["id"]}/browse/">{landing.esc(s["name"]["zh"])}分类</a>' for s in cfg["sites"]))
+
+    lic = {"portrait": "CC0 1.0 公有领域，可商用、可再分发。",
+           "pose": "允许免费用于作品制作（含商用与参考）；禁止再分发、转载、转售图片文件本身。",
+           "pose-depth": "同姿势集；原站另禁止批量下载或用工具自动获取。",
+           "costume": "允许免费用于作品制作（含商用与参考）；禁止再分发、转载、转售图片文件本身。"}
+    what = {"portrait": f"{stat('portrait', 0)} 张 AI 生成人像：面部 {stat('portrait', 1)} 张（正面、纯色背景），造型 {stat('portrait', 2)} 张。用于 AI 绘画中保持角色脸部一致，按发型分类。",
+            "pose": f"{stat('pose', 0)} 个人体姿势、{stat('pose', 1)} 张无脸灰色人偶线稿，每个姿势正面、侧面、斜角、俯视、仰视 5 个视角。",
+            "pose-depth": f"同一批 {stat('pose-depth', 0)} 个姿势的 {stat('pose-depth', 1)} 张灰度深度图，可直接作为 ControlNet depth 控制图。",
+            "costume": f"{stat('costume', 0)} 套 AI 生成服装、{stat('costume', 1)} 张图，8 个分类、{stat('costume', 2)} 个标签；标签为英文关键词，可直接用作提示词。"}
+    lines = ["# photoai.life", "",
+             "> AI 绘画参考图库合集：人像、人体姿势、ControlNet 姿势深度图、服装，共 12,975 张，全部为 AI 生成。"
+             "中文索引镜像，界面支持中文与日本語。", "",
+             "每个图库都是一个可筛选的画廊页，另有按分类 / 标签 / 发型生成的静态落地页（见各图库的 browse/ 目录与 sitemap）。"
+             "图片著作权归各原作者，授权各不相同，引用时请注明对应图库的授权。", "",
+             "## 图库", ""]
+    for s in cfg["sites"]:
+        lines.append(f"- [{s['name']['zh']}]({base}/{s['id']}/)：{what.get(s['id'], s['desc']['zh'])}"
+                     f" 授权：{lic.get(s['id'], '')} 原站：{s['source']}")
+    lines += ["", "## 分类与标签索引", ""]
+    lines += [f"- [{s['name']['zh']} · 全部分类]({base}/{s['id']}/browse/)" for s in cfg["sites"]]
+    lines += ["", "## 常见问题", ""] + [f"- **{q}** {a}" for q, a in faq]
+    lines += ["", "## 其他", "",
+              f"- [站点地图]({base}/sitemap.xml)",
+              "- [源代码（MIT）](https://github.com/Brilliant666/ai-image-gallery)", ""]
+    return {"intro": intro, "faq": faq, "llms": "\n".join(lines)}
+
+
 def main():
     cfg = load()
     only_check = "--check" in sys.argv
@@ -325,8 +382,10 @@ def main():
     data = json.dumps(cfg, ensure_ascii=False, separators=(",", ":"))
     lic_js = json.dumps(lic, ensure_ascii=False, separators=(",", ":"))
 
-    title = cfg["meta"]["title"]["zh"] + " · " + str(len(cfg["sites"])) + " 站"
-    desc = cfg["meta"]["lead"]["zh"]
+    title = "photoai.life · AI 绘画参考图库：人像、姿势、ControlNet 深度图、服装，共 12,975 张"
+    desc = ("四个 AI 绘画参考图库合集：1499 张 CC0 人像（角色脸部一致性参考）、288 个人体姿势线稿与深度图"
+            "（各 1439 张，五视角，适合 ControlNet）、1407 套服装（86 个标签）。中日双语，全部可在线浏览。")
+    seo = hub_seo(cfg, base)
 
     # 结构化数据：告诉搜索引擎/AI 引擎这是一组并列的子站点
     ld = json.dumps({
@@ -344,6 +403,9 @@ def main():
 
     html = (TEMPLATE
             .replace("__TITLE__", title)
+            .replace("__TITLE_JS__", json.dumps(title, ensure_ascii=False))
+            .replace("__SEO_INTRO__", seo["intro"])
+            .replace("</style>", "</style><style>" + landing.SEO_INTRO_CSS + "</style>" + landing.faq_ld_script(seo["faq"]), 1)
             .replace("__DESC__", desc)
             .replace("__LIC__", lic_js)
             .replace("__LD__", ld)
@@ -355,8 +417,15 @@ def main():
 
     print(f"\n写出 index.html  {os.path.getsize(OUT)/1024:.1f} KB")
 
-    # 根 sitemap：入口页 + 各子站
-    urls = [base + "/"] + [f"{base}/{s['id']}/" for s in cfg["sites"]]
+    # 根 sitemap：入口页 + 各子站首页 + 各子站落地页（读各站 data/landing.json）
+    urls = [base + "/"]
+    for s in cfg["sites"]:
+        urls.append(f"{base}/{s['id']}/")
+        p = os.path.join(ROOT, "sites", s["id"], "data", "landing.json")
+        if os.path.exists(p):
+            with open(p, encoding="utf-8") as f:
+                urls += [f"{base}/{s['id']}/{pg}/" for pg in json.load(f)["pages"]]
+    urls = [landing.esc(u) for u in urls]
     sm = ['<?xml version="1.0" encoding="UTF-8"?>',
           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for u in urls:
@@ -371,6 +440,11 @@ def main():
                 f"Sitemap: {base}/sitemap.xml\n")
 
     print(f"写出 sitemap.xml（{len(urls)} 条）与 robots.txt  base = {base}")
+
+    # llms.txt：给 AI 爬虫与助手的站点说明（https://llmstxt.org/）
+    with open(os.path.join(HUB, "llms.txt"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(seo["llms"])
+    print("写出 llms.txt")
 
     if bad:
         # 封面缺失不阻断生成：新克隆的仓库还没下图片，先出页面，
