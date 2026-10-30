@@ -65,7 +65,11 @@ python tools/verify.py --site new-site
 python tools/build.py
 python tools/release.py
 python tools/serve.py
+python tests/run.py                      # 提交前跑一遍；CI 也会跑
 ```
+
+`tests/run.py` 会自动覆盖 `sites.json` 里的新站：构建产物是否最新、重复 id、JS 引用的 id 是否存在、
+内联数据是否都被页面使用、页面体积上限、manifest 的档位字段与路径、封面是否在 manifest 里。
 
 上线到已有服务器的步骤见 [DEPLOY.md](../deploy/DEPLOY.md) §6。
 

@@ -6,6 +6,7 @@
 
 ポートレート · ポーズ · デプス ポーズ · 衣装 · 12,975 枚 · 中国語 / 日本語 · ライト / ダーク
 
+[![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
 [![sites](https://img.shields.io/badge/sites-4-0ea5e9?style=flat-square)](#サイト)
 [![images](https://img.shields.io/badge/images-12%2C975-8b5cf6?style=flat-square)](#サイト)
@@ -87,6 +88,7 @@ python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 | `python tools/build.py --base https://x.com` | 公開ドメインを canonical / og / sitemap に反映 |
 | `python tools/release.py --out <dir>` | 別のディレクトリへリリース |
 | `python tools/serve.py --root sites/pose` | 1 サイトだけプレビュー |
+| `python tests/run.py` | 画像不要のチェック：ビルド成果物の更新漏れ、重複 id、インライン JS 構文、manifest、文書リンク（CI が push ごとに実行） |
 
 `release.py` は先に画像を検証し、欠けていれば中止します（一部の段階だけ取得した場合は `--skip-verify`）。対象サイトのディレクトリは削除してから作り直します。`--no-images` はサイトファイルのみをコピーするもので、既存の画像を残す用途には使えません。
 
@@ -132,6 +134,7 @@ ai-image-gallery/
 ├── hub/                # トップページ生成器（ルートの sitemap / robots も出力）
 ├── tools/              # fetch / mid / verify / build / release / serve / update
 ├── deploy/             # デプロイ手順と nginx テンプレート
+├── tests/              # 画像不要のチェック（python tests/run.py）
 └── docs/               # ドキュメントとスクリーンショット
 ```
 

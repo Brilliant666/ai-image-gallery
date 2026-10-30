@@ -6,6 +6,7 @@
 
 Portrait · Pose · Pose Depth · Costume · 12,975 images · Chinese / Japanese UI · Light / Dark
 
+[![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
 [![sites](https://img.shields.io/badge/sites-4-0ea5e9?style=flat-square)](#sites)
 [![images](https://img.shields.io/badge/images-12%2C975-8b5cf6?style=flat-square)](#sites)
@@ -87,6 +88,7 @@ Check the result through `serve.py`, not by opening `dist/index.html` directly: 
 | `python tools/build.py --base https://x.com` | Set the public domain for canonical / og / sitemap |
 | `python tools/release.py --out <dir>` | Release into another directory |
 | `python tools/serve.py --root sites/pose` | Preview one site |
+| `python tests/run.py` | Checks that need no images: build output up to date, duplicate ids, inline JS syntax, manifests, doc links (CI runs it on every push) |
 
 `release.py` verifies images first and stops if any are missing (add `--skip-verify` if you fetched only some tiers). It deletes and recreates each target site directory. `--no-images` copies site files only; it does not keep old images in place.
 
@@ -132,6 +134,7 @@ ai-image-gallery/
 ├── hub/                # hub page generator (also writes root sitemap / robots)
 ├── tools/              # fetch / mid / verify / build / release / serve / update
 ├── deploy/             # deployment guide and nginx template
+├── tests/              # checks that need no images (python tests/run.py)
 └── docs/               # documentation and screenshots
 ```
 

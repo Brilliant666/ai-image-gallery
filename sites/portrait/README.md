@@ -174,7 +174,7 @@ CC0 允许商用、修改、再分发，无需署名。
 ## 🤝 贡献指南
 
 - 译文在 `scripts/translations.py`（`HAIR_ZH` / `STYLE_ZH` / `UI`），改完在仓库根目录跑 `python tools/build.py --site portrait`
-- 提交前请在仓库根目录运行 `python tools/build.py`，并确认 `git status` 里构建产物已一并提交
+- 提交前请在仓库根目录运行 `python tools/build.py` 和 `python tests/run.py`，构建产物要一并提交
 - **请勿提交任何图片文件**，`thumbs/` `img/` `raw/` 已在 `.gitignore` 中
 
 ## 📄 开源协议

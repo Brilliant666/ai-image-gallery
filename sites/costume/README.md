@@ -204,7 +204,7 @@ python tools/release.py --out dist-stage               # 发布前会自动校�
 欢迎补充译文、修正错译、报告 bug。
 
 - 译文在 `scripts/translations.py`（`CAT_ZH` / `TAG_ZH` / `TAG_JA`），改完在仓库根目录跑 `python tools/build.py --site costume` 重新生成
-- 提交前请在仓库根目录运行 `python tools/build.py`，并确认 `git status` 里构建产物已一并提交
+- 提交前请在仓库根目录运行 `python tools/build.py` 和 `python tests/run.py`，构建产物要一并提交
 - **请勿提交任何图片文件**，`thumbs/` `img/` `png/` `raw/` 已在 `.gitignore` 中
 
 ## 📄 开源协议

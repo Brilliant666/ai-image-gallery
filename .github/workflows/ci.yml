@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 3.8 是 README 写明的最低版本，3.13 与服务器（Debian 13）一致
+      - uses: actions/setup-python@v5
+        with:
+          python-version: |
+            3.8
+            3.13
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tests (Python 3.13)
+        run: python3.13 tests/run.py
+
+      - name: Build with minimum Python (3.8)
+        run: |
+          python3.8 tools/build.py
+          git diff --exit-code -- hub sites \
+            || { echo "::error::构建产物与仓库不一致，请运行 python tools/build.py 并提交"; exit 1; }
+
+      # 图片不进仓库，CI 拿不到图片，所以只检查发布脚本本身能跑通、不带图
+      - name: Release without images
+        run: python3.13 tools/release.py --no-images --out /tmp/dist-ci
+
+      - name: update.py check on a clean checkout
+        run: python3.13 tools/update.py --check --no-fetch --ref HEAD

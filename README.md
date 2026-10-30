@@ -6,6 +6,7 @@
 
 人像 · 姿势 · 深度姿势 · 服装 · 12,975 张参考图 · 中日双语 · 浅色 / 深色
 
+[![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
 [![sites](https://img.shields.io/badge/sites-4-0ea5e9?style=flat-square)](#四个站点)
 [![images](https://img.shields.io/badge/images-12%2C975-8b5cf6?style=flat-square)](#四个站点)
@@ -87,6 +88,7 @@ python tools/serve.py      # 预览 http://127.0.0.1:8080/
 | `python tools/build.py --base https://x.com` | 指定正式域名，写入 canonical / og / sitemap |
 | `python tools/release.py --out <目录>` | 发布到指定目录 |
 | `python tools/serve.py --root sites/pose` | 预览单个站点 |
+| `python tests/run.py` | 不依赖图片的检查：构建产物是否最新、重复 id、内联 JS 语法、manifest、文档链接（CI 每次推送都跑） |
 
 `release.py` 发布前会先校验图片，缺图就中止（只下了部分档位时加 `--skip-verify`）。它会先删除再重建目标站点目录。`--no-images` 只放站点文件、不放图片，不能用来保留线上旧图。
 
@@ -132,6 +134,7 @@ ai-image-gallery/
 ├── hub/                # 入口页生成器（同时生成根 sitemap / robots）
 ├── tools/              # fetch / mid / verify / build / release / serve / update
 ├── deploy/             # 部署手册与 nginx 模板
+├── tests/              # 不依赖图片的检查（python tests/run.py）
 └── docs/               # 文档与截图
 ```
 
