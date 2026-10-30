@@ -222,10 +222,11 @@ main{max-width:1680px;margin:0 auto;padding:22px clamp(16px,4vw,48px) 90px}
 .mstage{position:relative;overflow:hidden;border-radius:10px;flex:none}
 .mstage img{position:absolute;inset:0;width:100%;height:100%;
   object-fit:contain;display:block}
-/* 底层缩略图模糊垫底，中图加载完淡入 */
-.mstage .lo{filter:blur(18px)}
+/* 底层清晰缩略图垫底，中图加载完淡入（不加 blur：缩略图放大后仍可辨认，糊成一片反而像没加载） */
 .mstage .hi{opacity:0;transition:opacity .32s ease}
 .mstage .hi.rd{opacity:1}
+/* 换图时瞬间隐藏上一张，不走淡出 */
+.mstage .hi.nt{transition:none}
 .nav{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;border:0;
   background:var(--nav-bg);color:#fff;font-size:21px;cursor:pointer;transition:.15s;
   display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
@@ -584,6 +585,25 @@ const modal=$('#modal'), mimg=$('#mimg'), mimgLo=$('#mimgLo');
 const mstage=$('#mstage'), mwrap=$('.mimg');
 let loT=0;   // 底层模糊图隐藏定时器，连翻时需可取消
 let MI = 0;
+// 预取中图：悬停/按下卡片时先下载，打开灯箱后预取前后各一张。
+// 只留最近几个 Image 引用，下载完的字节留在 HTTP 缓存里，不长期占解码内存。
+const warmed = new Set(), warmRefs = [];
+function warm(u){
+  if (!u || warmed.has(u)) return;
+  warmed.add(u);
+  const im = new Image(); im.decoding = 'async'; im.src = u;
+  warmRefs.push(im); if (warmRefs.length > 6) warmRefs.shift();
+}
+// 悬停 120ms 后预取（划过网格不触发），按下立即预取（触屏比 click 早约 100ms）
+let hoverT=0;
+const cardItem=e=>{ const c=e.target.closest('.card'); return c && VIEW[+c.dataset.i]; };
+grid.addEventListener('pointerover', e=>{
+  const x=cardItem(e); clearTimeout(hoverT);
+  if(x) hoverT=setTimeout(()=>warm(x.im), 120);
+});
+grid.addEventListener('pointerout', ()=>clearTimeout(hoverT));
+grid.addEventListener('pointerdown', e=>{ const x=cardItem(e); if(x) warm(x.im); });
+grid.addEventListener('focusin', e=>{ const x=cardItem(e); if(x) warm(x.im); });
 
 // 把舞台缩到原图 contain 后的真实矩形：两层完全重合，底层 blur 的外溢被舞台裁掉
 function fitStage(){
@@ -612,14 +632,15 @@ function closeM(){
 }
 function showM(){
   const x=VIEW[MI]; if(!x) return;
-  // 先缩略图，再换中图（渐进加载）
-  // 双层：缩略图模糊垫底，中图加载完淡入
+  // 先瞬间隐藏上一张高清层，否则它会在新图上淡出 0.32 秒
+  mimg.onload = null;
+  mimg.classList.add('nt'); mimg.classList.remove('rd'); void mimg.offsetWidth; mimg.classList.remove('nt');
+  // 双层：缩略图垫底，中图加载完淡入
   mimgLo.src = x.th;
   // 舞台尺寸跟着缩略图比例走（缩略图与原图同比例，误差 <0.1%）
   fitStage();
   mimgLo.onload = fitStage;
   mimg.alt = x.i;
-  mimg.classList.remove('rd');
   mimgLo.style.opacity = '1';
   // 淡入完成后收起底层。舞台已把 blur 外溢裁掉，这一步在视觉上无变化
   const settle = () => {
@@ -630,6 +651,7 @@ function showM(){
   mimg.onload = settle;
   mimg.src = x.im;
   if (mimg.complete && mimg.naturalWidth) settle();
+  [VIEW[MI+1], VIEW[MI-1]].forEach(n => n && warm(n.im));
 
   $('#mid').textContent = x.i + ' · ' + nC(x.c);
   $('#mfull').href = x.pg;

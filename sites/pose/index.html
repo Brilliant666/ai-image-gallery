@@ -215,10 +215,11 @@ main{max-width:1600px;margin:0 auto;padding:22px clamp(16px,4vw,48px) 90px}
 .mstage{position:relative;overflow:hidden;border-radius:10px;flex:none}
 .mstage img{position:absolute;inset:0;width:100%;height:100%;
   object-fit:contain;display:block}
-/* 底层缩略图模糊垫底，原图加载完淡入 —— 观感是「对焦」而非「换图」 */
-.mstage .lo{filter:blur(18px)}
+/* 底层清晰缩略图垫底，中图加载完淡入（不加 blur：缩略图放大后仍可辨认，糊成一片反而像没加载） */
 .mstage .hi{opacity:0;transition:opacity .32s ease}
 .mstage .hi.rd{opacity:1}
+/* 换图时瞬间隐藏上一张，不走淡出 */
+.mstage .hi.nt{transition:none}
 .nav{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;border:0;
   background:var(--nav-bg);color:#fff;font-size:21px;cursor:pointer;transition:.15s;
   display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
@@ -618,6 +619,20 @@ grid.addEventListener('keydown', e=>{
   const c=e.target.closest('.card'); if(!c) return;
   e.preventDefault(); openM(+c.dataset.i, VIEWLIST[+c.dataset.i].d);
 });
+// 悬停 120ms 后预取（划过网格不触发），按下立即预取（触屏比 click 早约 100ms）
+let hoverT=0;
+const cardView=e=>{
+  const c=e.target.closest('.card'), it=c&&VIEWLIST[+c.dataset.i]; if(!it) return null;
+  const b=e.target.closest('.strip button');
+  return (b && it.p.v.find(x=>x.a===b.dataset.a)) || it.d;
+};
+grid.addEventListener('pointerover', e=>{
+  const v=cardView(e); clearTimeout(hoverT);
+  if(v) hoverT=setTimeout(()=>warm(midOf(v.f)), 120);
+});
+grid.addEventListener('pointerout', ()=>clearTimeout(hoverT));
+grid.addEventListener('pointerdown', e=>{ const v=cardView(e); if(v) warm(midOf(v.f)); });
+grid.addEventListener('focusin', e=>{ const v=cardView(e); if(v) warm(midOf(v.f)); });
 
 /* ══ 灯箱 ══ */
 const modal=$('#modal'), mimg=$('#mimg'), mimgLo=$('#mimgLo');
@@ -626,6 +641,15 @@ let loT=0;   // 底层模糊图隐藏定时器，连翻时需可取消
 let M={i:0, d:null};
 // img/a/b.png → mid/a/b.webp，规则与 tools/mid.py 的 mid_rel() 一致
 const midOf = f => f.replace(/^img\//, 'mid/').replace(/\.[^./]+$/, '.webp');
+// 预取中图：悬停/按下卡片时先下载，打开灯箱后预取同姿势其余视角。
+// 只留最近几个 Image 引用，下载完的字节留在 HTTP 缓存里，不长期占解码内存。
+const warmed = new Set(), warmRefs = [];
+function warm(u){
+  if (!u || warmed.has(u)) return;
+  warmed.add(u);
+  const im = new Image(); im.decoding = 'async'; im.src = u;
+  warmRefs.push(im); if (warmRefs.length > 8) warmRefs.shift();
+}
 
 // 把舞台缩到原图 contain 后的真实矩形：两层完全重合，底层 blur 的外溢被舞台裁掉
 function fitStage(){
@@ -657,14 +681,16 @@ function showM(){
   const it=VIEWLIST[M.i]; if(!it) return;
   const p=it.p, v=M.d||it.d;
 
-  // 双层：底层缩略图立即显示（模糊），原图加载完淡入覆盖
+  // 先瞬间隐藏上一张高清层，否则它会在新图上淡出 0.32 秒
+  mimg.onload = mimg.onerror = null;
+  mimg.classList.add('nt'); mimg.classList.remove('rd'); void mimg.offsetWidth; mimg.classList.remove('nt');
+  // 双层：底层缩略图立即显示，中图加载完淡入覆盖
   mimgLo.src = v.t;
   // 舞台尺寸跟着缩略图比例走（缩略图与原图同比例，误差 <0.1%）。
   // 先按已知比例摆好，缩略图 onload 再校一次，避免空窗期。
   fitStage();
   mimgLo.onload = fitStage;
   mimg.alt = nN(p)+' '+nA(v.a);
-  mimg.classList.remove('rd');
   // 不加 M.d===v 守卫：换 src 会中止上一次加载，onload 只会为当前图触发。
   // 守卫一旦不满足，原图下载了却不显示，比不显示更糟。
   const settle = () => {
@@ -679,6 +705,7 @@ function showM(){
   mimg.onerror = () => { mimg.onerror = null; mimg.src = v.f; };
   mimg.src = midOf(v.f);
   if (mimg.complete && mimg.naturalWidth) settle();
+  p.v.forEach(x => warm(midOf(x.f)));
 
   $('#mtitle').textContent = nN(p);
   $('#mid').textContent = p.p + ' · ' + nA(v.a);

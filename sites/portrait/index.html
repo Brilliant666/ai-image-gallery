@@ -199,11 +199,13 @@ img{max-width:100%}
   max-width:92vw;max-height:calc(94vh - 72px)}
 .lb-stage img{position:absolute;inset:0;width:100%;height:100%;
   object-fit:contain;display:block}
-/* 底层缩略图模糊垫底，原图加载完淡入 */
+/* 底层清晰缩略图垫底，中图加载完淡入（不加 blur：缩略图放大 1.5 倍仍可辨认，糊成一片反而像没加载） */
 /* transform 会创建层叠上下文，会盖住未定位的 .hi —— 必须显式定层序 */
-.lb-stage .lo{filter:blur(20px);z-index:1}
+.lb-stage .lo{z-index:1}
 .lb-stage .hi{opacity:0;transition:opacity .32s ease;z-index:2}
 .lb-stage .hi.rd{opacity:1}
+/* 换图时瞬间隐藏上一张，不走淡出 */
+.lb-stage .hi.nt{transition:none}
 .lb-figure figcaption{display:flex;align-items:center;gap:16px;color:#eee;
   font-size:.86rem;letter-spacing:.06em;flex-wrap:wrap;justify-content:center}
 .lb-btn{position:absolute;background:rgba(255,255,255,.1);border:0;color:#fff;
@@ -475,6 +477,15 @@ let LB = { list: [], idx: 0, last: null };
 let loT = 0;   // 底层模糊图隐藏定时器，连翻时需可取消
 // img/x.png → mid/x.webp，规则与 tools/mid.py 的 mid_rel() 一致
 const midOf = f => f.replace(/^img\//, 'mid/').replace(/\.[^./]+$/, '.webp');
+// 预取中图：悬停/按下卡片时先下载，打开灯箱后预取前后各一张。
+// 只留最近几个 Image 引用，下载完的字节留在 HTTP 缓存里，不长期占解码内存。
+const warmed = new Set(), warmRefs = [];
+function warm(u){
+  if (!u || warmed.has(u)) return;
+  warmed.add(u);
+  const im = new Image(); im.decoding = 'async'; im.src = u;
+  warmRefs.push(im); if (warmRefs.length > 6) warmRefs.shift();
+}
 
 // 把舞台缩到原图 contain 后的真实矩形：两层完全重合，底层 blur 的外溢被舞台裁掉。
 // 上限沿用 CSS 的 max-width / max-height，避免两处数字各写一遍。
@@ -501,7 +512,10 @@ function showLb(){
   const it = LB.list[LB.idx];
   if (!it) return;
   const img = $('#lb-img'), lo = $('#lb-img-lo');
-  // 双层：缩略图模糊垫底，原图加载完淡入
+  // 先瞬间隐藏上一张高清层，否则它会在新图上淡出 0.32 秒
+  img.onload = img.onerror = null;
+  img.classList.add('nt'); img.classList.remove('rd'); void img.offsetWidth; img.classList.remove('nt');
+  // 双层：缩略图垫底，中图加载完淡入
   lo.src = it.t;
   // 舞台尺寸跟着缩略图比例走（缩略图与原图同比例，误差 <0.1%）
   fitLbStage();
@@ -513,7 +527,6 @@ function showLb(){
   dl.setAttribute('download', it.i + '.png');
   $('#lb-full').href = it.f;
   $('#lb-note').textContent = '';
-  img.classList.remove('rd');
   lo.style.opacity = '1';
   const settle = () => {
     img.classList.add('rd');
@@ -529,6 +542,7 @@ function showLb(){
   };
   img.src = midOf(it.f);
   if (img.complete && img.naturalWidth) settle();
+  [LB.list[LB.idx + 1], LB.list[LB.idx - 1]].forEach(n => n && warm(midOf(n.f)));
   $('#lb-prev').style.visibility = LB.idx > 0 ? 'visible' : 'hidden';
   $('#lb-next').style.visibility = LB.idx < LB.list.length - 1 ? 'visible' : 'hidden';
 }
@@ -557,6 +571,16 @@ grid.addEventListener('click', e => {
   const it = VIEW[+li.dataset.i];
   if (it) openLb(it, VIEW);
 });
+// 悬停 120ms 后预取（划过网格不触发），按下立即预取（触屏比 click 早约 100ms）
+let hoverT = 0;
+const cardItem = e => { const li = e.target.closest('.card'); return li && VIEW[+li.dataset.i]; };
+grid.addEventListener('pointerover', e => {
+  const it = cardItem(e); clearTimeout(hoverT);
+  if (it) hoverT = setTimeout(() => warm(midOf(it.f)), 120);
+});
+grid.addEventListener('pointerout', () => clearTimeout(hoverT));
+grid.addEventListener('pointerdown', e => { const it = cardItem(e); if (it) warm(midOf(it.f)); });
+grid.addEventListener('focusin', e => { const it = cardItem(e); if (it) warm(midOf(it.f)); });
 $('#more').addEventListener('click', addMore);
 if ('IntersectionObserver' in window){
   new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) addMore(); },
