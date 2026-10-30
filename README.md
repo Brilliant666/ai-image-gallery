@@ -32,7 +32,8 @@ ai-image-gallery/
 │   ├── _common.py
 │   ├── fetch.py            ← 下载图片
 │   ├── build.py            ← 构建页面
-│   └── release.py          ← 组装发布目录
+│   ├── release.py          ← 组装发布目录
+│   └── serve.py            ← 本地 HTTP 预览
 ├── deploy/                 ← nginx 配置与部署手册
 └── dist/                   ← 发布产物（gitignored）
 ```
@@ -49,8 +50,13 @@ python tools/fetch.py            # 下载全部图片（首次，约 6.8 GB）
 python tools/build.py            # 构建四个站 + 入口页
 python tools/release.py          # 组装 dist/（图片用硬链接，不额外占盘）
 
-# dist/ 就是站点根，直接用浏览器打开 dist/index.html 即可预览
+# 用 HTTP 服务预览 dist/ —— 这才是 nginx 将要服务的形态
+python tools/serve.py            # http://127.0.0.1:8080/
 ```
+
+> **验收请用 `serve.py`，不要直接双击 `dist/index.html`。**
+> `file://` 与 `http://` 在相对路径、Content-Type、缓存行为上都有差异，
+> 只有 HTTP 服务下的表现才和线上一致。
 
 ### 命令一览
 
@@ -64,6 +70,8 @@ python tools/release.py          # 组装 dist/（图片用硬链接，不额外
 | `python tools/build.py --base https://x.com` | 指定正式域名，写入 canonical / og / sitemap |
 | `python tools/release.py` | 生成 `dist/`，图片硬链接 |
 | `python tools/release.py --no-images` | 只放站点文件，图片沿用服务器上的旧版 |
+| `python tools/serve.py` | 本地 HTTP 预览 `dist/`，自动选空闲端口 |
+| `python tools/serve.py --root sites/pose` | 预览单个站点 |
 
 ---
 
