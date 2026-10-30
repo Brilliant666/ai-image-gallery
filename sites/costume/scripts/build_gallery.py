@@ -323,7 +323,7 @@ footer a:hover{color:var(--ac)}
   .chip{font-size:11px;padding:4px 9px}
 }
 </style>
-<style>__SEO_CSS__</style>
+<style>__SEO_CSS__.seo-intro{--si-max:1680px}</style>
 __FAQ_LD__
 </head>
 <body>

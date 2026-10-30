@@ -49,6 +49,9 @@ TEMPLATE = r"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>__TITLE__</title>
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="description" content="__DESC__">
 <meta name="color-scheme" content="light dark">
 <meta name="robots" content="index,follow,max-image-preview:large">
@@ -321,15 +324,15 @@ def hub_seo(cfg, base):
          "这里是各原站的中文索引镜像：把日文分类、标签和姿势名译成中文，加了组合筛选、搜索和中日切换。"
          "图片著作权归原作者，每个图库页脚都有原站和作者链接。"),
     ]
-    links = [(f"{s['id']}/", s["name"]["zh"]) for s in cfg["sites"]]
+    # 入口页上方的卡片已经链到各图库首页，这里链到各图库的分类索引
+    links = [(f"{s['id']}/browse/", f"{s['name']['zh']} · 分类") for s in cfg["sites"]]
     intro = landing.static_intro(
         ["photoai.life 收录四个 AI 绘画参考图库，共 12,975 张 AI 生成的参考图，可在线浏览、按标签筛选和下载。",
          f"人像集 {stat('portrait', 0)} 张，用来让 AI 生成的角色保持同一张脸，CC0 可商用；"
          f"姿势集与深度姿势集各 {stat('pose', 0)} 个姿势、{stat('pose', 1)} 张，每个姿势 5 个视角，深度图可直接用于 ControlNet；"
          f"服装集 {stat('costume', 0)} 套服装、{stat('costume', 2)} 个标签，标签保留英文关键词，可直接作提示词。"],
         [("图库", "4 个"), ("图片", "12,975 张"), ("语言", "中文 / 日本語"), ("素材", "全部 AI 生成")],
-        links, faq).replace('<a href="browse/">全部分类与标签</a>',
-                            " · ".join(f'<a href="{s["id"]}/browse/">{landing.esc(s["name"]["zh"])}分类</a>' for s in cfg["sites"]))
+        links, faq, more_href=None)
 
     lic = {"portrait": "CC0 1.0 公有领域，可商用、可再分发。",
            "pose": "允许免费用于作品制作（含商用与参考）；禁止再分发、转载、转售图片文件本身。",
@@ -405,7 +408,8 @@ def main():
             .replace("__TITLE__", title)
             .replace("__TITLE_JS__", json.dumps(title, ensure_ascii=False))
             .replace("__SEO_INTRO__", seo["intro"])
-            .replace("</style>", "</style><style>" + landing.SEO_INTRO_CSS + "</style>" + landing.faq_ld_script(seo["faq"]), 1)
+            .replace("</style>", "</style><style>" + landing.SEO_INTRO_CSS
+                     + ".seo-intro{padding:0;margin-top:34px}</style>" + landing.faq_ld_script(seo["faq"]), 1)
             .replace("__DESC__", desc)
             .replace("__LIC__", lic_js)
             .replace("__LD__", ld)

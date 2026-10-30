@@ -41,7 +41,8 @@ def landing_dirs(sd):
         return json.load(f)["dirs"]
 
 # 入口页与根级文件（sitemap / robots / 社交分享图）
-HUB_FILES = ["index.html", "sitemap.xml", "robots.txt", "og-cover.jpg", "llms.txt"]
+HUB_FILES = ["index.html", "sitemap.xml", "robots.txt", "og-cover.jpg", "llms.txt",
+             "favicon.ico", "favicon.svg", "apple-touch-icon.png", "icon-512.png"]
 
 
 def link_or_copy(src, dst):

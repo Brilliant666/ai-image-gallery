@@ -294,7 +294,7 @@ img{max-width:100%}
   .seg{padding:9px 14px}
 }
 </style>
-<style>__SEO_CSS__</style>
+<style>__SEO_CSS__.seo-intro{--si-max:1280px}</style>
 __FAQ_LD__
 </head>
 <body>

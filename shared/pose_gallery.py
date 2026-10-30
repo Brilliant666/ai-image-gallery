@@ -338,7 +338,7 @@ footer a:hover{color:var(--ac)}
   .switch button{padding:0 7px;font-size:11px}
 }
 </style>
-<style>__SEO_CSS__</style>
+<style>__SEO_CSS__.seo-intro{--si-max:1600px}</style>
 __FAQ_LD__
 </head>
 <body>

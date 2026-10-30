@@ -118,6 +118,9 @@ def _page(site, *, slug, title, h1, description, crumbs, body, ld, depth):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(title)}</title>
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="description" content="{esc(description)}">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="{esc(canonical)}">
@@ -248,22 +251,49 @@ def sitemap(site_url, urls, path):
         f.write("</urlset>\n")
 
 
-def static_intro(paras, facts, links, faq):
-    """主画廊页里的静态介绍块：不依赖 JS，搜索引擎和 AI 直接可读。"""
-    return ('<section class="seo-intro" aria-label="关于本图库">'
-            + "".join(f"<p>{esc(p)}</p>" for p in paras)
-            + ('<ul class="seo-facts">' + "".join(f"<li><b>{esc(k)}</b> {esc(v)}</li>" for k, v in facts) + "</ul>" if facts else "")
-            + ('<p class="seo-links">按分类浏览：' + " · ".join(
-                f'<a href="{esc(h)}">{esc(t)}</a>' for h, t in links) + ' · <a href="browse/">全部分类与标签</a></p>' if links else "")
-            + '<details class="seo-faq"><summary>常见问题</summary><dl>'
-            + "".join(f"<dt>{esc(q)}</dt><dd>{esc(a)}</dd>" for q, a in faq) + "</dl></details></section>")
+def static_intro(paras, facts, links, faq, more_href="browse/", more_label="全部分类与标签"):
+    """主画廊页底部的「关于本站」卡片：不依赖 JS，搜索引擎和 AI 直接可读。
+    视觉上收成一张卡：一句话介绍 + 数据小标签 + 浏览链接；完整介绍与 FAQ 收在折叠里。"""
+    lead, rest = (paras[0], paras[1:]) if paras else ("", [])
+    return ('<section class="seo-intro" aria-label="关于本站"><div class="seo-card">'
+            + '<p class="seo-eyebrow">关于本站</p>'
+            + (f'<p class="seo-lead">{esc(lead)}</p>' if lead else "")
+            + ('<ul class="seo-facts">' + "".join(f"<li><span>{esc(k)}</span>{esc(v)}</li>" for k, v in facts) + "</ul>" if facts else "")
+            + ('<nav class="seo-links" aria-label="按分类浏览">' + "".join(
+                f'<a href="{esc(h)}">{esc(t)}</a>' for h, t in links)
+               + (f'<a class="seo-all" href="{esc(more_href)}">{esc(more_label)} →</a>' if more_href else "") + "</nav>" if links else "")
+            + '<details class="seo-more"><summary>更多介绍与常见问题</summary>'
+            + "".join(f"<p>{esc(p)}</p>" for p in rest)
+            + "<dl>" + "".join(f"<dt>{esc(q)}</dt><dd>{esc(a)}</dd>" for q, a in faq) + "</dl></details>"
+            + "</div></section>")
 
 
-SEO_INTRO_CSS = (".seo-intro{max-width:1600px;margin:8px auto 0;padding:0 clamp(16px,4vw,48px) 28px;"
-                 "color:var(--tx3,#888);font-size:12.5px;line-height:1.8}"
-                 ".seo-intro p{margin:0 0 6px}.seo-intro a{color:inherit}"
-                 ".seo-facts{display:flex;flex-wrap:wrap;gap:4px 18px;margin:6px 0;padding:0;list-style:none}"
-                 ".seo-faq summary{cursor:pointer;margin-top:6px}.seo-faq dt{font-weight:600;margin-top:8px}.seo-faq dd{margin:2px 0 0}")
+# 各页面的主题变量名不同：姿势 / 服装 / 入口页用 --tx* / --line / --panel，人像集用 --fg / --muted / --paper。
+# 这里用 var(a, var(b, 兜底色)) 两套都兼容，深浅主题跟随页面。
+SEO_INTRO_CSS = (
+    ".seo-intro{--si-tx:var(--tx,var(--fg,#16191f));--si-tx2:var(--tx2,var(--muted,#525b6a));"
+    "--si-tx3:var(--tx3,var(--muted,#8a93a3));--si-line:var(--line,#e3e7ed);"
+    "--si-bg:var(--panel,var(--paper,#fff));--si-ac:var(--ac,var(--fg,#2563eb));"
+    "max-width:var(--si-max,1180px);margin:0 auto;padding:0 clamp(16px,4vw,48px) 56px}"
+    ".seo-card{border:1px solid var(--si-line);border-radius:16px;background:var(--si-bg);"
+    "padding:22px clamp(18px,3vw,28px);font-size:13.5px;line-height:1.75;color:var(--si-tx2)}"
+    ".seo-eyebrow{margin:0 0 6px;font-size:11px;font-weight:600;letter-spacing:.14em;color:var(--si-tx3)}"
+    ".seo-lead{margin:0 0 14px;color:var(--si-tx);font-size:14.5px;max-width:880px}"
+    ".seo-facts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0;list-style:none}"
+    ".seo-facts li{border:1px solid var(--si-line);border-radius:999px;padding:3px 11px;font-size:12px;color:var(--si-tx)}"
+    ".seo-facts li span{color:var(--si-tx3);margin-right:6px}"
+    ".seo-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 4px;font-size:13px}"
+    ".seo-links a{color:var(--si-tx2);text-decoration:none;border-bottom:1px solid transparent}"
+    ".seo-links a:hover{color:var(--si-ac);border-bottom-color:currentColor}"
+    ".seo-links .seo-all{color:var(--si-ac);font-weight:600}"
+    ".seo-more{margin-top:12px;border-top:1px dashed var(--si-line);padding-top:10px}"
+    ".seo-more summary{cursor:pointer;color:var(--si-tx3);font-size:12.5px;list-style:none}"
+    ".seo-more summary::-webkit-details-marker{display:none}"
+    ".seo-more summary::before{content:'＋';margin-right:6px}.seo-more[open] summary::before{content:'－'}"
+    ".seo-more p{margin:10px 0 0;max-width:880px}"
+    ".seo-more dl{margin:6px 0 0;max-width:880px}.seo-more dt{margin-top:12px;color:var(--si-tx);font-weight:600}"
+    ".seo-more dd{margin:3px 0 0}"
+    "@media(max-width:600px){.seo-card{border-radius:12px;padding:18px 16px}}")
 
 
 def faq_ld_script(faq):

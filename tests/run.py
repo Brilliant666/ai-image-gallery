@@ -193,6 +193,12 @@ class Landing(unittest.TestCase):
             for href in re.findall(r'href="([^"#]+)', read(rel)):
                 if re.match(r"[a-z]+:", href):
                     continue
+                if href.startswith("/"):
+                    # 站点根的绝对路径（图标等）：photoai.life 根对应仓库的 hub/
+                    target = os.path.join(ROOT, "hub", html.unescape(href).lstrip("/"))
+                    if not os.path.exists(target):
+                        problems.append(f"{rel} → {href}")
+                    continue
                 target = os.path.normpath(os.path.join(base, html.unescape(href)))
                 if target == sites_dir:
                     target = os.path.join(ROOT, "hub")
@@ -257,6 +263,22 @@ class Landing(unittest.TestCase):
             text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body))
             self.assertGreater(len(text), 500, f"{rel} 去掉 JS 后可读文字太少")
             self.assertIn('"@type":"FAQPage"', h, f"{rel} 缺 FAQPage")
+            # 介绍卡片：FAQ 收在折叠里，不直接铺满页面底部
+            self.assertEqual(h.count('class="seo-intro"'), 1, rel)
+            self.assertIn('<details class="seo-more">', h, rel)
+
+    def test_icons(self):
+        # 入口页与落地页引用根级图标，文件都在 hub/ 里且会被 release.py 发布
+        icons = ["favicon.ico", "favicon.svg", "apple-touch-icon.png"]
+        for fn in icons + ["icon-512.png"]:
+            self.assertGreater(os.path.getsize(os.path.join(ROOT, "hub", fn)), 300, fn)
+        rel_src = read("tools/release.py")
+        for fn in icons:
+            self.assertIn(f'"{fn}"', rel_src, f"release.py 没发布 {fn}")
+        for rel in ["hub/index.html"] + self.pages:
+            h = read(rel)
+            for fn in icons:
+                self.assertIn(f'href="/{fn}"', h, f"{rel} 没引用 {fn}")
 
 
 class Manifests(unittest.TestCase):
