@@ -1,0 +1,79 @@
+# 加第 N 个站
+
+新站点只要满足下面的目录约定，`tools/fetch.py`、`tools/mid.py`、`tools/build.py`、`tools/release.py` 都不用改。
+
+## 1. 建目录
+
+```
+sites/<新站id>/
+├── scripts/
+│   ├── build_gallery.py    # 必填
+│   ├── download.py         # 必填
+│   └── verify.py           # 建议
+├── data/                   # 结构化数据（入库）
+├── index.html              # 构建产物（入库，便于直接预览）
+├── LICENSE
+├── NOTICE.md               # 该站单独的授权说明
+└── README.md
+```
+
+| 脚本 | 约定 |
+|---|---|
+| `scripts/build_gallery.py` | 读环境变量 `SITE_URL`，输出 `index.html`、`data/`、`robots.txt`、`sitemap.xml`、`404.html`。站点根用 `dirname(dirname(__file__))` 自己算，不依赖当前目录 |
+| `scripts/download.py <tier> [workers]` | 幂等下载：已存在且大于 1 KB 的文件跳过；失败时 `sys.exit(1)` |
+| `scripts/verify.py` | 校验完整性，失败时 `sys.exit(1)` |
+
+结构和姿势集相同的站，直接复用 `shared/pose_gallery.py`，只写一份 `config.py`（参考 `sites/pose/config.py`）。
+
+## 2. 在 `sites.json` 追加一条
+
+```json
+{
+  "id": "new-site",
+  "code": "NEW-DB-01",
+  "name": { "zh": "新站名", "ja": "新サイト名" },
+  "desc": { "zh": "一句话说明。", "ja": "一文で説明。" },
+  "stats": [{ "v": "1234", "l": { "zh": "图片", "ja": "画像" } }],
+  "license": "cc0",
+  "source": "https://new-site.pages.dev/",
+  "cover": "thumbs/cover.webp",
+  "coverPos": "center 30%",
+  "tiers": ["thumb", "full"],
+  "imageDirs": ["thumbs", "mid", "img"]
+}
+```
+
+| 字段 | 说明 |
+|---|---|
+| `id` | 唯一标识，同时是目录名和 URL 路径 |
+| `code` | 入口页封面左下角的编号 |
+| `cover` | 相对站点目录的封面路径 |
+| `coverPos` | 封面框是 16:10，竖图必然裁切：脸部特写用 `25%`–`35%`，全身图用 `0%`–`10%`，主体居中用 `50%` |
+| `tiers` | 下载档位，对应 `download.py` 的参数 |
+| `imageDirs` | `release.py` 硬链接的目录；含 `mid` 时 `mid.py` 会为该站生成中图 |
+| `license` | `cc0` / `conditional` / `restricted`，决定入口页卡片上的授权徽章 |
+
+站点在入口页的顺序 = `sites.json` 数组顺序。
+
+## 3. 构建
+
+```bash
+python tools/fetch.py --site new-site
+python tools/mid.py --site new-site      # imageDirs 含 mid 时
+python tools/build.py
+python tools/release.py
+python tools/serve.py
+```
+
+上线到已有服务器的步骤见 [DEPLOY.md](../deploy/DEPLOY.md) §6。
+
+## 设计约定
+
+新站点请保持一致：
+
+- 主题切换 `[☀ Light][☾ Dark]`，默认浅色
+- 语言切换 `[中文][日本語]`，默认中文，中文在左
+- `<head>` 内用同步脚本应用已存偏好，避免刷新闪白
+- 单文件 `index.html`，数据内嵌，零外部依赖
+- 分页加 `IntersectionObserver` 预取，不一次渲染全部卡片
+- 灯箱底图用清晰缩略图，不加模糊；中图到达后淡入
