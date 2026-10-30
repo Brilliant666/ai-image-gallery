@@ -231,6 +231,13 @@ main{max-width:1600px;margin:0 auto;padding:22px clamp(16px,4vw,48px) 90px}
 .card img{opacity:0;transition:opacity .32s ease}
 .card img.ld{opacity:1}
 .badge{position:absolute;top:10px;left:10px;display:flex;gap:6px}
+/* 卡片下载原图：图片右上角，与左上角编号对称 */
+.ph .dl{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;text-decoration:none;
+  background:rgba(13,15,18,.62);color:#fff;backdrop-filter:blur(4px);
+  opacity:.78;transition:opacity .15s,background .15s,color .15s}
+.ph .dl:hover{opacity:1;background:var(--ac);color:var(--on-ac)}
+.ph .dl svg{display:block}
 .badge span{background:var(--badge-bg);color:#fff;font-size:11px;padding:3px 8px;border-radius:99px;
   backdrop-filter:blur(4px);font-variant-numeric:tabular-nums}
 .badge span.alt{background:var(--ac);color:var(--on-ac);font-weight:700}
@@ -266,7 +273,12 @@ main{max-width:1600px;margin:0 auto;padding:22px clamp(16px,4vw,48px) 90px}
   background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--sh)}
 .mimg{position:relative;background:var(--imgbg);border-radius:12px;display:flex;align-items:center;
   justify-content:center;min-height:0;height:min(78vh,900px);overflow:hidden}
-.mimg img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.mimg img{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;display:block}
+/* 底层缩略图模糊垫底，原图加载完淡入 —— 观感是「对焦」而非「换图」 */
+.mimg .lo{filter:blur(18px);transform:scale(1.04)}
+.mimg .hi{opacity:0;transition:opacity .32s ease}
+.mimg .hi.rd{opacity:1}
 .nav{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;border:0;
   background:var(--nav-bg);color:#fff;font-size:21px;cursor:pointer;transition:.15s;
   display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
@@ -386,7 +398,8 @@ footer a:hover{color:var(--ac)}
   <div class="mbox">
     <button class="mclose" id="mclose" aria-label="close">×</button>
     <div class="mimg">
-      <img id="mimg" alt="">
+      <img id="mimgLo" class="lo" alt="" aria-hidden="true">
+      <img id="mimg" class="hi" alt="">
       <button class="nav l" id="mprev" aria-label="prev">‹</button>
       <button class="nav r" id="mnext" aria-label="next">›</button>
     </div>
@@ -613,7 +626,9 @@ function cardPose(p, d, i){
     '</button>').join('');
   return '<article class="card" tabindex="0" data-i="'+i+'">'+
     '<div class="ph"><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(d.t)+'" alt="'+esc(nN(p))+'">'+
-      '<div class="badge"><span>'+esc(p.p)+'</span></div></div>'+
+      '<div class="badge"><span>'+esc(p.p)+'</span></div>'+
+      '<a class="dl" href="'+esc(d.f)+'" download="'+esc(p.p + '-' + d.a + '.png')+'" title="下载原图" aria-label="下载原图">'+
+        '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg></a></div>'+
     '<div class="meta"><h3>'+esc(nN(p))+'</h3>'+
       '<div class="id">'+esc(nS(p.s))+' · '+esc(p.p)+'</div>'+
       '<div class="cat">'+esc(nC(p.c))+'</div></div>'+
@@ -623,7 +638,9 @@ function cardPose(p, d, i){
 function cardImg(p, v, i){
   return '<article class="card" tabindex="0" data-i="'+i+'">'+
     '<div class="ph"><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(v.t)+'" alt="'+esc(nN(p))+'">'+
-      '<div class="badge"><span class="alt">'+esc(nA(v.a))+'</span></div></div>'+
+      '<div class="badge"><span class="alt">'+esc(nA(v.a))+'</span></div>'+
+      '<a class="dl" href="'+esc(v.f)+'" download="'+esc(p.p + '-' + v.a + '.png')+'" title="下载原图" aria-label="下载原图">'+
+        '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg></a></div>'+
     '<div class="meta"><h3>'+esc(nN(p))+'</h3>'+
       '<div class="id">'+esc(p.p)+' · '+esc(nA(v.a))+'</div>'+
       '<div class="cat">'+esc(nS(p.s))+' · '+esc(nC(p.c))+'</div></div></article>';
@@ -657,7 +674,7 @@ grid.addEventListener('keydown', e=>{
 });
 
 /* ══ 灯箱 ══ */
-const modal=$('#modal'), mimg=$('#mimg');
+const modal=$('#modal'), mimg=$('#mimg'), mimgLo=$('#mimgLo');
 let M={i:0, d:null};
 
 function openM(i, v){
@@ -678,11 +695,15 @@ function showM(){
   const it=VIEWLIST[M.i]; if(!it) return;
   const p=it.p, v=M.d||it.d;
 
-  mimg.src = v.t;
-  const full=new Image();
-  full.onload=()=>{ if(M.d===v) mimg.src=v.f; };
-  full.src = v.f;
+  // 双层：底层缩略图立即显示（模糊），原图加载完淡入覆盖
+  mimgLo.src = v.t;
   mimg.alt = nN(p)+' '+nA(v.a);
+  mimg.classList.remove('rd');
+  // 不加 M.d===v 守卫：换 src 会中止上一次加载，onload 只会为当前图触发。
+  // 守卫一旦不满足，原图下载了却不显示，比不显示更糟。
+  mimg.onload = () => mimg.classList.add('rd');
+  mimg.src = v.f;
+  if (mimg.complete && mimg.naturalWidth) mimg.classList.add('rd');
 
   $('#mtitle').textContent = nN(p);
   $('#mid').textContent = p.p + ' · ' + nA(v.a);

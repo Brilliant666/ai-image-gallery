@@ -193,8 +193,13 @@ img{max-width:100%}
 .lightbox[hidden]{display:none}
 .lb-figure{margin:0;max-width:92vw;max-height:94vh;display:flex;flex-direction:column;
   align-items:center;gap:14px}
-.lb-figure img{max-width:92vw;max-height:calc(94vh - 72px);width:auto;height:auto;
-  object-fit:contain;border-radius:10px}
+.lb-stage{display:grid;place-items:center;max-width:92vw;max-height:calc(94vh - 72px)}
+.lb-stage img{grid-area:1/1;max-width:92vw;max-height:calc(94vh - 72px);width:auto;height:auto;
+  object-fit:contain;border-radius:10px;display:block}
+/* 底层缩略图模糊垫底，原图加载完淡入 */
+.lb-stage .lo{filter:blur(20px);transform:scale(1.03)}
+.lb-stage .hi{opacity:0;transition:opacity .32s ease}
+.lb-stage .hi.rd{opacity:1}
 .lb-figure figcaption{display:flex;align-items:center;gap:16px;color:#eee;
   font-size:.86rem;letter-spacing:.06em;flex-wrap:wrap;justify-content:center}
 .lb-btn{position:absolute;background:rgba(255,255,255,.1);border:0;color:#fff;
@@ -302,7 +307,10 @@ img{max-width:100%}
   <button id="lb-prev" class="lb-btn lb-prev" type="button" aria-label="上一张">‹</button>
   <button id="lb-next" class="lb-btn lb-next" type="button" aria-label="下一张">›</button>
   <figure class="lb-figure">
-    <img id="lb-img" alt="">
+    <div class="lb-stage">
+      <img id="lb-img-lo" class="lo" alt="" aria-hidden="true">
+      <img id="lb-img" class="hi" alt="">
+    </div>
     <figcaption>
       <span id="lb-label"></span>
       <a id="lb-dl" class="btn-primary" href="#" download>下载原图</a>
@@ -455,18 +463,20 @@ function openLb(it, list){
 function showLb(){
   const it = LB.list[LB.idx];
   if (!it) return;
-  const img = $('#lb-img');
-  img.src = it.t;
+  const img = $('#lb-img'), lo = $('#lb-img-lo');
+  // 双层：缩略图模糊垫底，原图加载完淡入
+  lo.src = it.t;
   img.alt = labelOf(it);
   $('#lb-label').textContent = labelOf(it) + '　' + it.w + '×' + it.h;
   const dl = $('#lb-dl');
   dl.href = it.f;
   dl.setAttribute('download', it.i + '.png');
-  const full = new Image();
-  full.onload = () => { if (LB.list[LB.idx] === it) img.src = it.f; };
-  full.onerror = () => { $('#lb-note').textContent = LANG === 'ja' ? '（原寸未取得）' : '（原图未下载）'; };
-  full.src = it.f;
   $('#lb-note').textContent = '';
+  img.classList.remove('rd');
+  img.onload = () => img.classList.add('rd');
+  img.onerror = () => { $('#lb-note').textContent = LANG === 'ja' ? '（原寸未取得）' : '（原图未下载）'; };
+  img.src = it.f;
+  if (img.complete && img.naturalWidth) img.classList.add('rd');
   $('#lb-prev').style.visibility = LB.idx > 0 ? 'visible' : 'hidden';
   $('#lb-next').style.visibility = LB.idx < LB.list.length - 1 ? 'visible' : 'hidden';
 }

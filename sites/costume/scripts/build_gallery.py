@@ -226,7 +226,13 @@ main{max-width:1680px;margin:0 auto;padding:22px clamp(16px,4vw,48px) 90px}
 .badge span{background:var(--badge-bg);color:#fff;font-size:10.5px;padding:3px 8px;border-radius:99px;
   backdrop-filter:blur(4px);font-variant-numeric:tabular-nums;letter-spacing:.03em}
 .badge span.cat{background:var(--ac);color:var(--on-ac);font-weight:700}
-.meta{padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.meta{padding:9px 12px;display:flex;align-items:center;gap:8px}
+.meta .dl{margin-left:auto;display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;letter-spacing:.06em;color:var(--tx3);text-decoration:none;
+  border:1px solid var(--line2);border-radius:999px;padding:2px 8px 2px 6px;
+  transition:.15s;flex:none}
+.meta .dl:hover{color:var(--tx);border-color:var(--tx3);background:var(--hover)}
+.meta .dl svg{display:block}
 .meta .mid{font-family:var(--mono);font-size:11px;color:var(--tx3);letter-spacing:.04em}
 .meta .mcat{font-size:11px;color:var(--tx2);white-space:nowrap}
 /* 标签改为悬停浮层，不占卡片高度 */
@@ -256,7 +262,12 @@ main{max-width:1680px;margin:0 auto;padding:22px clamp(16px,4vw,48px) 90px}
   background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--sh)}
 .mimg{position:relative;background:var(--imgbg);border-radius:12px;display:flex;align-items:center;
   justify-content:center;min-height:0;height:min(80vh,940px);overflow:hidden}
-.mimg img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.mimg img{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;display:block}
+/* 底层缩略图模糊垫底，中图加载完淡入 */
+.mimg .lo{filter:blur(18px);transform:scale(1.04)}
+.mimg .hi{opacity:0;transition:opacity .32s ease}
+.mimg .hi.rd{opacity:1}
 .nav{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;border:0;
   background:var(--nav-bg);color:#fff;font-size:21px;cursor:pointer;transition:.15s;
   display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
@@ -365,7 +376,8 @@ footer a:hover{color:var(--ac)}
   <div class="mbox">
     <button class="mclose" id="mclose" aria-label="close">×</button>
     <div class="mimg">
-      <img id="mimg" alt="">
+      <img id="mimgLo" class="lo" alt="" aria-hidden="true">
+      <img id="mimg" class="hi" alt="">
       <button class="nav l" id="mprev" aria-label="prev">‹</button>
       <button class="nav r" id="mnext" aria-label="next">›</button>
     </div>
@@ -571,7 +583,9 @@ function card(x, i){
   return '<article class="card" tabindex="0" data-i="'+i+'">'+
     '<div class="ph"><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(x.th)+'" alt="'+esc(x.i)+'">'+
       '<div class="tagbar">'+tags+over+'</div></div>'+
-    '<div class="meta"><span class="mid">'+esc(x.i)+'</span><span class="mcat">'+esc(nC(x.c))+'</span></div></article>';
+    '<div class="meta"><span class="mid">'+esc(x.i)+'</span><span class="mcat">'+esc(nC(x.c))+'</span>'+
+      '<a class="dl" href="'+esc(x.pg)+'" download="'+esc(x.i+'.png')+'" title="下载原图 PNG" aria-label="下载原图 PNG">'+
+        '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg><span>PNG</span></a></div></article>';
 }
 
 // 已在缓存中的图片不会触发 load，直接补渐显类
@@ -603,7 +617,7 @@ grid.addEventListener('keydown', e=>{
 });
 
 /* ── 灯箱 ── */
-const modal=$('#modal'), mimg=$('#mimg');
+const modal=$('#modal'), mimg=$('#mimg'), mimgLo=$('#mimgLo');
 let MI = 0;
 
 function openM(i){
@@ -623,11 +637,13 @@ function closeM(){
 function showM(){
   const x=VIEW[MI]; if(!x) return;
   // 先缩略图，再换中图（渐进加载）
-  mimg.src = x.th;
-  const mid = new Image();
-  mid.onload = ()=>{ if(VIEW[MI]===x) mimg.src = x.im; };
-  mid.src = x.im;
+  // 双层：缩略图模糊垫底，中图加载完淡入
+  mimgLo.src = x.th;
   mimg.alt = x.i;
+  mimg.classList.remove('rd');
+  mimg.onload = () => mimg.classList.add('rd');
+  mimg.src = x.im;
+  if (mimg.complete && mimg.naturalWidth) mimg.classList.add('rd');
 
   $('#mid').textContent = x.i + ' · ' + nC(x.c);
   $('#mfull').href = x.pg;
