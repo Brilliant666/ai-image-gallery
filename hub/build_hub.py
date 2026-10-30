@@ -138,7 +138,8 @@ footer{margin-top:38px;padding-top:16px;border-top:1px solid var(--line);
   color:var(--tx3);font-size:11.5px;line-height:1.8}
 .ft{margin:0 0 6px;font-size:10.5px;font-weight:600;letter-spacing:.16em;
   text-transform:uppercase;color:var(--tx3);opacity:.8}
-.credits{list-style:none;margin:0 0 6px;padding:0;max-width:540px}
+.credits{list-style:none;margin:0 0 6px;padding:0;max-width:940px;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 34px}
 .credits li{display:flex;align-items:baseline;gap:9px;padding:2px 0}
 .c-site{min-width:78px;font-size:12px;font-weight:600;color:var(--tx2);
   text-decoration:none;border-bottom:1px solid transparent}
@@ -150,6 +151,7 @@ footer{margin-top:38px;padding-top:16px;border-top:1px solid var(--line);
 footer .note{margin:0;color:var(--tx3);opacity:.85}
 
 @media(max-width:820px){ .cards{grid-template-columns:1fr} }
+@media(max-width:720px){ .credits{grid-template-columns:1fr} }
 @media(max-width:520px){
   .card{grid-template-columns:112px 1fr}
   .info{padding:14px 15px 13px;gap:6px}
