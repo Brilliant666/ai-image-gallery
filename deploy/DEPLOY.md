@@ -11,7 +11,7 @@
 | 项 | 要求 |
 |---|---|
 | 系统 | Ubuntu 20.04+ / Debian 11+ |
-| git | 任意版本（更新走 `git fetch` + `reset --hard`，见 §4） |
+| git | 任意版本（更新用 `tools/update.py`，见 §4） |
 | Python | 3.8+；`tools/mid.py` 需要 Pillow（`apt install python3-pil`），其余只用标准库 |
 | 磁盘 | ≥ 10 GB 可用（图片 6.8 GB + 中图约 290 MB；硬链接不额外占盘） |
 | 内存 | ≥ 512 MB |
@@ -162,12 +162,13 @@ curl -s https://实际域名.com/pose/ | grep -o 'rel="canonical" href="[^"]*"'
 都是**构建产物**，每次 `build.py --base` 都会按正式域名重写。
 也就是说：**构建完，工作区必然是「脏」的。**
 
-所以**不要用 `git pull`**——它会在这些文件上报本地改动冲突而中止。改用强制对齐：
+所以**不要用 `git pull`**——它会在这些文件上报本地改动冲突而中止。
+也**不要直接 `git reset --hard`**——它会连手改过的源码一起覆盖，且不留痕迹
+（2026-10-30 只打在服务器上的分页补丁就是这样丢的）。用 `tools/update.py`：
 
 ```bash
 cd /srv/ai-image-gallery
-git fetch origin
-git reset --hard origin/main      # 丢弃上次构建产物，源码对齐到远端
+python3 tools/update.py           # fetch，丢弃构建产物；发现手改文件就中止并列出
 python3 tools/mid.py              # 只补新增的中图
 python3 tools/build.py --base https://实际域名.com
 python3 tools/release.py --out dist-stage
@@ -188,8 +189,14 @@ mv -T dist-stage dist-prev        # 对调后暂存目录里是旧版，留作�
 否则目标会被当成父目录，命令报错退出。只更新了部分站点时，循环里只写那几个。
 对调完成后不需要 reload nginx。
 
-`git reset --hard` 只作用于仓库跟踪的文件，
-**不会碰图片目录**——`sites/*/{thumbs,mid,img,png,raw}` 都在 `.gitignore` 里。
+`update.py` 把改动分两类：`build.py` 会重写的构建产物直接丢弃；其他文件（源码、配置）
+默认**中止并列出**，什么都不改。确认要丢弃时加 `--force`，脚本会先把 diff 和原文件备份到
+`../ai-image-gallery-update-backups/<时间>-<旧提交>/` 再对齐。`--check` 只检查不改动。
+
+服务器上需要的修改，**一律提交进仓库**再部署，不要只改服务器上的文件。
+
+`update.py` 底层仍是 `git reset --hard`，只作用于仓库跟踪的文件，
+**不会碰图片目录**——`sites/*/{thumbs,mid,img,png,raw}` 都在 `.gitignore` 里，`dist-*/` 也不受影响。
 
 **图片不需要重新下载** —— `fetch.py` 幂等，已存在文件跳过。
 新增站点时才需要再跑一次 `python3 tools/fetch.py --site <新站id>`。
@@ -220,7 +227,7 @@ done
 需要回到更早的版本时，按提交重建再对调：
 
 ```bash
-git reset --hard <目标提交>
+python3 tools/update.py --ref <目标提交>
 python3 tools/build.py --base https://实际域名.com
 python3 tools/release.py --out dist-stage
 # 检查后按 §4 对调
@@ -231,7 +238,7 @@ python3 tools/release.py --out dist-stage
 ## 6. 加新站之后
 
 ```bash
-git fetch origin && git reset --hard origin/main
+python3 tools/update.py
 python3 tools/fetch.py --site <新站id>      # 只下新站的图
 python3 tools/mid.py --site <新站id>        # imageDirs 含 mid 时
 python3 tools/build.py --base https://实际域名.com
@@ -253,7 +260,8 @@ python3 tools/release.py --out dist-stage
 | 磁盘暴涨 | 图片被复制而非硬链接 | `df -h` 对比 `du -sh dist`；确认同盘 |
 | `fetch.py` 大量失败 | 原站不可达或被限速 | 降并发 `--workers 4` |
 | `detected dubious ownership` | 目录属主与执行用户不一致（常见于从别处 rsync 过来的目录） | `git config --global --add safe.directory /srv/ai-image-gallery` |
-| `git pull` 报本地改动冲突 | 构建产物被 `--base` 重写过 | 改用 `git fetch && git reset --hard origin/main`（见 §4） |
+| `git pull` 报本地改动冲突 | 构建产物被 `--base` 重写过 | 改用 `python3 tools/update.py`（见 §4） |
+| `update.py` 中止并列出文件 | 服务器上有手改的源码或配置 | 需要保留就提交进仓库；确认可丢弃再加 `--force`（会先备份） |
 | `git: command not found` | 服务器没装 git | `apt-get update && apt-get install -y git` |
 | `Connecting to … port 22` 后立刻 `kex_exchange_identification: Connection closed` | ① 连的不是当前源站 IP；② 本机开着 Clash 等 TUN 模式，SSH 被代理断开 | ① 核对 `~/.ssh/config` 的 `HostName`；② 临时关闭 TUN，或让 SSH 直连物理网卡 |
 | 灯箱一直显示缩略图、Network 里 `mid/*.webp` 404 | 没跑 `mid.py`，或 `sites.json` 的 `imageDirs` 没有 `mid` | 跑 `python3 tools/mid.py` 后重新 release |

@@ -112,8 +112,8 @@ python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 Web ルートを `dist/` に向けます。`dist/` はフラット構成（`index.html` + `portrait/` + `pose/` + …）なので、nginx の `alias` は不要です。
 
 ```bash
-# サーバー更新：ビルドで作業ツリーが変わるため pull ではなく reset
-git fetch origin && git reset --hard origin/main
+# サーバー更新：ビルド成果物は破棄、手で変更したファイルがあれば中止して一覧表示
+python3 tools/update.py
 python3 tools/mid.py
 python3 tools/build.py --base https://あなたのドメイン
 python3 tools/release.py --out dist-stage   # まず一時ディレクトリへ。確認後にサイト単位で dist/ と入れ替え
@@ -129,7 +129,7 @@ ai-image-gallery/
 ├── sites/<id>/         # 各サイト：スクリプト、データ、ビルド成果物、NOTICE
 ├── shared/             # ポーズ / デプスで共用するページ生成器と日中辞書
 ├── hub/                # トップページ生成器（ルートの sitemap / robots も出力）
-├── tools/              # fetch / mid / build / release / serve
+├── tools/              # fetch / mid / build / release / serve / update
 ├── deploy/             # デプロイ手順と nginx テンプレート
 └── docs/               # ドキュメントとスクリーンショット
 ```

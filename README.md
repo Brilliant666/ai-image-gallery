@@ -112,8 +112,8 @@ python tools/serve.py      # 预览 http://127.0.0.1:8080/
 站点根指向 `dist/`。`dist/` 是扁平结构（`index.html` + `portrait/` + `pose/` + …），入口页的相对链接直接命中，nginx 不需要 `alias`。
 
 ```bash
-# 服务器更新：构建产物会让工作区变脏，所以用 reset 而不是 pull
-git fetch origin && git reset --hard origin/main
+# 服务器更新：丢弃构建产物；有手改文件时中止并列出，不会悄悄覆盖
+python3 tools/update.py
 python3 tools/mid.py
 python3 tools/build.py --base https://你的域名
 python3 tools/release.py --out dist-stage   # 先发到暂存目录，检查后逐站原子换入 dist/
@@ -129,7 +129,7 @@ ai-image-gallery/
 ├── sites/<id>/         # 各站：脚本、数据、构建产物、NOTICE
 ├── shared/             # 姿势 / 深度姿势共用的页面生成器与日中词典
 ├── hub/                # 入口页生成器（同时生成根 sitemap / robots）
-├── tools/              # fetch / mid / build / release / serve
+├── tools/              # fetch / mid / build / release / serve / update
 ├── deploy/             # 部署手册与 nginx 模板
 └── docs/               # 文档与截图
 ```

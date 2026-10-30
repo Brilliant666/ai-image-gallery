@@ -112,8 +112,8 @@ Measured on the Portrait site at 1.5 MB/s and 150 ms latency: a direct click sho
 Point the web root at `dist/`. It is flat (`index.html` + `portrait/` + `pose/` + …), so the hub's relative links work without nginx `alias`.
 
 ```bash
-# Server update: builds dirty the work tree, so reset instead of pull
-git fetch origin && git reset --hard origin/main
+# Server update: drops build output; stops and lists any hand-edited files instead of overwriting them
+python3 tools/update.py
 python3 tools/mid.py
 python3 tools/build.py --base https://your-domain
 python3 tools/release.py --out dist-stage   # stage first, check, then swap sites into dist/ atomically
@@ -129,7 +129,7 @@ ai-image-gallery/
 ├── sites/<id>/         # each site: scripts, data, build output, NOTICE
 ├── shared/             # page generator and JA→ZH dictionary shared by Pose and Pose Depth
 ├── hub/                # hub page generator (also writes root sitemap / robots)
-├── tools/              # fetch / mid / build / release / serve
+├── tools/              # fetch / mid / build / release / serve / update
 ├── deploy/             # deployment guide and nginx template
 └── docs/               # documentation and screenshots
 ```
