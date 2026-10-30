@@ -1,0 +1,42 @@
+{
+ "site": "AI PORTRAIT / FACE REFERENCE",
+ "source": "https://ai-portrait-gallery.pages.dev/",
+ "author": "あぎ (@agi_aibusi)",
+ "license": "CC0 1.0",
+ "items": 1499,
+ "face": 893,
+ "styling": 606,
+ "分区": [
+  {
+   "key": "face",
+   "zh": "面部"
+  },
+  {
+   "key": "styling",
+   "zh": "造型"
+  }
+ ],
+ "发型": [
+  {
+   "ja": "ショート",
+   "zh": "短发",
+   "count": 727
+  },
+  {
+   "ja": "ミディアム",
+   "zh": "中发",
+   "count": 376
+  },
+  {
+   "ja": "セミロング",
+   "zh": "中长发",
+   "count": 260
+  },
+  {
+   "ja": "ロング",
+   "zh": "长发",
+   "count": 136
+  }
+ ],
+ "风格数": 50
+}
