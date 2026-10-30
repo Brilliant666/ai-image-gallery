@@ -105,27 +105,27 @@ h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text
   letter-spacing:.06em;margin:0 0 34px}
 .count-line b{font-family:var(--mono);color:var(--tx2);font-weight:600}
 
-/* 卡片 */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:22px}
-.card{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);
-  border-radius:var(--r);overflow:hidden;text-decoration:none;
+/* 卡片：左图右文。图片框 3:4 贴合素材比例，竖构图基本不裁切 */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:18px}
+.card{display:grid;grid-template-columns:156px 1fr;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;text-decoration:none;
   transition:transform .18s ease,box-shadow .18s ease,border-color .18s}
-.card:hover{transform:translateY(-4px);box-shadow:var(--sh);border-color:var(--hb)}
-.cover{position:relative;aspect-ratio:16/10;background:var(--line);overflow:hidden}
-.cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
-.card:hover .cover img{transform:scale(1.03)}
-.cover::after{content:'';position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(to top,rgba(8,10,14,.55),transparent 52%)}
-.code{position:absolute;left:16px;bottom:14px;z-index:2;color:#fff;font-family:var(--mono);
-  font-size:11.5px;letter-spacing:.14em;text-shadow:0 1px 6px rgba(0,0,0,.6)}
-.body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:9px;flex:1}
-.body h2{margin:0;font-size:19px;font-weight:700;letter-spacing:.01em;display:flex;align-items:center;gap:9px}
-.body p{margin:0;font-size:13px;color:var(--tx2);line-height:1.7}
-.nums{display:flex;gap:18px;margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
-.nums div{display:flex;flex-direction:column;gap:1px}
-.nums b{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
-.nums span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3)}
-.foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+.card:hover{transform:translateY(-3px);box-shadow:var(--sh);border-color:var(--hb)}
+.thumb{position:relative;aspect-ratio:3/4;background:var(--line);overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.card:hover .thumb img{transform:scale(1.05)}
+.info{padding:17px 19px 16px;display:flex;flex-direction:column;gap:7px;min-width:0}
+.head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.head h2{margin:0;font-size:17px;font-weight:700;letter-spacing:.01em}
+.code{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--tx3)}
+.desc{margin:0;font-size:12.5px;color:var(--tx2);line-height:1.65;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nums{display:flex;gap:16px;margin-top:auto;padding-top:11px;border-top:1px solid var(--line)}
+.nums div{display:flex;flex-direction:column;gap:0}
+.nums b{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.35}
+.nums span{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3)}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
 .go{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ac);font-weight:600}
 .go svg{width:15px;height:15px;transition:transform .18s}
 .card:hover .go svg{transform:translateX(3px)}
@@ -141,6 +141,14 @@ footer a{color:var(--tx3);text-decoration:none;border-bottom:1px solid transpare
 footer a:hover{color:var(--ac);border-color:var(--ac)}
 
 @media(max-width:820px){ .cards{grid-template-columns:1fr} }
+@media(max-width:520px){
+  .card{grid-template-columns:112px 1fr}
+  .info{padding:14px 15px 13px;gap:6px}
+  .head h2{font-size:15.5px}
+  .desc{-webkit-line-clamp:2}
+  .nums{gap:12px}
+  .nums b{font-size:14px}
+}
 @media(max-width:600px){ .wrap{padding-top:32px} .switches{width:100%;margin-left:0} }
 </style>
 </head>
@@ -201,14 +209,14 @@ function render(){
   $('#cards').innerHTML = DATA.sites.map(s => {
     const lic = LIC[s.license] || LIC.restricted;
     return '<a class="card" href="./' + esc(s.id) + '/">' +
-      '<div class="cover">' +
+      '<div class="thumb">' +
         '<img src="' + esc('./' + s.id + '/' + s.cover) + '" alt="' + esc(s.code) + '" loading="lazy"' +
           (s.coverPos ? ' style="object-position:' + esc(s.coverPos) + '"' : '') + '>' +
-        '<span class="code">' + esc(s.code) + '</span>' +
       '</div>' +
-      '<div class="body">' +
-        '<h2>' + esc(tx(s.name)) + '</h2>' +
-        '<p>' + esc(tx(s.desc)) + '</p>' +
+      '<div class="info">' +
+        '<div class="head"><h2>' + esc(tx(s.name)) + '</h2>' +
+          '<span class="code">' + esc(s.code) + '</span></div>' +
+        '<p class="desc">' + esc(tx(s.desc)) + '</p>' +
         '<div class="nums">' + s.stats.map(st =>
           '<div><b>' + esc(st.v) + '</b><span>' + esc(tx(st.l)) + '</span></div>').join('') + '</div>' +
         '<div class="foot">' +

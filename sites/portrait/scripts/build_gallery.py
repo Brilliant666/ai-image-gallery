@@ -43,9 +43,6 @@ for r in rows:
 payload = json.dumps({
     "items": items,
     "ui": UI,
-    "tips": TIPS,
-    "rules": RULES,
-    "rulesNote": RULES_NOTE,
     "secNote": {"zh": SECTION_NOTE_ZH, "ja": SECTION_NOTE_JA},
     "hairOrder": HAIR_ORDER,
     "secZh": SECTION_ZH,
@@ -226,15 +223,6 @@ img{max-width:100%}
 .btn[hidden]{display:none}
 #sentinel{height:1px}
 
-/* ── 说明区 ── */
-.tips,.rules{margin:clamp(48px,7vw,84px) 0 0;padding-top:clamp(24px,3vw,36px);
-  border-top:1px solid var(--line)}
-.tips h2,.rules h2{margin:0 0 16px;font-family:var(--serif);font-weight:500;
-  font-size:clamp(1.15rem,2vw,1.5rem);letter-spacing:.04em}
-.tips ul,.rules ul{margin:0;padding-left:1.2em;color:var(--muted);font-size:.9rem;line-height:2}
-.rules .note{margin:18px 0 0;font-size:.8rem;color:var(--muted);line-height:1.9}
-.rules .note a{color:var(--rose)}
-
 /* ── 页脚 ── */
 .site-footer{margin:clamp(48px,7vw,84px) 0 0;padding:26px 0 40px;border-top:1px solid var(--line);
   font-size:.8rem;color:var(--muted);letter-spacing:.06em}
@@ -284,8 +272,6 @@ img{max-width:100%}
       <span class="brand-mark">F</span><span class="brand-text">FACE&nbsp;REFERENCE</span>
     </a>
     <nav class="nav" aria-label="菜单">
-      <a href="#tips" data-t="tipsTitle">使用建议</a>
-      <a href="#rules" data-t="rulesTitle">使用规则</a>
       <div class="switches">
         <div class="switch" id="themeSw" role="group" aria-label="主题">
           <button type="button" data-t="light" title="Light" aria-label="Light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg></button>
@@ -339,17 +325,6 @@ img{max-width:100%}
   <p id="empty" class="empty" hidden></p>
   <div class="more-wrap"><button id="more" class="btn" type="button" hidden></button></div>
   <div id="sentinel" aria-hidden="true"></div>
-
-  <section id="tips" class="tips">
-    <h2 data-t="tipsTitle">使用建议</h2>
-    <ul id="tips-list"></ul>
-  </section>
-
-  <section id="rules" class="rules">
-    <h2 data-t="rulesTitle">使用规则</h2>
-    <ul id="rules-list"></ul>
-    <p class="note" id="rules-note"></p>
-  </section>
 </main>
 
 <footer class="site-footer">
@@ -410,10 +385,6 @@ function applyStatic(){
   });
   $('#seg-face').textContent = LANG === 'ja' ? 'フェイス' : '面部';
   $('#seg-styling').textContent = LANG === 'ja' ? 'スタイリング' : '造型';
-  const tl = $('#tips-list'), rl = $('#rules-list');
-  tl.innerHTML = DB.tips[LANG].map(x => '<li>' + esc(x) + '</li>').join('');
-  rl.innerHTML = DB.rules[LANG].map(x => '<li>' + esc(x) + '</li>').join('');
-  $('#rules-note').textContent = DB.rulesNote[LANG];
   document.querySelectorAll('#themeSw button').forEach(b =>
     b.setAttribute('aria-pressed', b.dataset.t === THEME ? 'true' : 'false'));
   document.querySelectorAll('#langSw button').forEach(b =>
