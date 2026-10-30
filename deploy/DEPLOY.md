@@ -11,12 +11,14 @@
 | 项 | 要求 |
 |---|---|
 | 系统 | Ubuntu 20.04+ / Debian 11+ |
+| git | 任意版本（更新走 `git fetch` + `reset --hard`，见 §4） |
 | Python | 3.8+（仅标准库，无需 pip install） |
 | 磁盘 | ≥ 10 GB 可用（图片 6.8 GB + 硬链接余量） |
 | 内存 | ≥ 512 MB |
 | 域名 | 已解析到本机 IP |
 
 ```bash
+git --version
 python3 --version
 df -h /
 free -m | head -2
@@ -152,12 +154,22 @@ curl -s https://实际域名.com/pose/ | grep -o 'rel="canonical" href="[^"]*"'
 
 ## 4. 更新
 
+服务器上的 `sites/*/index.html`、`hub/index.html`、`robots.txt`、`sitemap.xml`
+都是**构建产物**，每次 `build.py --base` 都会按正式域名重写。
+也就是说：**构建完，工作区必然是「脏」的。**
+
+所以**不要用 `git pull`**——它会在这些文件上报本地改动冲突而中止。改用强制对齐：
+
 ```bash
 cd /srv/ai-image-gallery
-git pull
+git fetch origin
+git reset --hard origin/main      # 丢弃上次构建产物，源码对齐到远端
 python3 tools/build.py --base https://实际域名.com
 python3 tools/release.py
 ```
+
+`git reset --hard` 只作用于仓库跟踪的 110 个文件，
+**不会碰图片目录**——`sites/*/{thumbs,img,png,raw}` 都在 `.gitignore` 里。
 
 **图片不需要重新下载** —— `fetch.py` 幂等，已存在文件跳过。
 新增站点时才需要再跑一次 `python3 tools/fetch.py --site <新站id>`。
@@ -176,10 +188,10 @@ python3 tools/release.py --site pose
 ```bash
 cd /srv/ai-image-gallery
 git log --oneline -5
-git checkout <目标提交>
+git reset --hard <目标提交>
 python3 tools/build.py --base https://实际域名.com
 python3 tools/release.py
-git checkout main          # 回滚验证完再切回
+git reset --hard origin/main      # 验证完回到最新
 ```
 
 因为 `release.py` 会重建 `dist/`，回滚就是重建一次，几十秒。
@@ -209,6 +221,10 @@ python3 tools/release.py
 | canonical 还是 example.com | 构建时没传 `--base` | 带 `--base` 重跑 `tools/build.py` |
 | 磁盘暴涨 | 图片被复制而非硬链接 | `df -h` 对比 `du -sh dist`；确认同盘 |
 | `fetch.py` 大量失败 | 原站不可达或被限速 | 降并发 `--workers 4` |
+| `detected dubious ownership` | 目录属主与执行用户不一致（常见于从别处 rsync 过来的目录） | `git config --global --add safe.directory /srv/ai-image-gallery` |
+| `git pull` 报本地改动冲突 | 构建产物被 `--base` 重写过 | 改用 `git fetch && git reset --hard origin/main`（见 §4） |
+| `git: command not found` | 服务器没装 git | `apt-get update && apt-get install -y git` |
+| `Connecting to … port 22` 后立刻 `kex_exchange_identification: Connection closed` | 连的不是当前源站 IP（别名指向了旧地址） | 核对 `~/.ssh/config` 里该 Host 的 `HostName` 是不是当前源站 IP |
 
 ---
 
