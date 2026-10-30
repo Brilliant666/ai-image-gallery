@@ -60,26 +60,57 @@ python3 tools/release.py
 
 ---
 
-## 2. nginx
+## 2. nginx（单域名路径式）
 
-```bash
-cp deploy/nginx.conf /etc/nginx/sites-available/ai-image-gallery
-sed -i 's/你的域名\.com/实际域名.com/g' /etc/nginx/sites-available/ai-image-gallery
-grep -c "实际域名.com" /etc/nginx/sites-available/ai-image-gallery   # 应为 4
+目标拓扑：**全部站点挂在 `photoai.life` 一个域名下**，按路径区分。
+
+```
+https://photoai.life/            入口页
+https://photoai.life/portrait/   人像集
+https://photoai.life/costume/    服装集
+https://photoai.life/pose/       姿势集
+https://photoai.life/pose-depth/ 深度姿势集
 ```
 
-先只启用 HTTP 块签证书（或注释掉 443 块）：
+### 2.1 前置：DNS 与证书
 
 ```bash
-ln -sf /etc/nginx/sites-available/ai-image-gallery /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
+# 确认解析到本机
+getent hosts photoai.life www.photoai.life
+
+# 签发证书（首次）
+certbot --nginx -d photoai.life -d www.photoai.life
+```
+
+### 2.2 启用站点配置
+
+```bash
+cp deploy/nginx.conf /etc/nginx/sites-available/photoai
+ln -sf /etc/nginx/sites-available/photoai /etc/nginx/sites-enabled/
+nginx -t
+```
+
+**`nginx -t` 必须通过再 reload。**
+
+### 2.3 迁移旧子域名
+
+服务器上原有的 `pose.photoai.life` / `costume.photoai.life` 已在运行，
+新配置里为它们保留 301 跳转到新路径，证书沿用。
+
+确认跳转生效后，停用旧配置：
+
+```bash
+rm -f /etc/nginx/sites-enabled/refsite-pose /etc/nginx/sites-enabled/refsite-costume
 nginx -t && systemctl reload nginx
-
-apt install -y certbot python3-certbot-nginx
-certbot --nginx -d 实际域名.com --agree-tos -m 你的邮箱@example.com --redirect
 ```
 
-**不需要 `alias`** —— `dist/` 是扁平结构，`root` 直接指过去即可。
+> 旧配置停用前，新旧两套同时启用会因 `server_name` 冲突导致不确定行为。
+> **先加新配置并验证路径站可用，再删旧配置。**
+
+### 2.4 为什么不用 alias
+
+`dist/` 是扁平结构（`index.html` + `portrait/` + `pose/` + …），
+`root` 直接指过去即可，入口页的 `./portrait/` 相对链接天然命中，**不需要任何 alias**。
 
 ---
 
