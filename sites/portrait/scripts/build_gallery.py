@@ -247,8 +247,9 @@ img{max-width:100%}
 .lb-stage img{grid-area:1/1;max-width:92vw;max-height:calc(94vh - 72px);width:auto;height:auto;
   object-fit:contain;border-radius:10px;display:block}
 /* 底层缩略图模糊垫底，原图加载完淡入 */
-.lb-stage .lo{filter:blur(20px);transform:scale(1.03)}
-.lb-stage .hi{opacity:0;transition:opacity .32s ease}
+/* transform 会创建层叠上下文，会盖住未定位的 .hi —— 必须显式定层序 */
+.lb-stage .lo{filter:blur(20px);transform:scale(1.03);z-index:1}
+.lb-stage .hi{opacity:0;transition:opacity .32s ease;z-index:2}
 .lb-stage .hi.rd{opacity:1}
 .lb-figure figcaption{display:flex;align-items:center;gap:16px;color:#eee;
   font-size:.86rem;letter-spacing:.06em;flex-wrap:wrap;justify-content:center}
@@ -262,6 +263,10 @@ img{max-width:100%}
 .btn-primary{background:#fff;color:#151412;border:0;border-radius:999px;
   padding:8px 20px;font-size:.82rem;text-decoration:none;letter-spacing:.06em}
 .btn-primary:hover{opacity:.86}
+.btn-ghost{background:transparent;color:#e6e2dc;border:1px solid rgba(255,255,255,.28);
+  border-radius:999px;padding:8px 18px;font-size:.82rem;text-decoration:none;
+  letter-spacing:.06em;cursor:pointer;font-family:inherit;transition:.18s}
+.btn-ghost:hover{border-color:#fff;color:#fff}
 .lb-note{color:#9a9a9a;font-size:.76rem}
 
 @media (max-width:860px){
@@ -364,6 +369,8 @@ img{max-width:100%}
     <figcaption>
       <span id="lb-label"></span>
       <a id="lb-dl" class="btn-primary" href="#" download>下载原图</a>
+      <a id="lb-full" class="btn-ghost" href="#" target="_blank" rel="noopener">打开原寸 PNG</a>
+      <button id="lb-copy" class="btn-ghost" type="button">复制图片链接</button>
       <span class="lb-note" id="lb-note"></span>
     </figcaption>
   </figure>
@@ -408,6 +415,8 @@ function applyStatic(){
   document.querySelectorAll('#langSw button').forEach(b =>
     b.setAttribute('aria-pressed', b.dataset.l === LANG ? 'true' : 'false'));
   $('#lb-dl').textContent = t('download');
+  $('#lb-full').textContent = t('openFull');
+  $('#lb-copy').textContent = t('copyLink');
   $('#lb-close').setAttribute('aria-label', t('close'));
   $('#lb-prev').setAttribute('aria-label', t('prev'));
   $('#lb-next').setAttribute('aria-label', t('next'));
@@ -502,6 +511,7 @@ function syncMore(){
 
 /* ── 灯箱 ── */
 let LB = { list: [], idx: 0, last: null };
+let loT = 0;   // 底层模糊图隐藏定时器，连翻时需可取消
 function openLb(it, list){
   LB.list = list && list.length ? list : VIEW;
   LB.idx = Math.max(0, LB.list.indexOf(it));
@@ -521,12 +531,20 @@ function showLb(){
   const dl = $('#lb-dl');
   dl.href = it.f;
   dl.setAttribute('download', it.i + '.png');
+  $('#lb-full').href = it.f;
   $('#lb-note').textContent = '';
   img.classList.remove('rd');
-  img.onload = () => img.classList.add('rd');
+  lo.style.opacity = '1';
+  const settle = () => {
+    img.classList.add('rd');
+    // 淡入完成后隐藏底层：lo 有 scale(1.03)，不隐藏会在原图周围留一圈模糊光晕
+    clearTimeout(loT);
+    loT = setTimeout(() => { lo.style.opacity = '0'; }, 340);
+  };
+  img.onload = settle;
   img.onerror = () => { $('#lb-note').textContent = LANG === 'ja' ? '（原寸未取得）' : '（原图未下载）'; };
   img.src = it.f;
-  if (img.complete && img.naturalWidth) img.classList.add('rd');
+  if (img.complete && img.naturalWidth) settle();
   $('#lb-prev').style.visibility = LB.idx > 0 ? 'visible' : 'hidden';
   $('#lb-next').style.visibility = LB.idx < LB.list.length - 1 ? 'visible' : 'hidden';
 }
@@ -589,6 +607,19 @@ $('#themeSw').addEventListener('click', e => {
 });
 
 $('#lb-close').addEventListener('click', closeLb);
+$('#lb-copy').addEventListener('click', function(){
+  const it = LB.list[LB.idx]; if (!it) return;
+  // 复制完整 URL（相对路径粘到浏览器/聊天窗口都用不了）
+  const url = new URL(it.f, location.href).href;
+  const btn = this;
+  const done = ok => {
+    btn.textContent = ok ? t('copied') : t('copyFail');
+    setTimeout(() => { btn.textContent = t('copyLink'); }, 1400);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => done(true)).catch(() => done(false));
+  } else { done(false); }
+});
 $('#lb-prev').addEventListener('click', () => stepLb(-1));
 $('#lb-next').addEventListener('click', () => stepLb(1));
 $('#lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox') closeLb(); });

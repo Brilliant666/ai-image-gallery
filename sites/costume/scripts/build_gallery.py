@@ -288,6 +288,8 @@ main{max-width:1680px;margin:0 auto;padding:22px clamp(16px,4vw,48px) 90px}
   border:1px solid var(--line2);background:var(--panel);color:var(--tx);font-size:13px;text-decoration:none;
   cursor:pointer;transition:.15s}
 .macts a:hover,.macts button:hover{border-color:var(--ac);color:var(--ac)}
+.macts .primary{background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:600}
+.macts .primary:hover{opacity:.88;color:var(--on-ac)}
 .mclose{position:absolute;top:14px;right:16px;width:50px;height:50px;border-radius:50%;border:1px solid var(--close-border);
   background:var(--panel);color:var(--tx);font-size:22px;cursor:pointer;z-index:2;transition:.15s;line-height:1}
 .mclose:hover{background:var(--hover)}
@@ -386,9 +388,9 @@ footer a:hover{color:var(--ac)}
       <dl class="mkv" id="mkv"></dl>
       <div class="mtags" id="mtags"></div>
       <div class="macts">
+        <a id="mdl" class="primary" href="#" download data-i18n="dlPng">下载 PNG</a>
         <a id="mfull" href="#" target="_blank" rel="noopener" data-i18n="openFull">打开原寸 PNG</a>
-        <a id="mmid" href="#" target="_blank" rel="noopener" data-i18n="openMid">打开中图 WEBP</a>
-        <button id="mcopy" data-i18n="copyPath">复制本地路径</button>
+        <button id="mcopy" data-i18n="copyLink">复制图片链接</button>
       </div>
       <div class="hint" id="mhint"></div>
     </div>
@@ -607,6 +609,7 @@ if('IntersectionObserver' in window){
 grid.addEventListener('load', e=>{ if(e.target.tagName==='IMG') e.target.classList.add('ld'); }, true);
 grid.addEventListener('error', e=>{ if(e.target.tagName==='IMG') e.target.classList.add('ld'); }, true);
 grid.addEventListener('click', e=>{
+  if(e.target.closest('.dl')) return;   // 下载按钮不打开灯箱
   const c=e.target.closest('.card'); if(!c) return;
   openM(+c.dataset.i);
 });
@@ -618,6 +621,7 @@ grid.addEventListener('keydown', e=>{
 
 /* ── 灯箱 ── */
 const modal=$('#modal'), mimg=$('#mimg'), mimgLo=$('#mimgLo');
+let loT=0;   // 底层模糊图隐藏定时器，连翻时需可取消
 let MI = 0;
 
 function openM(i){
@@ -641,13 +645,21 @@ function showM(){
   mimgLo.src = x.th;
   mimg.alt = x.i;
   mimg.classList.remove('rd');
-  mimg.onload = () => mimg.classList.add('rd');
+  mimgLo.style.opacity = '1';
+  // 淡入完成后隐藏底层：lo 有 scale(1.04)，不隐藏会在原图周围留一圈模糊光晕
+  const settle = () => {
+    mimg.classList.add('rd');
+    clearTimeout(loT);
+    loT = setTimeout(() => { mimgLo.style.opacity = '0'; }, 340);
+  };
+  mimg.onload = settle;
   mimg.src = x.im;
-  if (mimg.complete && mimg.naturalWidth) mimg.classList.add('rd');
+  if (mimg.complete && mimg.naturalWidth) settle();
 
   $('#mid').textContent = x.i + ' · ' + nC(x.c);
   $('#mfull').href = x.pg;
-  $('#mmid').href = x.im;
+  $('#mdl').href = x.pg;
+  $('#mdl').setAttribute('download', x.i + '.png');
 
   $('#mkv').innerHTML = [
     [t('kCat'), nC(x.c)],
@@ -696,9 +708,10 @@ mimg.addEventListener('touchend', e=>{
 
 $('#mcopy').onclick = function(){
   const x=VIEW[MI]; if(!x) return;
-  const done=ok=>{ this.textContent = ok?t('copied'):t('copyFail'); setTimeout(()=>{ this.textContent=t('copyPath'); },1400); };
+  const done=ok=>{ this.textContent = ok?t('copied'):t('copyFail'); setTimeout(()=>{ this.textContent=t('copyLink'); },1400); };
+  const url = new URL(x.pg, location.href).href;   // 完整 URL，不是相对路径
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(x.pg).then(()=>done(true)).catch(()=>done(false));
+    navigator.clipboard.writeText(url).then(()=>done(true)).catch(()=>done(false));
   } else done(false);
 };
 
