@@ -10,7 +10,7 @@ SOURCE = "https://ai-pose-depth-gallery.pages.dev/"
 
 # SEO 与社交分享文案（中文，页面 lang 为 zh-CN）
 SEO = {
-    "title": "深度姿势集 POSE-DB-02 · 离线索引",
+        "title": "深度姿势集 POSE-DB-02 · 离线索引",
     "desc": "AI 绘画人体姿势深度图库中文版：288 个姿势、1439 张多视角深度图，含正面・侧面・斜角・俯视・仰视，适用于 ControlNet 深度控制与 3D 建模参考。",
     "ogSite": "深度姿势集 POSE-DB-02",
     "ogTitle": "深度姿势集 POSE-DB-02 · 288 姿势 / 1439 张深度图",
@@ -26,6 +26,7 @@ SEO = {
 UI = {
     "ja": {
         "title": "デプス ポーズ集 POSE-DB-02 · オフライン索引",
+        "home": "参照素材集", "homeAria": "参照素材集のトップへ",
         "eyebrow": "POSE-DB-02 · 深度参照用ポーズ集 · ローカルミラー",
         "brand1": "デプス",
         "brand2": "ポーズ集",
@@ -56,6 +57,7 @@ UI = {
     },
     "zh": {
         "title": "姿势集 POSE-DB-01 · 离线索引",
+        "home": "参考素材库", "homeAria": "返回参考素材库首页",
         "eyebrow": "POSE-DB-02 · 深度参照用姿势集 · 本地镜像",
         "brand1": "深度",
         "brand2": "姿势集",

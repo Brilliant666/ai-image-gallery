@@ -10,7 +10,7 @@ SOURCE = "https://ai-pose-gallery.pages.dev/"
 
 # SEO 与社交分享文案（中文，页面 lang 为 zh-CN）
 SEO = {
-    "title": "姿势集 POSE-DB-01 · 离线索引",
+        "title": "姿势集 POSE-DB-01 · 离线索引",
     "desc": "AI 绘画人体姿势参考图库中文版：288 个姿势、1439 张多视角参考图，含正面・侧面・斜角・俯视・仰视，支持中日双语与浅深主题切换。",
     "ogSite": "姿势集 POSE-DB-01",
     "ogTitle": "姿势集 POSE-DB-01 · 288 姿势 / 1439 张参考图",
@@ -26,6 +26,7 @@ SEO = {
 UI = {
     "ja": {
         "title": "ポーズ集 POSE-DB-01 · オフライン索引",
+        "home": "参照素材集", "homeAria": "参照素材集のトップへ",
         "eyebrow": "POSE-DB-01 · 画像参照用ポーズ集 · ローカルミラー",
         "brand1": "ポーズ集",
         "brand2": "データベース",
@@ -56,6 +57,7 @@ UI = {
     },
     "zh": {
         "title": "姿势集 POSE-DB-01 · 离线索引",
+        "home": "参考素材库", "homeAria": "返回参考素材库首页",
         "eyebrow": "POSE-DB-01 · 图像参照用姿势集 · 本地镜像",
         "brand1": "姿势集",
         "brand2": "数据库",

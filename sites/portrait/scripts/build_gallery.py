@@ -111,10 +111,17 @@ img{max-width:100%}
   background:radial-gradient(closest-side,rgba(201,139,127,.18),transparent 70%)}
 .topbar{position:relative;display:flex;align-items:center;justify-content:space-between;gap:16px;
   padding-top:22px;padding-bottom:22px}
+.brand-wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none}
 .brand-mark{width:30px;height:30px;border-radius:50%;border:1px solid var(--fg);
   display:grid;place-items:center;font-family:var(--latin);font-style:italic;font-size:1.05rem;line-height:1}
 .brand-text{font-family:var(--latin);font-size:.95rem;letter-spacing:.28em}
+.home{display:inline-flex;align-items:center;gap:4px;flex:none;
+  font-size:11px;letter-spacing:.06em;color:var(--muted);text-decoration:none;
+  border:1px solid var(--line);border-radius:999px;padding:3px 10px 3px 7px;
+  transition:color .15s,border-color .15s;white-space:nowrap}
+.home:hover{color:var(--fg);border-color:var(--muted)}
+.home svg{width:11px;height:11px;display:block}
 .nav{display:flex;align-items:center;gap:clamp(12px,2.2vw,26px);font-size:.86rem}
 .nav a{text-decoration:none;position:relative;padding:4px 0;background:none;border:0;
   color:inherit;font:inherit;cursor:pointer}
@@ -268,9 +275,12 @@ img{max-width:100%}
 
 <header class="site-header">
   <div class="wrap topbar">
-    <a class="brand" href="./" aria-label="AI 模特脸库 首页">
-      <span class="brand-mark">F</span><span class="brand-text">FACE&nbsp;REFERENCE</span>
-    </a>
+    <div class="brand-wrap">
+      <a class="brand" href="../" aria-label="返回参考素材库首页">
+        <span class="brand-mark">F</span><span class="brand-text">FACE&nbsp;REFERENCE</span>
+      </a>
+      <a class="home" href="../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span data-t="home">参考素材库</span></a>
+    </div>
     <nav class="nav" aria-label="菜单">
       <div class="switches">
         <div class="switch" id="themeSw" role="group" aria-label="主题">

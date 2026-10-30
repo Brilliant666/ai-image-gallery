@@ -152,6 +152,13 @@ button,select,input{font:inherit;color:inherit}
 
 /* ── hero ── */
 .hero{padding:22px clamp(16px,4vw,48px) 14px;max-width:1600px;margin:0 auto}
+.hero-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.home{display:inline-flex;align-items:center;gap:4px;flex:none;
+  font-size:11px;letter-spacing:.06em;color:var(--tx3);text-decoration:none;
+  border:1px solid var(--line2);border-radius:999px;padding:2px 9px 2px 6px;
+  transition:color .15s,border-color .15s}
+.home:hover{color:var(--tx);border-color:var(--tx3)}
+.home svg{width:11px;height:11px;display:block}
 .eyebrow{font-size:11.5px;letter-spacing:.22em;color:var(--tx3);text-transform:uppercase}
 .hero h1{margin:4px 0 5px;font-size:clamp(23px,3vw,33px);font-weight:700;letter-spacing:.02em}
 .hero h1 span{background:var(--title-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -321,7 +328,10 @@ footer a:hover{color:var(--ac)}
 <body>
 
 <header class="hero">
-  <div class="eyebrow" data-i18n="eyebrow">__CODE__</div>
+  <div class="hero-top">
+    <a class="home" href="../" data-i18n-aria="homeAria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span data-i18n="home">参考素材库</span></a>
+    <div class="eyebrow" data-i18n="eyebrow">__CODE__</div>
+  </div>
   <h1><span data-i18n="brand1">姿势集</span> <em data-i18n="brand2" style="font-style:normal">数据库</em></h1>
   <div class="sub"><p data-i18n="sub1"></p></div>
 </header>

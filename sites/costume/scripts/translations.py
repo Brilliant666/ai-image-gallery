@@ -109,6 +109,7 @@ TAG_JA = {
 UI = {
     "ja": {
         "title": "衣装集 COSTUME-DB-01 · オフライン索引",
+        "home": "参照素材集", "homeAria": "参照素材集のトップへ",
         "eyebrow": "COSTUME-DB-01 · 画像参照用衣装集 · ローカルミラー",
         "brand1": "衣装集",
         "brand2": "データベース",
@@ -137,6 +138,7 @@ UI = {
     },
     "zh": {
         "title": "服装集 COSTUME-DB-01 · 离线索引",
+        "home": "参考素材库", "homeAria": "返回参考素材库首页",
         "eyebrow": "COSTUME-DB-01 · 图像参照用服装集 · 本地镜像",
         "brand1": "服装集",
         "brand2": "数据库",
