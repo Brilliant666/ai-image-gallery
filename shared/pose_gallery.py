@@ -395,7 +395,7 @@ footer a:hover{color:var(--ac)}
   </div>
 </div>
 
-<main><div class="grid" id="grid"></div><button class="loadmore" id="more" hidden></button></main>
+<main><div class="grid" id="grid"></div><button class="loadmore" id="load-more" hidden></button></main>
 
 <footer id="foot"></footer>
 
@@ -573,7 +573,7 @@ function badge(){
 }
 
 /* ══ 渲染 ══ */
-const grid=$('#grid'), countEl=$('#count'), moreEl=$('#more');
+const grid=$('#grid'), countEl=$('#count'), moreEl=$('#load-more');
 let VIEWLIST=[];
 
 function pageSize(){ return S.view==='pose' ? PAGE_POSE : PAGE_IMG; }
