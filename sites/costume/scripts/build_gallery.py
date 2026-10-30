@@ -129,22 +129,18 @@ button,select,input{font:inherit;color:inherit}
 ::-webkit-scrollbar-track{background:transparent}
 
 /* hero */
-.hero{padding:34px clamp(16px,4vw,48px) 18px;max-width:1680px;margin:0 auto}
+.hero{padding:22px clamp(16px,4vw,48px) 14px;max-width:1680px;margin:0 auto}
 .eyebrow{font-size:11.5px;letter-spacing:.22em;color:var(--tx3);text-transform:uppercase}
-.hero h1{margin:8px 0 6px;font-size:clamp(25px,3.4vw,38px);font-weight:700;letter-spacing:.02em}
+.hero h1{margin:4px 0 5px;font-size:clamp(23px,3vw,33px);font-weight:700;letter-spacing:.02em}
 .hero h1 span{background:var(--title-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero h1 em{font-style:normal}
-.sub{color:var(--tx2);font-size:13.5px;margin:0;line-height:1.75;max-width:860px}
+.sub{color:var(--tx2);font-size:13px;margin:0;line-height:1.7;max-width:900px}
 .sub p{margin:0}
-.stats{display:flex;gap:26px;margin-top:18px;flex-wrap:wrap}
-.stats div{display:flex;flex-direction:column;gap:2px}
-.stats b{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
-.stats span{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3)}
 
 /* tools */
 .tools{position:sticky;top:0;z-index:30;background:var(--tools-bg);backdrop-filter:blur(14px);
   -webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);transition:background-color .22s ease}
-.tools-in{max-width:1680px;margin:0 auto;padding:10px clamp(16px,4vw,48px);position:relative}
+.tools-in{max-width:1680px;margin:0 auto;padding:8px clamp(16px,4vw,48px);position:relative}
 .tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:0 0 auto;display:flex;align-items:center;gap:8px;height:36px;padding:0 15px;border:1px solid var(--line2);
@@ -153,7 +149,7 @@ button,select,input{font:inherit;color:inherit}
 .tab[aria-selected="true"]{background:var(--ac);border-color:var(--ac);color:var(--on-ac);font-weight:700}
 .tab .n{font-size:11px;opacity:.62;font-variant-numeric:tabular-nums}
 .tab[aria-selected="true"] .n{opacity:.8}
-.row2{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.row2{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
 .search{position:relative;display:flex;align-items:center}
 .search svg{position:absolute;left:11px;color:var(--tx3);pointer-events:none}
 .search input{width:260px;height:36px;padding:0 12px 0 34px;border:1px solid var(--line2);border-radius:10px;
@@ -307,13 +303,7 @@ footer a:hover{color:var(--ac)}
 <header class="hero">
   <div class="eyebrow" data-i18n="eyebrow">COSTUME-DB-01</div>
   <h1><span data-i18n="brand1">服装集</span> <em data-i18n="brand2">数据库</em></h1>
-  <div class="sub"><p data-i18n="sub1"></p><p data-i18n="sub2" style="margin-top:6px"></p></div>
-  <div class="stats">
-    <div><b id="stItem">0</b><span data-i18n="statItem">服装</span></div>
-    <div><b id="stImg">0</b><span data-i18n="statImg">图片</span></div>
-    <div><b id="stCat">0</b><span data-i18n="statCat">分类</span></div>
-    <div><b id="stTag">0</b><span data-i18n="statTag">标签</span></div>
-  </div>
+  <div class="sub"><p data-i18n="sub1"></p></div>
 </header>
 
 <div class="tools">
@@ -410,10 +400,6 @@ function applyStatic(){
   $('#q').placeholder = t('search');
   $('#mhint').innerHTML = t('hint');
   $('#foot').innerHTML = t('footer');
-  $('#stItem').textContent = ITEMS.length;
-  $('#stImg').textContent = ITEMS.length * 3;
-  $('#stCat').textContent = CATS.length;
-  $('#stTag').textContent = Object.keys(TZ).length;
   document.querySelectorAll('#themeSw button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.t===THEME?'true':'false'));
   document.querySelectorAll('#langSw button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.l===LANG?'true':'false'));
 }

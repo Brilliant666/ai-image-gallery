@@ -25,6 +25,9 @@ ai-image-gallery/
 │   ├── pose/
 │   ├── pose-depth/
 │   └── costume/
+├── shared/                 ← 多站共用的生成器
+│   ├── pose_gallery.py     ← 姿势 / 深度姿势共用的页面生成器
+│   └── pose_i18n.py        ← 两站共用的日→中词典
 ├── hub/                    ← 入口页生成器
 │   ├── build_hub.py
 │   └── index.html          ← 生成物
@@ -74,6 +77,32 @@ python tools/serve.py            # http://127.0.0.1:8080/
 | `python tools/serve.py --root sites/pose` | 预览单个站点 |
 
 ---
+
+## 站点复用
+
+结构相同的站点不复制代码，而是抽到 `shared/`，各站只留配置。
+
+| 站点 | 生成逻辑 | 品牌配置 |
+|---|---|---|
+| 姿势集 | `shared/pose_gallery.py` | `sites/pose/config.py` |
+| 深度姿势集 | 同上 | `sites/pose-depth/config.py` |
+| 服装集 | 自己的 `scripts/build_gallery.py` | — |
+| 人像集 | 自己的 `scripts/build_gallery.py` | — |
+
+姿势集与深度姿势集结构完全一致，只差品牌文案与图源：
+
+```
+shared/pose_gallery.py    861 行   页面模板 + CSS + JS
+shared/pose_i18n.py       337 行   系列/分类/视角/姿势名 日中对照
+sites/pose/config.py       94 行   SEO + 界面文案
+sites/pose-depth/config.py 94 行   同上（深度版文案）
+sites/*/scripts/build_gallery.py  22 行  入口，调用 build(SITE, CONFIG)
+```
+
+合并前是两份各 860 行、98.8% 相同的脚本。现在改一处，两站同时生效。
+
+**什么时候再抽？** 当出现第三个同结构站点时，再把它的模板并进 `shared/`。
+两个站共用一份是收益，三个以上共用才需要考虑参数化差异。
 
 ## 加第 N 个站
 
