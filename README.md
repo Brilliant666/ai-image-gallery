@@ -11,11 +11,20 @@
 [![Python](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square&logo=python&logoColor=white)](#)
 [![License](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](#授权)
 
-[在线浏览](https://photoai.life/) · [四个站点](#四个站点) · [快速开始](#快速开始) · [加第 N 个站](#加第-n-个站) · [部署](#部署)
+[四个站点](#四个站点) · [快速开始](#快速开始) · [加第 N 个站](#加第-n-个站) · [部署](#部署) · [授权](#授权)
 
 </div>
 
 ![入口页](docs/preview-hub.jpg)
+
+<div align="center">
+
+### [在线浏览 · photoai.life →](https://photoai.life/)
+
+四个图库都在同一个域名下 —— `https://photoai.life/`
+打开即用，不需要下载 6.8 GB 素材，也不需要部署
+
+</div>
 
 ---
 
