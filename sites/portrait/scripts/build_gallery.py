@@ -45,7 +45,6 @@ payload = json.dumps({
     "ui": UI,
     "secNote": {"zh": SECTION_NOTE_ZH, "ja": SECTION_NOTE_JA},
     "hairOrder": HAIR_ORDER,
-    "secZh": SECTION_ZH,
 }, ensure_ascii=False, separators=(",", ":"))
 
 html = r"""<!doctype html>
