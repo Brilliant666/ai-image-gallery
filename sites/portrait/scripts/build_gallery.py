@@ -279,6 +279,14 @@ img{max-width:100%}
   .rank-list{grid-template-columns:repeat(3,1fr)}
   .lb-prev{left:8px}.lb-next{right:8px}
 }
+/* 320~400px：品牌行 + 开关挤在一行会溢出，改为换行；分区切换允许横向滚动 */
+@media (max-width:520px){
+  .topbar{flex-wrap:wrap;row-gap:12px}
+  .nav{margin-left:auto}
+  .sections{overflow-x:auto;scrollbar-width:none}
+  .sections::-webkit-scrollbar{display:none}
+  .seg{padding:9px 14px}
+}
 </style>
 </head>
 <body>
