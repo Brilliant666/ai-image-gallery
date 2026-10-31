@@ -238,6 +238,22 @@ class Landing(unittest.TestCase):
                 deep = [p for p in pages if f"/series/{series}/" in p and not p.endswith(f"/series/{series}/index.html")]
                 self.assertFalse(deep, f"{s} 的 {series} 不应展开到分类页")
 
+    def test_shisei_suggestive(self):
+        # Shisei：上游标为 suggestive 的姿势在画廊里带模糊标记，不出现在任何落地页
+        if "shisei" not in SITES:
+            self.skipTest("没有 shisei")
+        rows = json.loads(read("sites/shisei/manifest.json"))
+        sugg = {r["编号"] for r in rows if r["rating"] == "suggestive"}
+        db = page_db(read("sites/shisei/index.html"))
+        self.assertEqual({p["p"] for p in db["poses"] if p.get("r")}, sugg)
+        self.assertIn("const BLUR = true;", read("sites/shisei/index.html"))
+        for rel in self.site_pages("shisei"):
+            shown = set(re.findall(r"<figcaption>([A-Z]\d+) ", read(rel)))
+            self.assertFalse(shown & sugg, f"{rel} 出现了 suggestive 姿势: {sorted(shown & sugg)[:5]}")
+            self.assertFalse(re.search(r"ふたり|セクシー", rel), f"{rel} 不应为双人或性感系列生成落地页")
+        for s in ("pose", "pose-depth"):
+            self.assertIn("const BLUR = false;", read(f"sites/{s}/index.html"))
+
     def test_sitemaps_cover_landing_pages(self):
         root_sm = read("hub/sitemap.xml")
         for s in SITES:
@@ -303,11 +319,13 @@ class Manifests(unittest.TestCase):
                 self.assertEqual(len(paths), len(set(paths)), f"{s['id']} {t} 路径重复")
 
     def test_urls_point_to_source(self):
+        # 图片地址要在原站下；图片另有出处的站点（如 Shisei 用上游 GitHub 固定标签）写 imageBase
         for s in CFG["sites"]:
+            base = s.get("imageBase", s["source"])
             rows = json.loads(read(f"sites/{s['id']}/manifest.json"))
             for t in s["tiers"]:
-                off = [r[t + "_url"] for r in rows if not r[t + "_url"].startswith(s["source"])]
-                self.assertEqual(off, [], f"{s['id']} {t} 的 URL 不在原站 {s['source']} 下")
+                off = [r[t + "_url"] for r in rows if not r[t + "_url"].startswith(base)]
+                self.assertEqual(off, [], f"{s['id']} {t} 的 URL 不在 {base} 下")
 
     def test_image_dirs_match_paths(self):
         # release.py 只硬链接 imageDirs；manifest 里的图片都应落在这些目录里

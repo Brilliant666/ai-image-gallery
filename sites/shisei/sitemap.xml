@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://example.com/shisei/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://example.com/shisei/browse/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/座り/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/立ち/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/膝立ち/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/横座り・女の子座り/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/寝そべり/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/しゃがみ/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/前かがみ/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/shisei/series/上半身/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+</urlset>

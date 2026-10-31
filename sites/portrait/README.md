@@ -118,7 +118,7 @@ python tools/serve.py --root sites/portrait           # 本地预览
 
 ## 📦 生产部署
 
-四个站一起发布到同一个 `dist/`，部署、nginx、原子切换与回滚见单仓的 [deploy/DEPLOY.md](../../deploy/DEPLOY.md)。
+各站一起发布到同一个 `dist/`，部署、nginx、原子切换与回滚见单仓的 [deploy/DEPLOY.md](../../deploy/DEPLOY.md)。
 
 ```bash
 python tools/build.py --base https://your-domain.com   # canonical / og:url / sitemap 使用正式域名

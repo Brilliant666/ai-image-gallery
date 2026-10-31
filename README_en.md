@@ -2,14 +2,14 @@
 
 # AI Image Reference Library
 
-**Four AI art reference galleries, built from one repo and served from one directory**
+**Five AI art reference galleries, built from one repo and served from one directory**
 
-Portrait · Pose · Pose Depth · Costume · 12,975 images · Chinese / Japanese UI · Light / Dark
+Portrait · Pose · Pose Depth · Costume · CC0 Pose Line Art · 15,241 images · Chinese / Japanese UI · Light / Dark
 
 [![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
-[![sites](https://img.shields.io/badge/sites-4-0ea5e9?style=flat-square)](#sites)
-[![images](https://img.shields.io/badge/images-12%2C975-8b5cf6?style=flat-square)](#sites)
+[![sites](https://img.shields.io/badge/sites-5-0ea5e9?style=flat-square)](#sites)
+[![images](https://img.shields.io/badge/images-15%2C241-8b5cf6?style=flat-square)](#sites)
 [![Python](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square&logo=python&logoColor=white)](#quick-start)
 [![License](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](#license-and-credits)
 
@@ -52,10 +52,11 @@ Screenshots are taken from the live site to show the UI. The artwork belongs to 
 | [Pose](https://photoai.life/pose/) | Faceless gray mannequin line art, 5 angles per pose | 1,439 | No redistribution |
 | [Pose Depth](https://photoai.life/pose-depth/) | Grayscale depth maps of the same poses, for ControlNet | 1,439 | No redistribution |
 | [Costume](https://photoai.life/costume/) | Outfits without models, 86 faceted tags | 1,407 items / 4,221 files | No redistribution |
+| [Shisei line art](https://photoai.life/shisei/) | Faceless mannequin line art, 4 series × 5 angles; suggestive poses blurred by default | 280 poses / 1,133 | **CC0** |
 
 Every site has paginated grids, filters and search, a lightbox (`←` `→` to step, `Esc` to close, swipe on touch), original downloads, and theme and language switches. Each page is a single `index.html` with embedded data and no framework, CDN or web fonts.
 
-> **Only the Portrait images are CC0.** The other three sites forbid redistribution. See `sites/<id>/NOTICE.md`.
+> **Portrait and Shisei images are CC0.** The other three sites forbid redistribution. Shisei's pose list follows ai-pose-gallery and is credited only. See `sites/<id>/NOTICE.md`.
 
 ## Quick start
 
@@ -67,7 +68,7 @@ cd ai-image-gallery
 
 python tools/fetch.py      # download all images (~6.8 GB first time, then only missing files)
 python tools/mid.py        # generate lightbox previews (~290 MB)
-python tools/build.py      # build the four sites and the hub
+python tools/build.py      # build the five sites and the hub
 python tools/release.py    # assemble dist/ (images are hard links, no extra disk)
 python tools/serve.py      # preview at http://127.0.0.1:8080/
 ```
@@ -138,11 +139,11 @@ ai-image-gallery/
 └── docs/               # documentation and screenshots
 ```
 
-Images stay out of git: 6.8 GB of binaries would make every clone huge, and most site licenses do not allow it. `release.py` hard-links 17,352 image files into `dist/`, which costs no extra disk on the same file system.
+Images stay out of git: 6.8 GB of binaries would make every clone huge, and most site licenses do not allow it. `release.py` hard-links 20,751 image files into `dist/`, which costs no extra disk on the same file system.
 
 ## Documentation
 
-[Deployment guide](deploy/DEPLOY.md) · [Adding a site](docs/ADDING_A_SITE.md) · [nginx template](deploy/nginx.conf) · Per-site notes: [Portrait](sites/portrait/README.md) · [Pose](sites/pose/README.md) · [Pose Depth](sites/pose-depth/README.md) · [Costume](sites/costume/README.md)
+[Deployment guide](deploy/DEPLOY.md) · [Adding a site](docs/ADDING_A_SITE.md) · [nginx template](deploy/nginx.conf) · Per-site notes: [Portrait](sites/portrait/README.md) · [Pose](sites/pose/README.md) · [Pose Depth](sites/pose-depth/README.md) · [Costume](sites/costume/README.md) · [Shisei](sites/shisei/README.md)
 
 The deployment guide and adding-a-site guide are in Chinese.
 
@@ -154,4 +155,4 @@ The deployment guide and adding-a-site guide are in Chinese.
 | Images | Differs per site, see `sites/<id>/NOTICE.md` |
 | Chinese translations in `data/` | CC BY 4.0 |
 
-Images come from the original sites. Portrait by [あぎ](https://x.com/agi_aibusi) ([original](https://ai-portrait-gallery.pages.dev/)); Pose, Pose Depth and Costume by [ギア](https://x.com/giaaibusi) ([pose](https://ai-pose-gallery.pages.dev/) · [pose depth](https://ai-pose-depth-gallery.pages.dev/) · [costume](https://ai-costume-gallery.pages.dev/)). This project is a personal Chinese-language mirror for learning.
+Images come from the original sites. Portrait by [あぎ](https://x.com/agi_aibusi) ([original](https://ai-portrait-gallery.pages.dev/)); Pose, Pose Depth and Costume by [ギア](https://x.com/giaaibusi) ([pose](https://ai-pose-gallery.pages.dev/) · [pose depth](https://ai-pose-depth-gallery.pages.dev/) · [costume](https://ai-costume-gallery.pages.dev/)). Shisei line art comes from [wquguru/shisei](https://github.com/wquguru/shisei) (CC0). This project is a personal Chinese-language mirror for learning.

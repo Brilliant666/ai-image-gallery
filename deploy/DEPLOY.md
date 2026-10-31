@@ -51,13 +51,15 @@ python3 tools/release.py
 **预期输出**（release 阶段）：
 
 ```
-发布 · 4 个站点 → /srv/ai-image-gallery/dist
-  [portrait] 12 个站点文件  图片 4497 链接  → 4.8 GB
-  [costume] 11 个站点文件  图片 4221 链接  → 1.4 GB
-  [pose] 11 个站点文件  图片 4317 链接  → 710.4 MB
-  [pose-depth] 11 个站点文件  图片 4317 链接  → 162.6 MB
-  [hub] 4 个根级文件已复制（index.html, sitemap.xml, robots.txt, og-cover.jpg）
-其中 17352 个图片文件为硬链接，不额外占盘
+发布 · 5 个站点 → /srv/ai-image-gallery/dist
+  图片校验通过
+  [portrait] 74 个站点文件  图片 4497 链接  → 4.8 GB
+  [costume] 106 个站点文件  图片 4221 链接  → 1.4 GB
+  [pose] 23 个站点文件  图片 4317 链接  → 710.3 MB
+  [pose-depth] 23 个站点文件  图片 4317 链接  → 162.5 MB
+  [shisei] 23 个站点文件  图片 3399 链接  → 59.1 MB
+  [hub] 9 个根级文件已复制（index.html, sitemap.xml, robots.txt, og-cover.jpg, llms.txt, favicon.ico, …）
+其中 20751 个图片文件为硬链接，不额外占盘
 ```
 
 > `dist/` 报告 7.0 GB，但因为是硬链接，**实际磁盘增量接近 0**。
@@ -128,7 +130,7 @@ python3 tools/verify.py
 # 文件与体积
 du -sh /srv/ai-image-gallery/dist
 find /srv/ai-image-gallery/dist -name '*.jpg' -o -name '*.webp' -o -name '*.png' | wc -l
-# 期望 17352 张图片（含 4377 张中图）
+# 期望 20751 张图片（含 4377 张生成的中图与 Shisei 的 1133 张上游中图）
 
 # HTTP
 for p in / /portrait/ /pose/ /pose-depth/ /costume/; do
@@ -274,7 +276,7 @@ python3 tools/release.py --out dist-stage
 
 ## 8. 授权提醒
 
-四个站授权不同，**公开部署前务必确认**：
+五个站授权不同，**公开部署前务必确认**：
 
 | 站点 | 授权 | 可否公开 |
 |---|---|---|
@@ -282,5 +284,6 @@ python3 tools/release.py --out dist-stage
 | 姿势集 | 禁止再分发 | ⚠️ 公开可访问在性质上接近再分发 |
 | 深度姿势集 | 禁止再分发 + **禁止批量下载** | ⚠️ 同上，且 `fetch.py` 属被禁止行为 |
 | 服装集 | 禁止再分发 | ⚠️ 同姿势集 |
+| Shisei 姿势线稿 | 图片 CC0 1.0；姿势目录仅注明出处 | ✅ 图片可自由分发；suggestive 姿势默认模糊，不进落地页与 sitemap |
 
 建议：如需公开，至少加访问控制（`nginx.conf` 末尾有配置示例）。

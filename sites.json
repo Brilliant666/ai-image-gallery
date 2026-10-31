@@ -227,6 +227,60 @@
         "name": "ギア",
         "url": "https://x.com/giaaibusi"
       }
+    },
+    {
+      "id": "shisei",
+      "code": "SHISEI-v0.3.0",
+      "name": {
+        "zh": "CC0 姿势线稿",
+        "ja": "CC0 ポーズ線画"
+      },
+      "desc": {
+        "zh": "无脸人偶的姿势线稿，四个系列、每个姿势 5 个视角，CC0 可商用、可再分发。来自 Shisei 项目。",
+        "ja": "顔なしマネキンのポーズ線画。4 シリーズ・各 5 アングル、CC0 で商用・再配布可。Shisei プロジェクトより。"
+      },
+      "stats": [
+        {
+          "v": "280",
+          "l": {
+            "zh": "姿势",
+            "ja": "ポーズ"
+          }
+        },
+        {
+          "v": "1133",
+          "l": {
+            "zh": "线稿",
+            "ja": "線画"
+          }
+        },
+        {
+          "v": "4",
+          "l": {
+            "zh": "系列",
+            "ja": "シリーズ"
+          }
+        }
+      ],
+      "license": "cc0",
+      "source": "https://shisei.indaloop.app/",
+      "cover": "thumbs/std_P001_front.webp",
+      "coverPos": "center 8%",
+      "tiers": [
+        "thumb",
+        "mid",
+        "full"
+      ],
+      "imageDirs": [
+        "thumbs",
+        "mid",
+        "img"
+      ],
+      "author": {
+        "name": "Shisei",
+        "url": "https://github.com/wquguru"
+      },
+      "imageBase": "https://raw.githubusercontent.com/wquguru/shisei/v0.3.0/"
     }
   ]
 }

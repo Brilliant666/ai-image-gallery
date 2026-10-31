@@ -182,4 +182,15 @@
   <url><loc>https://example.com/pose-depth/series/全身1人・標準系/しゃがみ/</loc><changefreq>weekly</changefreq></url>
   <url><loc>https://example.com/pose-depth/series/全身1人・標準系/前かがみ/</loc><changefreq>weekly</changefreq></url>
   <url><loc>https://example.com/pose-depth/series/上半身1人/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://example.com/shisei/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://example.com/shisei/browse/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/座り/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/立ち/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/膝立ち/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/横座り・女の子座り/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/寝そべり/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/しゃがみ/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://example.com/shisei/series/全身・標準/前かがみ/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://example.com/shisei/series/上半身/</loc><changefreq>weekly</changefreq></url>
 </urlset>

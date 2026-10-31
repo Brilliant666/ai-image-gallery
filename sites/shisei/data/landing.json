@@ -1,0 +1,18 @@
+{
+ "dirs": [
+  "browse",
+  "series"
+ ],
+ "pages": [
+  "browse",
+  "series/全身・標準",
+  "series/全身・標準/座り",
+  "series/全身・標準/立ち",
+  "series/全身・標準/膝立ち",
+  "series/全身・標準/横座り・女の子座り",
+  "series/全身・標準/寝そべり",
+  "series/全身・標準/しゃがみ",
+  "series/全身・標準/前かがみ",
+  "series/上半身"
+ ]
+}

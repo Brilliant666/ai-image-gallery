@@ -24,6 +24,7 @@ sites/<新站id>/
 | `manifest.json` | 每条记录对 `sites.json` 里的每个档位 `<tier>` 都有 `<tier>_url` 和 `<tier>_path`（例如 `thumb_url` / `thumb_path`）。`tools/fetch.py` 和 `tools/verify.py` 只靠这条规则工作 |
 
 结构和姿势集相同的站，直接复用 `shared/pose_gallery.py` 与 `shared/pose_source.py`，只写一份 `config.py`（参考 `sites/pose/config.py`）。
+数据来自别的项目、系列和名称不同的，参考 `sites/shisei/config.py`：系列与视角顺序、中文名表、作者、`blurRatings`（默认模糊）都在配置里。
 
 ## 2. 在 `sites.json` 追加一条
 
@@ -47,11 +48,12 @@ sites/<新站id>/
 |---|---|
 | `id` | 唯一标识，同时是目录名和 URL 路径 |
 | `source` | 原站地址，下载时作为 Referer |
+| `imageBase` | 可选。图片不在原站域名下时填写（如 Shisei 的图片在上游 GitHub 固定标签里），测试据此核对 manifest 的 URL |
 | `code` | 入口页封面左下角的编号 |
 | `cover` | 相对站点目录的封面路径 |
 | `coverPos` | 封面框是 16:10，竖图必然裁切：脸部特写用 `25%`–`35%`，全身图用 `0%`–`10%`，主体居中用 `50%` |
 | `tiers` | 下载与校验的档位，对应 manifest 里的 `<tier>_url` / `<tier>_path` |
-| `imageDirs` | `release.py` 硬链接的目录；含 `mid` 时 `mid.py` 会为该站生成中图 |
+| `imageDirs` | `release.py` 硬链接的目录；含 `mid` 时 `mid.py` 会为该站生成中图（`tiers` 里已有 `mid` 的站点由上游提供，不生成） |
 | `license` | `cc0` / `conditional` / `restricted`，决定入口页卡片上的授权徽章 |
 
 站点在入口页的顺序 = `sites.json` 数组顺序。

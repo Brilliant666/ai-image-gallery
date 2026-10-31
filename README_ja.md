@@ -2,14 +2,14 @@
 
 # AI 参照画像ライブラリ
 
-**AI イラスト向けの参照画像ギャラリー 4 つ、1 リポジトリでビルド、1 ディレクトリで公開**
+**AI イラスト向けの参照画像ギャラリー 5 つ、1 リポジトリでビルド、1 ディレクトリで公開**
 
-ポートレート · ポーズ · デプス ポーズ · 衣装 · 12,975 枚 · 中国語 / 日本語 · ライト / ダーク
+ポートレート · ポーズ · デプス ポーズ · 衣装 · CC0 ポーズ線画 · 15,241 枚 · 中国語 / 日本語 · ライト / ダーク
 
 [![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
-[![sites](https://img.shields.io/badge/sites-4-0ea5e9?style=flat-square)](#サイト)
-[![images](https://img.shields.io/badge/images-12%2C975-8b5cf6?style=flat-square)](#サイト)
+[![sites](https://img.shields.io/badge/sites-5-0ea5e9?style=flat-square)](#サイト)
+[![images](https://img.shields.io/badge/images-15%2C241-8b5cf6?style=flat-square)](#サイト)
 [![Python](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square&logo=python&logoColor=white)](#クイックスタート)
 [![License](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](#ライセンスとクレジット)
 
@@ -52,10 +52,11 @@
 | [ポーズ集](https://photoai.life/pose/) | 顔なしグレーマネキンの線画、1 ポーズ 5 アングル | 1,439 枚 | 再配布禁止 |
 | [デプス ポーズ集](https://photoai.life/pose-depth/) | 同じポーズの深度マップ、ControlNet 向け | 1,439 枚 | 再配布禁止 |
 | [衣装集](https://photoai.life/costume/) | 人物なしの衣装、86 タグで絞り込み | 1,407 着 / 4,221 枚 | 再配布禁止 |
+| [Shisei 線画](https://photoai.life/shisei/) | 顔なしマネキン線画、4 シリーズ × 5 アングル。suggestive はぼかし表示 | 280 ポーズ / 1,133 枚 | **CC0** |
 
 各サイト共通：ページ送り付きグリッド、絞り込みと検索、ライトボックス（`←` `→` で移動、`Esc` で閉じる、タッチでスワイプ）、原寸ダウンロード、テーマと言語の切り替え。ページは単一の `index.html` でデータを内蔵し、フレームワーク・CDN・Web フォントを使いません。
 
-> **CC0 はポートレート集のみです。** 他の 3 サイトの素材は再配布禁止です。詳しくは `sites/<id>/NOTICE.md` を参照してください。
+> **CC0 はポートレート集と Shisei です。** 他の 3 サイトの素材は再配布禁止です。Shisei のポーズ目録は ai-pose-gallery に基づき出典表記のみです。詳しくは `sites/<id>/NOTICE.md` を参照してください。
 
 ## クイックスタート
 
@@ -67,7 +68,7 @@ cd ai-image-gallery
 
 python tools/fetch.py      # 全画像をダウンロード（初回約 6.8 GB、以降は不足分のみ）
 python tools/mid.py        # ライトボックス用の中サイズ画像を生成（約 290 MB）
-python tools/build.py      # 4 サイトとトップをビルド
+python tools/build.py      # 5 サイトとトップをビルド
 python tools/release.py    # dist/ を組み立て（画像はハードリンク、容量は増えない）
 python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 ```
@@ -138,11 +139,11 @@ ai-image-gallery/
 └── docs/               # ドキュメントとスクリーンショット
 ```
 
-画像は git に入れません。6.8 GB のバイナリは clone のたびに重く、多くのサイトのライセンスでも認められていません。`release.py` は 17,352 個の画像ファイルを `dist/` にハードリンクするため、同じファイルシステム上なら容量は増えません。
+画像は git に入れません。6.8 GB のバイナリは clone のたびに重く、多くのサイトのライセンスでも認められていません。`release.py` は 20,751 個の画像ファイルを `dist/` にハードリンクするため、同じファイルシステム上なら容量は増えません。
 
 ## ドキュメント
 
-[デプロイ手順](deploy/DEPLOY.md) · [サイトの追加](docs/ADDING_A_SITE.md) · [nginx テンプレート](deploy/nginx.conf) · 各サイト：[ポートレート](sites/portrait/README.md) · [ポーズ](sites/pose/README.md) · [デプス ポーズ](sites/pose-depth/README.md) · [衣装](sites/costume/README.md)
+[デプロイ手順](deploy/DEPLOY.md) · [サイトの追加](docs/ADDING_A_SITE.md) · [nginx テンプレート](deploy/nginx.conf) · 各サイト：[ポートレート](sites/portrait/README.md) · [ポーズ](sites/pose/README.md) · [デプス ポーズ](sites/pose-depth/README.md) · [衣装](sites/costume/README.md) · [Shisei](sites/shisei/README.md)
 
 デプロイ手順とサイト追加ガイドは中国語です。
 
@@ -154,4 +155,4 @@ ai-image-gallery/
 | 画像素材 | サイトごとに異なる。`sites/<id>/NOTICE.md` を参照 |
 | `data/` の中国語訳 | CC BY 4.0 |
 
-素材は各元サイトによるものです。ポートレート集：[あぎ](https://x.com/agi_aibusi)（[元サイト](https://ai-portrait-gallery.pages.dev/)）。ポーズ集・デプス ポーズ集・衣装集：[ギア](https://x.com/giaaibusi)（[ポーズ](https://ai-pose-gallery.pages.dev/) · [デプス](https://ai-pose-depth-gallery.pages.dev/) · [衣装](https://ai-costume-gallery.pages.dev/)）。本プロジェクトは個人学習目的の中国語ミラーです。
+素材は各元サイトによるものです。ポートレート集：[あぎ](https://x.com/agi_aibusi)（[元サイト](https://ai-portrait-gallery.pages.dev/)）。ポーズ集・デプス ポーズ集・衣装集：[ギア](https://x.com/giaaibusi)（[ポーズ](https://ai-pose-gallery.pages.dev/) · [デプス](https://ai-pose-depth-gallery.pages.dev/) · [衣装](https://ai-costume-gallery.pages.dev/)）。Shisei の線画は [wquguru/shisei](https://github.com/wquguru/shisei)（CC0）より。本プロジェクトは個人学習目的の中国語ミラーです。

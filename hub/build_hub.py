@@ -307,19 +307,35 @@ render();
 """
 
 
+def total_images(cfg):
+    """对外公布的「参考图」总数，沿用最初 12,975 的口径：原站提供的图片文件数，
+    即 manifest 条数 × 档位数，不含 mid 档（中图是本仓库生成或补的）。
+    这是文件数，不是不同画面数：人像、姿势、深度姿势、Shisei 每张图按缩略图 + 原图算两个文件，服装按三档算三个。"""
+    n = 0
+    for s in cfg["sites"]:
+        p = os.path.join(ROOT, "sites", s["id"], "manifest.json")
+        with open(p, encoding="utf-8") as f:
+            rows = len(json.load(f))
+        n += rows * len([t for t in s.get("tiers", []) if t != "mid"])
+    return n
+
+
 def hub_seo(cfg, base):
     """入口页静态介绍、FAQ 与 llms.txt。事实只取自 sites.json 与固定的授权说明。"""
     sites = {s["id"]: s for s in cfg["sites"]}
     stat = lambda sid, i: sites[sid]["stats"][i]["v"]
+    N = f"{total_images(cfg):,}"
+    K = len(cfg["sites"])
     faq = [
         ("photoai.life 是什么？",
          "一组面向 AI 绘画的参考图库：人像集（角色脸部一致性参考）、姿势集（人体姿势线稿）、"
-         "深度姿势集（ControlNet 深度图）和服装集（服装与穿搭参考），共 12,975 张，全部为 AI 生成，中日双语。"),
+         "深度姿势集（ControlNet 深度图）、服装集（服装与穿搭参考）和 Shisei（CC0 姿势线稿），"
+         f"共 {N} 张，全部为 AI 生成，中日双语。"),
         ("图片可以商用吗？",
-         "要看图库。人像集为 CC0 1.0 公有领域，可以免费商用和再分发。姿势集、深度姿势集、服装集的原作者"
+         "要看图库。人像集与 Shisei 姿势线稿为 CC0 1.0 公有领域，可以免费商用和再分发。姿势集、深度姿势集、服装集的原作者"
          "允许免费用于作品制作（包括商用与参考），但禁止再分发、转载或转售图片文件本身；深度姿势集另禁止批量下载。"),
         ("这些图是真人吗？",
-         "不是。人像是 AI 生成的虚构人物，姿势是无脸灰色人偶，服装图由文字生成图像制作，都不对应真实人物或商品。"),
+         "不是。人像是 AI 生成的虚构人物，姿势是无脸人偶，服装图由文字生成图像制作，都不对应真实人物或商品。"),
         ("和原站是什么关系？",
          "这里是各原站的中文索引镜像：把日文分类、标签和姿势名译成中文，加了组合筛选、搜索和中日切换。"
          "图片著作权归原作者，每个图库页脚都有原站和作者链接。"),
@@ -327,23 +343,26 @@ def hub_seo(cfg, base):
     # 入口页上方的卡片已经链到各图库首页，这里链到各图库的分类索引
     links = [(f"{s['id']}/browse/", f"{s['name']['zh']} · 分类") for s in cfg["sites"]]
     intro = landing.static_intro(
-        ["photoai.life 收录四个 AI 绘画参考图库，共 12,975 张 AI 生成的参考图，可在线浏览、按标签筛选和下载。",
+        [f"photoai.life 收录 {K} 个 AI 绘画参考图库，共 {N} 张 AI 生成的参考图，可在线浏览、按标签筛选和下载。",
          f"人像集 {stat('portrait', 0)} 张，用来让 AI 生成的角色保持同一张脸，CC0 可商用；"
          f"姿势集与深度姿势集各 {stat('pose', 0)} 个姿势、{stat('pose', 1)} 张，每个姿势 5 个视角，深度图可直接用于 ControlNet；"
-         f"服装集 {stat('costume', 0)} 套服装、{stat('costume', 2)} 个标签，标签保留英文关键词，可直接作提示词。"],
-        [("图库", "4 个"), ("图片", "12,975 张"), ("语言", "中文 / 日本語"), ("素材", "全部 AI 生成")],
+         f"服装集 {stat('costume', 0)} 套服装、{stat('costume', 2)} 个标签，标签保留英文关键词，可直接作提示词；"
+         f"Shisei {stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张 CC0 线稿，可商用、可再分发。"],
+        [("图库", f"{K} 个"), ("图片", f"{N} 张"), ("语言", "中文 / 日本語"), ("素材", "全部 AI 生成")],
         links, faq, more_href=None)
 
     lic = {"portrait": "CC0 1.0 公有领域，可商用、可再分发。",
            "pose": "允许免费用于作品制作（含商用与参考）；禁止再分发、转载、转售图片文件本身。",
            "pose-depth": "同姿势集；原站另禁止批量下载或用工具自动获取。",
-           "costume": "允许免费用于作品制作（含商用与参考）；禁止再分发、转载、转售图片文件本身。"}
+           "costume": "允许免费用于作品制作（含商用与参考）；禁止再分发、转载、转售图片文件本身。",
+           "shisei": "图片 CC0 1.0，可商用、可再分发；姿势目录沿用 ai-pose-gallery，仅注明出处。"}
     what = {"portrait": f"{stat('portrait', 0)} 张 AI 生成人像：面部 {stat('portrait', 1)} 张（正面、纯色背景），造型 {stat('portrait', 2)} 张。用于 AI 绘画中保持角色脸部一致，按发型分类。",
             "pose": f"{stat('pose', 0)} 个人体姿势、{stat('pose', 1)} 张无脸灰色人偶线稿，每个姿势正面、侧面、斜角、俯视、仰视 5 个视角。",
             "pose-depth": f"同一批 {stat('pose-depth', 0)} 个姿势的 {stat('pose-depth', 1)} 张灰度深度图，可直接作为 ControlNet depth 控制图。",
-            "costume": f"{stat('costume', 0)} 套 AI 生成服装、{stat('costume', 1)} 张图，8 个分类、{stat('costume', 2)} 个标签；标签为英文关键词，可直接用作提示词。"}
+            "costume": f"{stat('costume', 0)} 套 AI 生成服装、{stat('costume', 1)} 张图，8 个分类、{stat('costume', 2)} 个标签；标签为英文关键词，可直接用作提示词。",
+            "shisei": f"{stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张无脸人偶线稿（全身・标准、上半身、全身・性感、双人），每个姿势最多 5 个视角；偏性感的姿势默认模糊。"}
     lines = ["# photoai.life", "",
-             "> AI 绘画参考图库合集：人像、人体姿势、ControlNet 姿势深度图、服装，共 12,975 张，全部为 AI 生成。"
+             f"> AI 绘画参考图库合集：人像、人体姿势、ControlNet 姿势深度图、服装、CC0 姿势线稿，共 {N} 张，全部为 AI 生成。"
              "中文索引镜像，界面支持中文与日本語。", "",
              "每个图库都是一个可筛选的画廊页，另有按分类 / 标签 / 发型生成的静态落地页（见各图库的 browse/ 目录与 sitemap）。"
              "图片著作权归各原作者，授权各不相同，引用时请注明对应图库的授权。", "",
@@ -385,9 +404,9 @@ def main():
     data = json.dumps(cfg, ensure_ascii=False, separators=(",", ":"))
     lic_js = json.dumps(lic, ensure_ascii=False, separators=(",", ":"))
 
-    title = "photoai.life · AI 绘画参考图库：人像、姿势、ControlNet 深度图、服装，共 12,975 张"
-    desc = ("四个 AI 绘画参考图库合集：1499 张 CC0 人像（角色脸部一致性参考）、288 个人体姿势线稿与深度图"
-            "（各 1439 张，五视角，适合 ControlNet）、1407 套服装（86 个标签）。中日双语，全部可在线浏览。")
+    title = f"photoai.life · AI 绘画参考图库：人像、姿势、ControlNet 深度图、服装，共 {total_images(cfg):,} 张"
+    desc = (f"{len(cfg['sites'])} 个 AI 绘画参考图库合集：1499 张 CC0 人像（角色脸部一致性参考）、288 个人体姿势线稿与深度图"
+            "（各 1439 张，五视角，适合 ControlNet）、1407 套服装（86 个标签）、280 个 CC0 姿势线稿。中日双语，全部可在线浏览。")
     seo = hub_seo(cfg, base)
 
     # 结构化数据：告诉搜索引擎/AI 引擎这是一组并列的子站点
