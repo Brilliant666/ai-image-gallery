@@ -423,14 +423,15 @@ class Landing(unittest.TestCase):
         self.assertIn('"404.html"', read("tools/release.py"))
 
     def test_shisei_suggestive(self):
-        # Shisei：上游标为 suggestive 的姿势在画廊里带成人向标记（模糊模式），不出现在任何落地页
+        # Shisei：全身・性感、双人系列与上游标为 suggestive 的姿势带成人向标记，18+ 关闭时隐藏，不出现在任何落地页
         if "shisei" not in SITES:
             self.skipTest("没有 shisei")
         rows = json.loads(read("sites/shisei/manifest.json"))
-        sugg = {r["编号"] for r in rows if r["rating"] == "suggestive"}
+        sugg = {r["编号"] for r in rows if r["rating"] == "suggestive" or r["系列"] in ("全身・セクシー", "ふたり")}
         db = page_db(read("sites/shisei/index.html"))
         self.assertEqual({p["p"] for p in db["poses"] if p.get("x")}, sugg)
-        self.assertIn("const ADULT_MODE = 'blur';", read("sites/shisei/index.html"))
+        self.assertEqual({p["s"] for p in db["poses"] if not p.get("x")}, {"全身・標準", "上半身"})
+        self.assertIn("const ADULT_MODE = 'hide';", read("sites/shisei/index.html"))
         for rel in self.site_pages("shisei"):
             shown = set(re.findall(r"<figcaption>([A-Z]\d+) ", read(rel)))
             self.assertFalse(shown & sugg, f"{rel} 出现了 suggestive 姿势: {sorted(shown & sugg)[:5]}")
@@ -440,7 +441,7 @@ class Landing(unittest.TestCase):
         # 18+：有 adult 规则的站点，内联数据里的成人向标记与规则一致；姿势 / 服装默认隐藏，Shisei 模糊
         sys.path.insert(0, os.path.join(ROOT, "shared"))
         import adult
-        mode = {"pose": "hide", "pose-depth": "hide", "shisei": "blur"}
+        mode = {"pose": "hide", "pose-depth": "hide", "shisei": "hide"}
         for s in SITES:
             rule = adult.rules(s)
             if not rule:

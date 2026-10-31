@@ -74,7 +74,7 @@ TEMPLATE = r"""<!doctype html>
 __UI_HEAD__
 __UI_CSS__
 <style>
-.hero{padding:44px 0 26px}
+.hero{padding:24px 0 26px}
 .hero h1{margin:0;font-size:clamp(30px,4.6vw,52px);line-height:1.12;font-weight:800;letter-spacing:.005em}
 .hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero .lead{margin:14px 0 0;max-width:640px;color:var(--tx2);font-size:15px;line-height:1.8}
@@ -119,7 +119,7 @@ html[data-theme="dark"] .credits .lic.ok{background:#14301d;color:#86efac}
 .credits .note{margin:12px 0 0;font-size:12px;color:var(--mu);line-height:1.8}
 .hub-seo{margin-top:34px}
 @media(max-width:640px){
-  .hero{padding:22px 0 16px}
+  .hero{padding:14px 0 16px}
   .hero .lead{font-size:14px}
   .big{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;margin-top:18px}
   .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 10px}
@@ -240,7 +240,7 @@ def bh(zh, ja):
 
 GUIDE_CSS = """
 .gd{max-width:880px;margin:0 auto;padding:0 var(--gut) 40px}
-.gd .crumb{margin:22px 0 0;font-size:13px;color:var(--mu)}.gd .crumb a{color:var(--tx2)}
+.gd .crumb{margin:14px 0 0;font-size:13px;color:var(--mu)}.gd .crumb a{color:var(--tx2)}
 .gd h1{margin:10px 0 8px;font-size:clamp(26px,3.6vw,36px);line-height:1.25;font-weight:800}
 .gd .lead{margin:0;color:var(--tx2);font-size:15px;line-height:1.8}
 .gd nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 6px}
@@ -466,7 +466,7 @@ def hub_seo(cfg, base):
         ("这些图是真人吗？",
          "不是。人像是 AI 生成的虚构人物，姿势是无脸人偶，服装图由文字生成图像制作，都不对应真实人物或商品。"),
         ("为什么有些内容看不到？",
-         "姿势集的双人与性感系列、服装集的内衣与性感两类属于成人向参考，默认隐藏，CC0 线稿里偏性感的姿势默认模糊。"
+         "姿势集与 CC0 线稿的双人、性感系列，服装集的内衣与性感两类属于成人向参考，默认隐藏。"
          "用顶部栏的「18+」确认一次年龄即可显示，各图库通用；这些内容不出现在静态落地页里。"),
         ("和原站是什么关系？",
          "这里是各原站的中文索引镜像：把日文分类、标签和姿势名译成中文，加了组合筛选、搜索和中日切换。"
@@ -491,7 +491,7 @@ def hub_seo(cfg, base):
             "pose": f"{stat('pose', 0)} 个人体姿势、{stat('pose', 1)} 张无脸灰色人偶线稿，每个姿势正面、侧面、斜角、俯视、仰视 5 个视角；页面里可切换到同一姿势的深度图。双人与性感系列默认隐藏。",
             "pose-depth": f"姿势集的深度图入口：同一批 {stat('pose-depth', 0)} 个姿势的 {stat('pose-depth', 1)} 张灰度深度图，可直接作为 ControlNet depth 控制图，可切换回线稿。",
             "costume": f"{stat('costume', 0)} 套 AI 生成服装、{stat('costume', 1)} 个文件，8 个分类、{stat('costume', 2)} 个标签；标签为英文关键词，可直接用作提示词。内衣与性感两类默认隐藏。",
-            "shisei": f"{stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张无脸人偶线稿（全身・标准、上半身、全身・性感、双人），每个姿势最多 5 个视角；偏性感的姿势默认模糊。"}
+            "shisei": f"{stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张无脸人偶线稿（全身・标准、上半身、全身・性感、双人），每个姿势最多 5 个视角；全身・性感、双人系列与偏性感的姿势默认隐藏。"}
     lines = ["# photoai.life", "",
              f"> AI 绘画参考图库合集：人像、人体姿势（线稿与 ControlNet 深度图）、服装、CC0 姿势线稿，共 {N} 个图片文件，全部为 AI 生成。"
              "中文索引镜像，界面支持中文与日本語。", "",

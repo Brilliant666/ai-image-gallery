@@ -4,8 +4,8 @@
 数据来自上游 wquguru/shisei 的 v0.3.0 标签（data/catalog.json，见 scripts/manifest.py），页面由
 shared/pose_gallery.py 生成。与姿势集 / 深度姿势集的区别：
   - 图片 CC0，可商用、可再分发；姿势名与中文译名直接取自上游 catalog
-  - 四个系列全部收录；上游标为 suggestive 的姿势在 18+ 关闭时模糊显示，点开或打开顶部栏的 18+ 才清晰，
-    且不生成静态落地页（同上游站点的做法）
+  - 四个系列全部收录；全身・性感、双人两个系列与上游标为 suggestive 的姿势属于成人向，
+    18+ 关闭时隐藏（同姿势集），不生成静态落地页
 """
 import json, os, sys
 from collections import Counter
@@ -57,7 +57,7 @@ UI = gallery_ui({
         "eyebrow": "SHISEI v0.3.0 · CC0 ポーズ線画 · ミラー",
         "brand1": "Shisei", "brand2": "CC0 ポーズ線画",
         "sub1": "顔なしマネキンの線画（3:4）。4 シリーズ・各最大 5 アングル。CC0 で商用・再配布できます。"
-                "suggestive なポーズは 18+ がオフの間ぼかし表示で、タップすると見られます。",
+                "全身・セクシー、ふたり、suggestive なポーズは 18+ がオンのときだけ表示されます。",
         "dlPng": "WEBP をダウンロード", "openFull": "900px 画像を開く", "footer": FOOTER_JA,
     },
     "zh": {
@@ -65,7 +65,7 @@ UI = gallery_ui({
         "eyebrow": "SHISEI v0.3.0 · CC0 姿势线稿 · 镜像",
         "brand1": "Shisei", "brand2": "CC0 姿势线稿",
         "sub1": "无脸人偶线稿（3:4），四个系列、每个姿势最多 5 个视角。CC0 可商用、可再分发。"
-                "偏性感的姿势在 18+ 关闭时模糊显示，点开即可查看。",
+                "全身・性感、双人系列与偏性感的姿势只在打开 18+ 后显示。",
         "dlPng": "下载 WEBP", "openFull": "打开 900px 原图", "footer": FOOTER_ZH,
     },
 })
@@ -80,7 +80,7 @@ def _faq(kind, use):
         ("每个姿势有几张图？", "最多 5 个视角：正面、斜角、侧面、俯视、仰视。没通过上游质检的视角不收录，所以部分姿势少于 5 张。"),
         ("和姿势集有什么不同？",
          "姿势集是原作者ギア的图，禁止再分发；Shisei 是另一个项目按同一份姿势目录重新绘制的线稿，CC0 可商用、可再分发。"
-         "上游标为 suggestive 的姿势在这里默认模糊显示。"),
+         "全身・性感、双人系列与上游标为 suggestive 的姿势默认隐藏，打开顶部栏的 18+ 后显示。"),
     ]
 
 
@@ -100,7 +100,7 @@ SEO_PAGES = {
     "introParas": lambda n, m: [
         f"Shisei 是一个 CC0 的人体姿势参考线稿库：收录 {n} 个姿势、{m} 张无脸人偶线稿，"
         "分全身・标准、上半身、全身・性感、双人四个系列，每个姿势最多 5 个视角，可以免费商用和再分发。",
-        "本页面是它的中文镜像：系列、分类和姿势名使用上游 catalog 的中文译名；偏性感的姿势默认模糊，点开或打开开关即可查看。"],
+        "本页面是它的中文镜像：系列、分类和姿势名使用上游 catalog 的中文译名；全身・性感、双人系列与偏性感的姿势默认隐藏，打开顶部栏的 18+ 后显示。"],
     "faq": _faq("线稿", "把线稿作为图像工具的姿势参考或 ControlNet 的 lineart / openpose 输入；"
                 "用同一姿势的多个视角，可以让人物在不同镜头里保持同一个动作。"),
 }
@@ -127,7 +127,6 @@ CONFIG = {
     "licenseLd": '"license":"https://creativecommons.org/publicdomain/zero/1.0/","acquireLicensePage":"' + REPO + '",'
                  '"copyrightNotice":"CC0 1.0 (Shisei)",',
     "stats": [(str(N_POSES), "个姿势", "ポーズ"), (f"{N_IMAGES:,}", "张线稿", "枚の線画"), ("CC0", "可商用", "商用可")],
-    # 18+ 开关（shared/adult.py）：上游标为 suggestive 的姿势默认模糊，与上游站点一致
-    "adultMode": "blur",
-    "ageWhat": {"zh": "上游标为 suggestive 的偏性感姿势，关闭时模糊显示。", "ja": "上流で suggestive とされたポーズで、オフの間はぼかし表示です。"},
+    # 18+ 开关（shared/adult.py）：成人向（sites.json 的 adult 规则）关闭时隐藏，同姿势集
+    "adultMode": "hide",
 }

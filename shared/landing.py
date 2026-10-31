@@ -80,7 +80,7 @@ def _ld(obj):
 
 CSS = """
 .lp{max-width:1180px;margin:0 auto;padding:0 var(--gut) 20px}
-.crumb{display:flex;flex-wrap:wrap;gap:4px 8px;margin:22px 0 0;font-size:12.5px;color:var(--mu)}
+.crumb{display:flex;flex-wrap:wrap;gap:4px 8px;margin:14px 0 0;font-size:12.5px;color:var(--mu)}
 .crumb a{color:var(--tx2);text-decoration:none}.crumb a:hover{color:var(--tx);text-decoration:underline}
 .crumb span{color:var(--line2)}
 .lp h1{font-size:clamp(24px,3.4vw,34px);line-height:1.3;margin:12px 0 10px;font-weight:800}

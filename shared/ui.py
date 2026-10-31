@@ -118,7 +118,7 @@ select.sel{height:36px;padding:0 32px 0 14px;border:0;border-radius:999px;backgr
 .search input::placeholder{color:var(--mu)}
 
 /* 页头 */
-.phead{padding-top:26px;padding-bottom:8px}
+.phead{padding-top:14px;padding-bottom:8px}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--mu);text-transform:uppercase}
 .phead h1{margin:0;font-size:clamp(24px,3.2vw,34px);line-height:1.2;font-weight:800;letter-spacing:.01em}
 .phead .lead{margin:8px 0 0;max-width:760px;color:var(--tx2);font-size:14px;line-height:1.75}
@@ -241,7 +241,7 @@ kbd{display:inline-block;min-width:22px;padding:0 6px;border:1px solid var(--lin
   :root{--bar:52px}
   body{font-size:14.5px}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 10px}
-  .phead{padding-top:12px;padding-bottom:2px}
+  .phead{padding-top:10px;padding-bottom:2px}
   .phead .eyebrow{display:none}
   .phead h1{font-size:23px}
   .phead .lead{margin-top:6px;font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -435,8 +435,8 @@ POSE_KEYS = [K_NAV, K_HOME, K_SEARCH, K_DEPTH, K_THEME, K_LANG, K_POSE_LR, K_POS
 LINE_KEYS = [K_NAV, K_HOME, K_SEARCH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ADD, K_ESC, K_HELP]
 PAGE_KEYS = [K_NAV, K_HOME, K_THEME, K_LANG, K_HELP]      # 落地页、使用说明页
 
-AGE_WHAT = {"zh": "包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类；CC0 线稿里偏性感的姿势关闭时模糊显示。",
-            "ja": "ポーズ集の 2人絡み・全身セクシー系・上半身の胸寄せ／セクシー露骨寄り、衣装集のランジェリー・セクシー、CC0 線画の suggestive ポーズ（オフの間はぼかし表示）が対象です。"}
+AGE_WHAT = {"zh": "包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类，以及 CC0 线稿的全身・性感、双人系列与偏性感的姿势。",
+            "ja": "ポーズ集の 2人絡み・全身セクシー系・上半身の胸寄せ／セクシー露骨寄り、衣装集のランジェリー・セクシー、CC0 線画の全身・セクシー、ふたり、suggestive なポーズが対象です。"}
 
 
 def dialogs(keys):

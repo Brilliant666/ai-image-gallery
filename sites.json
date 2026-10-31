@@ -253,6 +253,7 @@
       "stats": [
         {
           "v": "280",
+          "public": "96",
           "l": {
             "zh": "姿势",
             "ja": "ポーズ"
@@ -277,7 +278,7 @@
       "source": "https://shisei.indaloop.app/",
       "cover": "thumbs/std_P001_front.webp",
       "coverPos": "center 8%",
-      "adult": {"rating": ["suggestive"]},
+      "adult": {"系列": ["全身・セクシー", "ふたり"], "rating": ["suggestive"]},
       "tiers": [
         "thumb",
         "mid",
