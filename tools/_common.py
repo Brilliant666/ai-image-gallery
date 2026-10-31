@@ -34,7 +34,9 @@ def run(cmd, cwd, env_extra=None, quiet=False):
         env.update(env_extra)
     if not quiet:
         print("    $ " + " ".join(cmd))
-    r = subprocess.run(cmd, cwd=cwd, env=env, text=True,
+    # 子进程按 UTF-8 输出、按 UTF-8 读：Windows 控制台默认 GBK，不指定会在读输出的线程里报 UnicodeDecodeError
+    env.setdefault("PYTHONIOENCODING", "utf-8")
+    r = subprocess.run(cmd, cwd=cwd, env=env, text=True, encoding="utf-8", errors="replace",
                        capture_output=quiet)
     if r.returncode != 0:
         if quiet and r.stderr:

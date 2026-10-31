@@ -774,9 +774,11 @@ applyStatic(); drawTabs(); drawCatSel(); drawTagGroups(); draw();
 </body>
 </html>"""
 
-# 静态落地页（8 个分类 + 86 个标签）与主页里不依赖 JS 的介绍、FAQ
-import seo  # noqa: E402
-landing_urls, seo_intro, FAQ = seo.build(root, SITE_URL, items, cats)
+# 静态落地页（分类 + 标签，成人向服装不进落地页）与主页里不依赖 JS 的介绍、FAQ
+import adult, seo  # noqa: E402
+ADULT_RULE = adult.rules("costume")
+adult_ids = {r["id"] for r in rows if adult.is_adult(r, ADULT_RULE)}
+landing_urls, seo_intro, FAQ = seo.build(root, SITE_URL, items, cats, adult_ids)
 html = (html.replace("__SEO_INTRO__", seo_intro).replace("__SEO_CSS__", landing.SEO_INTRO_CSS)
             .replace("__FAQ_LD__", landing.faq_ld_script(FAQ)))
 

@@ -401,7 +401,9 @@ def main():
         return 1 if bad else 0
 
     lic = {k: {"cls": v["cls"]} for k, v in LICENSE_LABEL.items()}
-    data = json.dumps(cfg, ensure_ascii=False, separators=(",", ":"))
+    # 入口页只用得到展示字段；adult 规则只给构建脚本用，不内联进页面
+    shown = {**cfg, "sites": [{k: v for k, v in s.items() if k != "adult"} for s in cfg["sites"]]}
+    data = json.dumps(shown, ensure_ascii=False, separators=(",", ":"))
     lic_js = json.dumps(lic, ensure_ascii=False, separators=(",", ":"))
 
     title = f"photoai.life · AI 绘画参考图库：人像、姿势、ControlNet 深度图、服装，共 {total_images(cfg):,} 张"

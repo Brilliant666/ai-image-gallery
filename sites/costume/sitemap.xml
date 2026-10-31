@@ -6,93 +6,85 @@
   <url><loc>https://example.com/costume/category/夏/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/category/秋/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/category/冬/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/category/ランジェリー/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/category/セクシー/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/category/水着/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/category/パーティ/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/bag/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/mini/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/black/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/skirt/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/knit/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/dress/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/skirt/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/boots/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/socks/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/lace/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/white/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/ribbon/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/sandals/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/leather/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/stockings/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/socks/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/dress/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/ribbon/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/white/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/brown/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/camisole/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/tights/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/cardigan/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/necklace/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/ivory/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/satin/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/cardigan/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/lace/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/pants/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/ivory/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/jacket/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/heels/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/shorts/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/beige/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/camisole/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/grey/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/denim/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/pleated/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/red/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/beige/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/shirt/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/gold/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/blue/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/shirt/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/fur/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/navy/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/pleated/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/silver/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/frill/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/choker/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/midi/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/coat/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/bra/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/briefs/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/pink/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/sneakers/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/navy/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/suede/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/green/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/red/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/blouse/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/tote/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/green/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/loafers/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/belt/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/mint/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/hat/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/shorts/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/jeans/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/wool/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/cream/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/headband/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/floral/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/corset/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/velvet/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/satin/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/mint/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/hat/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/pink/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/pumps/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/gloves/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/turtleneck/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/frill/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/belt/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/choker/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/sunglasses/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/yellow/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/khaki/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/turtleneck/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/floral/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/heels/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/burgundy/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/orange/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/velvet/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/corduroy/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/scarf/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/robe/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/swimsuit/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/sweater/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/chiffon/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/olive/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/tulle/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/mesh/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/beret/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/vest/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/hoodie/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/apron/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/maxi/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/gloves/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/polka-dot/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/costume/tag/lavender/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/tulle/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/mesh/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/beanie/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/corset/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/costume/tag/stockings/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://example.com/costume/tag/muffler/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
 </urlset>

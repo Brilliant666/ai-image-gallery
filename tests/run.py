@@ -230,13 +230,35 @@ class Landing(unittest.TestCase):
                     self.assertIn(kv.split("=")[0], {"cat", "tag", "series", "sec", "hair"}, f"{rel}: {hsh}")
 
     def test_adult_series_not_expanded(self):
-        # 姿势两站：双人系列不生成落地页，性感系与上半身不展开到分类
+        # 姿势两站：双人与性感系不生成落地页，上半身不展开到分类
         for s in ("pose", "pose-depth"):
             pages = self.site_pages(s)
-            self.assertFalse([p for p in pages if "2人絡み" in p], f"{s} 不应有双人系列落地页")
-            for series in ("全身1人・セクシー系", "上半身1人"):
-                deep = [p for p in pages if f"/series/{series}/" in p and not p.endswith(f"/series/{series}/index.html")]
-                self.assertFalse(deep, f"{s} 的 {series} 不应展开到分类页")
+            self.assertFalse([p for p in pages if "2人絡み" in p or "セクシー" in p], f"{s} 不应有双人或性感系落地页")
+            deep = [p for p in pages if "/series/上半身1人/" in p and not p.endswith("/series/上半身1人/index.html")]
+            self.assertFalse(deep, f"{s} 的上半身不应展开到分类页")
+
+    def test_no_adult_thumbs_on_landing_pages(self):
+        # 2026-10-31：sitemap 里有 4 个成人向页面，27 个服装标签页带内衣 / 性感缩略图。
+        # sites.json 的 adult 规则命中的图，不得出现在任何可收录的落地页上
+        sys.path.insert(0, os.path.join(ROOT, "shared"))
+        import adult
+        for s in SITES:
+            rule = adult.rules(s)
+            rows = json.loads(read(f"sites/{s}/manifest.json"))
+            bad = {r["thumb_path"] for r in rows if adult.is_adult(r, rule)}
+            if rule:
+                self.assertTrue(bad, f"{s} 的 adult 规则一张图都没命中，字段名或取值写错了")
+            for rel in self.site_pages(s):
+                up = "../" * (rel.count("/") - 2)
+                hit = [src for src in re.findall(r'<img src="([^"]+)"', read(rel)) if src[len(up):] in bad]
+                self.assertEqual(hit, [], f"{rel} 出现了成人向缩略图")
+            # 分类 / 系列名本身就是成人向的，不生成页面
+            for k, vs in rule.items():
+                for v in vs:
+                    self.assertFalse([p for p in self.site_pages(s) if f"/{v}/" in p], f"{s} 不应有「{v}」的落地页")
+
+    def test_hub_does_not_inline_adult_rules(self):
+        self.assertNotIn('"adult"', read("hub/index.html"))
 
     def test_shisei_suggestive(self):
         # Shisei：上游标为 suggestive 的姿势在画廊里带模糊标记，不出现在任何落地页

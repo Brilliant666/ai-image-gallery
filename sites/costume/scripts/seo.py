@@ -30,19 +30,23 @@ def faq(n_items):
     ]
 
 
-def build(root, site_url, items, cats):
+def build(root, site_url, items, cats, adult_ids=frozenset()):
+    """adult_ids = 成人向服装的编号（sites.json 的 adult 规则）：这些服装不进任何落地页，
+    内衣、性感两个分类也不单独成页。标签页只用其余服装，剩下不足 MIN_ITEMS 套的标签不生成。"""
     n_files = len(items) * 3
     FAQ = faq(len(items))
+    pub = [x for x in items if x["i"] not in adult_ids]
+    pub_cats = [c for c in cats if any(x["c"] == c for x in pub)]
     site = landing.Site(
         id="costume", root=root, site_url=site_url, name="服装集",
         tagline=f"AI 绘画服装参考图库，{len(items)} 套服装、{n_files} 张图、86 个标签。",
         license_note="图片为 AI 生成，著作权归原作者，禁止再分发图片文件本身。",
         author="ギア", author_url="https://x.com/giaaibusi", source="https://ai-costume-gallery.pages.dev/",
         faq=FAQ, accent="#4f7ee8",
-        index_title="AI 绘画服装参考：全部 8 个分类与 86 个标签",
+        index_title="AI 绘画服装参考：按分类与标签浏览",
         index_intro=(f"服装集收录 {len(items)} 套 AI 生成的服装参考图，按季节和用途分 8 个分类，"
-                     "每套服装平均带 8.5 个英文关键词标签。下面按颜色、单品、鞋袜、配饰、材质图案、长度列出全部标签，"
-                     "点进去可以看到该标签下的服装缩略图。"),
+                     "每套服装平均带 8.5 个英文关键词标签。下面按颜色、单品、鞋袜、配饰、材质图案、长度列出标签，"
+                     "点进去可以看到该标签下的服装缩略图；内衣、性感两类不在这里列出，只在画廊中浏览。"),
     )
 
     def to_item(x):
@@ -51,8 +55,8 @@ def build(root, site_url, items, cats):
                             caption=x["i"], w=360, h=540)
 
     facets = []
-    for c in cats:
-        xs = [x for x in items if x["c"] == c]
+    for c in pub_cats:
+        xs = [x for x in pub if x["c"] == c]
         top = Counter(t for x in xs for t in x["t"]).most_common(12)
         czh = CAT_ZH.get(c, c)
         facets.append(landing.Facet(
@@ -68,8 +72,8 @@ def build(root, site_url, items, cats):
             items=[to_item(x) for x in xs], gallery_hash=f"cat={c}",
             related=[(f"tag/{t}", f"{TAG_ZH.get(t, t)} {t}", n) for t, n in top]))
 
-    for t, n in Counter(t for x in items for t in x["t"]).most_common():
-        xs = [x for x in items if t in x["t"]]
+    for t, n in Counter(t for x in pub for t in x["t"]).most_common():
+        xs = [x for x in pub if t in x["t"]]
         co = Counter(u for x in xs for u in x["t"] if u != t).most_common(12)
         by_cat = Counter(x["c"] for x in xs).most_common()
         tzh, tja, grp = TAG_ZH.get(t, t), TAG_JA.get(t, t), GROUP_OF.get(t, "其他")
@@ -96,6 +100,6 @@ def build(root, site_url, items, cats):
          "标签保留原站英文关键词，可直接复制做提示词。"],
         [("服装", f"{len(items)} 套"), ("图片", f"{n_files} 张"), ("分类", "8 个"), ("标签", "86 个，分 6 组"),
          ("语言", "中文 / 日本語"), ("素材", "AI 生成，作者ギア")],
-        [(f"category/{c}/", CAT_ZH.get(c, c)) for c in cats],
+        [(f"category/{c}/", CAT_ZH.get(c, c)) for c in pub_cats],
         FAQ)
     return urls, intro, FAQ

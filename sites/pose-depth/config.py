@@ -106,7 +106,8 @@ SEO_PAGES = {
     "licenseNote": "图片为 AI 生成，著作权归原作者，禁止再分发图片文件本身，原站另禁止批量下载。",
     "descTail": "灰度深度图可直接用于 ControlNet depth 控制。",
     "accent": "#6b7280",
-    # 只为标准系展开到分类页；性感系、上半身只保留系列页，双人系列不生成落地页（见 shared/pose_seo.py）
+    # 只为标准系展开到分类页；双人系列不生成落地页。成人向姿势（sites.json 的 adult 规则）
+    # 不进任何落地页，所以性感系没有页面，上半身系列页只列可爱系（见 shared/pose_seo.py）
     "expandSeries": ["全身1人・標準系"],
     "skipSeries": ["2人絡み"],
     "introParas": lambda n, m: [

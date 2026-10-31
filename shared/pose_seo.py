@@ -2,8 +2,9 @@
 """姿势 / 深度姿势共用：静态落地页（系列、分类、系列×分类）与主页静态介绍
 
 两站数据结构相同，文案差异取自各站 config.py 的 SEO_PAGES。
-由 shared/pose_gallery.build() 调用 build(root, site_url, cfg, data, series_list, cats)。
-Shisei 也用这一套：中文名表取 cfg 的 seriesZh / catZh / angZh，onlyRatings 控制哪些姿势可以出现在落地页里。
+由 shared/pose_gallery.build() 调用 build(root, site_url, cfg, data, series_list, cats, adult)。
+Shisei 也用这一套：中文名表取 cfg 的 seriesZh / catZh / angZh。
+哪些姿势算成人向、不进落地页，由 sites.json 的 adult 规则决定（shared/adult.py）。
 """
 from collections import Counter
 
@@ -11,16 +12,16 @@ import landing
 from pose_i18n import SERIES_ZH, CAT_ZH, ANG_ZH
 
 
-def build(root, site_url, cfg, data, series_list, cats):
+def build(root, site_url, cfg, data, series_list, cats, adult=frozenset()):
+    """adult = 成人向姿势的 (系列, 分類, 编号) 集合"""
     sp = cfg["seoPages"]                       # 各站文案
     kind = sp["kind"]                          # 例如「姿势参考图」「姿势深度图」
     S_ZH, C_ZH, A_ZH = cfg.get("seriesZh", SERIES_ZH), cfg.get("catZh", CAT_ZH), cfg.get("angZh", ANG_ZH)
     _zh_s = lambda x: S_ZH.get(x, x)
     _zh_c = lambda x: C_ZH.get(x, x)
     author, author_url = sp.get("author", "ギア"), sp.get("authorUrl", "https://x.com/giaaibusi")
-    # onlyRatings：只有这些 rating 的姿势进落地页（Shisei 的 suggestive 姿势不生成可被收录的页面）
-    only = set(sp.get("onlyRatings", []))
-    indexable = [p for p in data if not only or (p.get("r", 0) == 0)]
+    # 成人向姿势（sites.json 的 adult 规则，见 shared/adult.py）不进任何落地页，连缩略图也不放
+    indexable = [p for p in data if (p["s"], p["c"], p["p"]) not in adult]
     n_poses = len(data)
     n_imgs = sum(len(p["v"]) for p in data)
     FAQ = sp["faq"]
@@ -32,7 +33,7 @@ def build(root, site_url, cfg, data, series_list, cats):
         index_title=f"{sp['name']}：全部系列与分类",
         index_intro=(f"{sp['name']}收录 {n_poses} 个姿势、{n_imgs} 张{kind}，分 {len(series_list)} 个系列、"
                      f"{len(cats)} 个动作分类。每个姿势都有正面、侧面、斜角、俯视、仰视 5 个视角。"
-                     "下面按系列和分类列出全部落地页。"),
+                     "下面按系列和分类列出落地页；成人向的系列与分类不在这里列出，只在画廊中浏览。"),
     )
 
     def items_of(ps):
@@ -60,9 +61,9 @@ def build(root, site_url, cfg, data, series_list, cats):
             items=items_of(ps), gallery_hash=gallery_hash, related=related)
 
     facets = []
-    # 成人向系列（双人交缠、性感系、上半身里露骨的分类）只给系列页，不按分类单独生成落地页：
-    # 分类名含性行为术语，作为页面标题被收录会让整个域名被判为成人站，连带 CC0 的人像集。
-    # 哪些系列按分类展开，由各站 config.py 的 SEO_PAGES["expandSeries"] 决定。
+    # 成人向内容不进可收录页面：混有成人内容的整个域名可能被判为成人站，SafeSearch 下连带 CC0 的人像集。
+    # adult 里的系列与分类已在上面从 indexable 去掉（只剩其余姿势的系列页不会出现成人向缩略图）；
+    # 剩下的系列里只有 SEO_PAGES["expandSeries"] 按分类展开，skipSeries 整个系列不生成落地页。
     expand = set(sp.get("expandSeries", []))
     skip = set(sp.get("skipSeries", []))         # 不生成任何落地页的系列（只在画廊里浏览）
     listed = [s for s in series_list if s not in skip and any(p["s"] == s for p in indexable)]

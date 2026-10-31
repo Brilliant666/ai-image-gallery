@@ -109,6 +109,7 @@
       "source": "https://ai-costume-gallery.pages.dev/",
       "cover": "thumbs/春/SPR-0001.webp",
       "coverPos": "center 25%",
+      "adult": {"分类": ["ランジェリー", "セクシー"]},
       "tiers": [
         "thumb",
         "img",
@@ -160,8 +161,9 @@
       ],
       "license": "restricted",
       "source": "https://ai-pose-gallery.pages.dev/",
-      "cover": "thumbs/全身1人・セクシー系/立ち/P001/正面.jpg",
+      "cover": "thumbs/全身1人・標準系/立ち/P015/正面.jpg",
       "coverPos": "center 6%",
+      "adult": {"系列": ["2人絡み", "全身1人・セクシー系"], "分類": ["胸寄せ・谷間強調系", "セクシー・露骨寄り系"]},
       "tiers": [
         "thumb",
         "full"
@@ -212,8 +214,9 @@
       ],
       "license": "restricted",
       "source": "https://ai-pose-depth-gallery.pages.dev/",
-      "cover": "thumbs/全身1人・セクシー系/立ち/P001/正面.jpg",
+      "cover": "thumbs/全身1人・標準系/立ち/P015/正面.jpg",
       "coverPos": "center 6%",
+      "adult": {"系列": ["2人絡み", "全身1人・セクシー系"], "分類": ["胸寄せ・谷間強調系", "セクシー・露骨寄り系"]},
       "tiers": [
         "thumb",
         "full"
@@ -266,6 +269,7 @@
       "source": "https://shisei.indaloop.app/",
       "cover": "thumbs/std_P001_front.webp",
       "coverPos": "center 8%",
+      "adult": {"rating": ["suggestive"]},
       "tiers": [
         "thumb",
         "mid",

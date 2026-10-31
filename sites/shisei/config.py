@@ -138,8 +138,7 @@ SEO_PAGES = {
     "accent": "#1a5cc8",
     "author": "Shisei", "authorUrl": REPO,
     "dlFormat": "WEBP", "factSource": "AI 生成，Shisei 项目",
-    # 同上游站点：suggestive 姿势不生成可被收录的页面。按 rating 过滤，系列页只列 general 的姿势
-    "onlyRatings": ["general"],
+    # 同上游站点：suggestive 姿势不生成可被收录的页面（sites.json 的 adult 规则按 rating 判定），系列页只列 general 的姿势
     "expandSeries": ["全身・標準"],
     # 双人与全身・性感整个系列不生成落地页（同姿势集的做法），只在画廊里浏览
     "skipSeries": ["ふたり", "全身・セクシー"],

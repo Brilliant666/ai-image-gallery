@@ -55,6 +55,7 @@ sites/<新站id>/
 | `tiers` | 下载与校验的档位，对应 manifest 里的 `<tier>_url` / `<tier>_path` |
 | `imageDirs` | `release.py` 硬链接的目录；含 `mid` 时 `mid.py` 会为该站生成中图（`tiers` 里已有 `mid` 的站点由上游提供，不生成） |
 | `license` | `cc0` / `conditional` / `restricted`，决定入口页卡片上的授权徽章 |
+| `adult` | 可选。成人向内容的判定规则：`{manifest 字段名: [取值, …]}`，任一字段命中即算成人向，例如 `{"分类": ["ランジェリー"]}`。命中的图不进任何静态落地页，`tests/run.py` 会检查（见 `shared/adult.py`） |
 
 站点在入口页的顺序 = `sites.json` 数组顺序。
 

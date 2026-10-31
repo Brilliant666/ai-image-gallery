@@ -14,6 +14,7 @@ cfg 需要的键：
 """
 import csv, json, os, sys
 
+import adult
 from pose_i18n import SERIES_ZH, CAT_ZH, ANG_ZH, NAME_ZH
 
 
@@ -31,12 +32,15 @@ def build(root, cfg):
     """
     UI = cfg["ui"]
     rows = json.load(open(os.path.join(root, "manifest.json"), encoding="utf-8"))
+    # 成人向规则在 sites.json（shared/adult.py），按站点目录名取
+    ADULT_RULE = adult.rules(os.path.basename(os.path.normpath(root)))
 
     # 站点地址：部署前用环境变量覆盖，否则 canonical / sitemap 会指向占位域名
     SITE_URL = os.environ.get("SITE_URL", "https://example.com").rstrip("/")
 
     ANG_ORDER = cfg.get("angOrder", ["正面", "横", "斜め", "上から", "下から"])
-    SERIES_ORDER = cfg.get("seriesOrder", ["全身1人・セクシー系", "全身1人・標準系", "上半身1人", "2人絡み"])
+    # 标准系排第一：画廊默认按系列排序，打开页面首屏就是这一系列（2026-10-31 前是性感系在前）
+    SERIES_ORDER = cfg.get("seriesOrder", ["全身1人・標準系", "上半身1人", "全身1人・セクシー系", "2人絡み"])
     S_ZH, C_ZH, A_ZH = cfg.get("seriesZh", SERIES_ZH), cfg.get("catZh", CAT_ZH), cfg.get("angZh", ANG_ZH)
     N_ZH = cfg.get("nameZh", NAME_ZH)
     AUTHOR, AUTHOR_URL = cfg.get("author", "ギア"), cfg.get("authorUrl", "https://x.com/giaaibusi")
@@ -45,8 +49,11 @@ def build(root, cfg):
     BLUR = list(cfg.get("blurRatings", []))
 
     poses = {}
+    adult_keys = set()      # 成人向姿势 (系列, 分類, 编号)，不进落地页
     for r in rows:
         key = (r["系列"], r["分類"], r["编号"])
+        if adult.is_adult(r, ADULT_RULE):
+            adult_keys.add(key)
         if key not in poses:
             zh = r.get("姿势名_zh") if N_ZH is None else N_ZH.get(r["姿势名"], r["姿势名"])
             poses[key] = {"s": r["系列"], "c": r["分類"], "p": r["编号"], "n": r["姿势名"],
@@ -906,7 +913,7 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
     landing_urls = []
     if cfg.get("seoPages"):
         import landing, pose_seo
-        landing_urls, seo_intro, FAQ = pose_seo.build(root, SITE_URL, cfg, data, series_list, cats)
+        landing_urls, seo_intro, FAQ = pose_seo.build(root, SITE_URL, cfg, data, series_list, cats, adult_keys)
         html = (html.replace("__SEO_INTRO__", seo_intro).replace("__SEO_CSS__", landing.SEO_INTRO_CSS)
                     .replace("__FAQ_LD__", landing.faq_ld_script(FAQ)))
     else:
