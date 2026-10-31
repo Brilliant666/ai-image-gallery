@@ -141,7 +141,8 @@ class Pages(unittest.TestCase):
         for s in SITES:
             size = os.path.getsize(os.path.join(ROOT, f"sites/{s}/index.html"))
             self.assertLess(size, 240 * 1024, f"{s}/index.html {size // 1024} KB，超出 240 KB")
-        self.assertLess(os.path.getsize(os.path.join(ROOT, "hub/index.html")), 80 * 1024)
+        # 入口页 2026-11 起带配方面板（约 22 KB 脚本），可以在首页查看、复制配方
+        self.assertLess(os.path.getsize(os.path.join(ROOT, "hub/index.html")), 100 * 1024)
 
     def test_json_ld_parses(self):
         # 所有页面里的 JSON-LD 都能解析；CC0 图库的结构化数据带 license
@@ -312,11 +313,36 @@ class Landing(unittest.TestCase):
                 self.assertIn(el, h, rel)
             self.assertLess(h.index('class="pl-bar"'), h.index("<h1"), f"{rel} 顶部栏应在标题之前")
 
+    def test_recipe_wired(self):
+        # 配方：各画廊与入口页都有胶囊和面板；画廊大图有「加入配方」「复制提示词」；画风预设与 shared/recipe.py 一致；
+        # 成人向姿势不内联英文名（不能加入配方，也就用不到）
+        import recipe
+        styles = json.dumps(recipe.STYLES, ensure_ascii=False)
+        for rel in ["hub/index.html"] + [f"sites/{s}/index.html" for s in SITES]:
+            h = read(rel)
+            for el in ('id="rcFab"', 'id="rcPan"', 'id="rcCopy"', 'id="rcBoard"'):
+                self.assertIn(el, h, f"{rel} 缺 {el}")
+            self.assertIn(styles, h, f"{rel} 的画风预设与 shared/recipe.py 不一致")
+            if rel.startswith("sites/"):
+                for el in ('id="mrec"', 'id="mprompt"', "PL.recipe.grid(", "PL.recipe.button("):
+                    self.assertIn(el, h, f"{rel} 缺 {el}")
+        for s in ("pose", "pose-depth", "shisei"):
+            poses = page_db(read(f"sites/{s}/index.html"))["poses"]
+            self.assertFalse([p["p"] for p in poses if p.get("x") and ("e" in p or "ed" in p)], f"{s} 成人向姿势不应带英文")
+            self.assertGreater(sum(1 for p in poses if p.get("e")), 90, f"{s} 英文姿势名太少")
+        # 服装标签内联成下标，标签表覆盖所有下标
+        db = page_db(read("sites/costume/index.html"))
+        self.assertTrue(all(isinstance(n, int) and 0 <= n < len(db["tags"]) for x in db["items"] for n in x["t"]))
+        # 人像每种风格都有英文名
+        sys.path.insert(0, os.path.join(ROOT, "sites", "portrait", "scripts"))
+        import translations as ptr
+        self.assertEqual(sorted(set(ptr.STYLE_ZH) - set(ptr.STYLE_EN)), [])
+
     def test_guide_page(self):
         # 使用说明页：带顶部栏、各章节锚点（顶部栏的「注意事项」链到 #notes）、进了根 sitemap 与 llms.txt、发布时一起复制
         h = read("hub/guide/index.html")
         self.assertIn('class="pl-bar"', h)
-        for a in ("libs", "browse", "viewer", "pose", "adult", "keys", "notes", "feedback"):
+        for a in ("libs", "browse", "viewer", "pose", "recipe", "adult", "keys", "notes", "feedback"):
             self.assertIn(f'<section id="{a}">', h)
         self.assertIn('rel="canonical" href="https://example.com/guide/"', h)
         for s in CFG["sites"]:

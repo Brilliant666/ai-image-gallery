@@ -417,6 +417,7 @@ K_LR = (["←", "→"], "大图：上一张 / 下一张", "拡大表示：前 / 
 K_POSE_LR = (["←", "→"], "大图：切换视角", "拡大表示：アングル切り替え")
 K_POSE_UD = (["↑", "↓"], "大图：上一个 / 下一个姿势", "拡大表示：前 / 次のポーズ")
 K_DEPTH = (["D"], "线稿 / 深度图", "線画 / デプス")
+K_ADD = (["A"], "大图：加入 / 移出配方", "拡大表示：レシピに追加 / 外す")
 
 
 def _k_nav():
@@ -428,10 +429,10 @@ def _k_nav():
 K_NAV = _k_nav()
 K_HOME = (["0"], "回到入口页", "トップページへ")
 HUB_KEYS = [K_NAV, K_THEME, K_LANG, K_HELP]
-PORTRAIT_KEYS = [K_NAV, K_HOME, K_THEME, K_LANG, K_LR, K_ESC, K_HELP]
-COSTUME_KEYS = [K_NAV, K_HOME, K_SEARCH, K_THEME, K_LANG, K_LR, K_ESC, K_HELP]
-POSE_KEYS = [K_NAV, K_HOME, K_SEARCH, K_DEPTH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ESC, K_HELP]
-LINE_KEYS = [K_NAV, K_HOME, K_SEARCH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ESC, K_HELP]
+PORTRAIT_KEYS = [K_NAV, K_HOME, K_THEME, K_LANG, K_LR, K_ADD, K_ESC, K_HELP]
+COSTUME_KEYS = [K_NAV, K_HOME, K_SEARCH, K_THEME, K_LANG, K_LR, K_ADD, K_ESC, K_HELP]
+POSE_KEYS = [K_NAV, K_HOME, K_SEARCH, K_DEPTH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ADD, K_ESC, K_HELP]
+LINE_KEYS = [K_NAV, K_HOME, K_SEARCH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ADD, K_ESC, K_HELP]
 PAGE_KEYS = [K_NAV, K_HOME, K_THEME, K_LANG, K_HELP]      # 落地页、使用说明页
 
 AGE_WHAT = {"zh": "包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类；CC0 线稿里偏性感的姿势关闭时模糊显示。",

@@ -18,21 +18,37 @@ cfg 需要的键：code, title, desc, ogSite, ogTitle, ogDesc, twTitle, twDesc, 
 """
 import csv, json, os, re
 
-import adult, landing, ui
+import adult, landing, recipe, ui
 from pose_i18n import SERIES_ZH, CAT_ZH, ANG_ZH, NAME_ZH
 
 
-def _thumb_dir(rows):
-    """缩略图 / 原图路径能否按规则由 系列/分類/编号/视角 拼出来；能就只内联规则，不逐张写路径"""
-    def rule(r, kind):
-        ext = {"t": r["thumb_path"].rsplit(".", 1)[1], "f": r["full_path"].rsplit(".", 1)[1]}[kind]
-        top = "thumbs" if kind == "t" else "img"
-        return f'{top}/{r["系列"]}/{r["分類"]}/{r["编号"]}/{r["视角"]}.{ext}'
+def _pose_en(root):
+    """姿势英文名与英文描述（配方拼提示词用）：取 Shisei CC0 目录的 name_en / desc_en，按日文姿势名对应"""
+    p = os.path.join(os.path.dirname(os.path.normpath(root)), "shisei", "data", "catalog.json")
+    if not os.path.exists(p):
+        return {}
+    with open(p, encoding="utf-8") as f:
+        return {c["name_jp"]: (c.get("name_en") or "", c.get("desc_en") or "") for c in json.load(f)}
+
+
+def _thumb_dir(rows, flat=None):
+    """缩略图 / 原图路径能否按规则拼出来；能就只内联规则，不逐张写路径。两种规则：
+       分目录：<档>/<系列>/<分類>/<编号>/<视角>.<扩展名>（姿势、深度姿势）
+       平铺：  <档>/<系列码>_<编号>_<视角码>.<扩展名>（Shisei；flat = {"s": 系列→码, "a": 视角→码}）"""
     exts = {(r["thumb_path"].rsplit(".", 1)[1], r["full_path"].rsplit(".", 1)[1]) for r in rows}
     if len(exts) != 1:
         return None
+    tx, fx = next(iter(exts))
+
+    def rule(r, kind):
+        top, ext = ("thumbs", tx) if kind == "t" else ("img", fx)
+        if flat:
+            return f'{top}/{flat["s"].get(r["系列"], "?")}_{r["编号"]}_{flat["a"].get(r["视角"], "?")}.{ext}'
+        return f'{top}/{r["系列"]}/{r["分類"]}/{r["编号"]}/{r["视角"]}.{ext}'
     ok = all(rule(r, "t") == r["thumb_path"] and rule(r, "f") == r["full_path"] for r in rows)
-    return {"tx": next(iter(exts))[0], "fx": next(iter(exts))[1]} if ok else None
+    if not ok:
+        return None
+    return {"tx": tx, "fx": fx, **({"fs": flat["s"], "fa": flat["a"]} if flat else {})}
 
 
 def build(root, cfg):
@@ -62,7 +78,7 @@ def build(root, cfg):
                   for r in json.load(open(os.path.join(os.path.dirname(root), other, "manifest.json"), encoding="utf-8"))}
         assert mine == theirs, "线稿与深度图的 manifest 不再一一对应，不能合成一个模块"
 
-    rule = _thumb_dir(rows)
+    rule = _thumb_dir(rows, cfg.get("flatPaths"))
     by_view = {(r["系列"], r["分類"], r["编号"], r["视角"]): r for r in rows}
     poses, adult_keys = {}, set()
     for r in rows:
@@ -78,6 +94,14 @@ def build(root, cfg):
         poses[key]["v"].append(v)
     for key in adult_keys:
         poses[key]["x"] = 1
+    # 英文名 e、英文描述 ed：只给能加入配方的（非成人向）姿势，成人向不内联
+    EN = _pose_en(root) if cfg.get("poseEn", True) else {}
+    for p in poses.values():
+        ne, de = EN.get(p["n"], ("", ""))
+        if "x" not in p and ne:
+            p["e"] = ne
+            if de:
+                p["ed"] = de
     for p in poses.values():
         p["v"].sort(key=lambda v: ANG_ORDER.index(v["a"]) if v["a"] in ANG_ORDER else 99)
     data = sorted(poses.values(), key=lambda p: (SERIES_ORDER.index(p["s"]) if p["s"] in SERIES_ORDER else 99, p["p"]))
@@ -116,6 +140,8 @@ def build(root, cfg):
         "__UI_HEAD__": ui.head_script(), "__UI_CSS__": ui.head_css(),
         "__BLUR_CSS__": adult.BLUR_CSS if ADULT_MODE == "blur" else "",
         "__UI_BAR__": ui.bar(sid), "__UI_DIALOGS__": ui.dialogs(keys), "__UI_JS__": ui.body_script(),
+        "__RC_CSS__": recipe.CSS, "__RC_HTML__": recipe.html("../"), "__RC_JS__": recipe.script(),
+        "__RC_BTNS__": recipe.viewer_buttons(), "__SID__": sid,
         "__SEO_CSS__": landing.SEO_INTRO_CSS, "__SEO_INTRO__": seo_intro,
         "__FAQ_LD__": landing.faq_ld_script(FAQ) if FAQ else "",
         "__EYEBROW__": ui.bi(U["eyebrow"], UI["ja"]["eyebrow"]),
@@ -250,6 +276,7 @@ html:not([data-theme="dark"]) .ph>img,html:not([data-theme="dark"]) .strip img,h
 .mview{display:flex}
 .mview button{flex:1}
 __BLUR_CSS__
+__RC_CSS__
 .seo-intro{--si-max:var(--w)}
 __SEO_CSS__
 </style>
@@ -311,6 +338,7 @@ __SEO_INTRO__
       <div class="mang" id="mang"></div>
       <div class="macts">
         <a id="mdl" class="btn pri" href="#" download></a>
+        __RC_BTNS__
         <a id="mfull" class="btn" href="#" target="_blank" rel="noopener"></a>
         <button type="button" id="mcopy" class="btn ghost"></button>
       </div>
@@ -320,6 +348,8 @@ __SEO_INTRO__
 </div>
 __UI_DIALOGS__
 __UI_JS__
+__RC_HTML__
+__RC_JS__
 <script>
 (function(){
 const DB = __PAYLOAD__;
@@ -340,9 +370,9 @@ const VARS = DB.vars || null;
 let VAR = DB.variant || null;
 const VSW = document.getElementById(VARS ? 'vsw' : '');   // 只有姿势模块有线稿 / 深度图开关
 /*PATHS*/
-const base = (p, v, kind) => DB.path
-  ? (kind === 't' ? 'thumbs/' : 'img/') + p.s + '/' + p.c + '/' + p.p + '/' + v.a + '.' + (kind === 't' ? DB.path.tx : DB.path.fx)
-  : v[kind];
+const base = (p, v, kind) => !DB.path ? v[kind]
+  : (kind === 't' ? 'thumbs/' : 'img/') + (DB.path.fs ? DB.path.fs[p.s] + '_' + p.p + '_' + DB.path.fa[v.a] : p.s + '/' + p.c + '/' + p.p + '/' + v.a)
+    + '.' + (kind === 't' ? DB.path.tx : DB.path.fx);
 const pre = k => VARS ? VARS[k || VAR].pre : '';
 const thumbOf = (p, v, k) => pre(k) + base(p, v, 't');
 const fullOf = (p, v, k) => pre(k) + base(p, v, 'f');
@@ -350,6 +380,20 @@ const fullOf = (p, v, k) => pre(k) + base(p, v, 'f');
 const midOf = f => f.replace(/(^|\/)img\//, '$1mid/').replace(/\.[^./]+$/, '.webp');
 const pathOf = (p, v) => [base(p, v, 't'), base(p, v, 'f')];
 /*END PATHS*/
+
+/* 配方：条目路径存成相对站点根（另一版本的前缀 ../pose-depth/ → pose-depth/），任何一页都能显示 */
+const SID = '__SID__', MOD = VARS ? 'pose' : SID;
+const ANG_EN = {'正面':'front', '横':'side', '斜め':'three-quarter', '上から':'high-angle', '下から':'low-angle'};
+const rootRel = r => r.startsWith('../') ? r.slice(3) : SID + '/' + r;
+function recItem(p, v){
+  if (!p || !v || p.x) return null;
+  const k = VAR || 'line', vs = {};
+  (VARS ? Object.keys(VARS) : ['line']).forEach(x => { vs[x] = rootRel(midOf(fullOf(p, v, VARS ? x : undefined))); });
+  return {k:'pose', id: MOD + ':' + p.s + ':' + p.p + ':' + v.a + ':' + k, site: VARS ? (k === 'depth' ? VARS.depth.site : VARS.line.site) : SID,
+    th: rootRel(thumbOf(p, v)), im: rootRel(midOf(fullOf(p, v))), vs, var: k,
+    n: {zh: p.z || p.n, ja: p.n, en: p.e || ''}, d: p.ed || '', ang: {zh: AZ[v.a] || v.a, ja: v.a, en: ANG_EN[v.a] || ''}};
+}
+const promptOf = (p, v) => (p.ed || p.e || p.n) + (ANG_EN[v.a] ? ', ' + ANG_EN[v.a] + ' view' : '');
 
 const PAGE_POSE = 60, PAGE_IMG = 120;
 const S = {series:null, cat:null, ang:null, sort:'series', view:'pose', q:'', n:PAGE_POSE};
@@ -372,6 +416,7 @@ function applyText(){
   $('#view').children[0].textContent = t('viewPose'); $('#view').children[1].textContent = t('viewCard');
   $('#mhint').innerHTML = t('hint');
   $('#mdl').textContent = t('dlPng'); $('#mfull').textContent = t('openFull'); $('#mcopy').textContent = t('copyLink');
+  $('#mprompt span').textContent = PL.recipe.t('prompt');
   $('#mclose').ariaLabel = t('close'); $('#mprev').ariaLabel = t('prev'); $('#mnext').ariaLabel = t('next');
   if (VARS){ $('#cmpTa').textContent = t('vLine'); $('#cmpTb').textContent = t('vDepth'); $('#cmpR').ariaLabel = t('compare'); }
 }
@@ -469,7 +514,8 @@ function card({p, d}, i){
   return '<article class="card'+(unblurred.has(p.p)?' unblur':'')+'" tabindex="0" data-i="'+i+'"'+(p.x?' data-x="1"':'')+' aria-label="'+esc(name+' '+p.p)+'">'+
     '<div class="ph"'+(p.x?' data-blur="'+esc(t('blurTap'))+'"':'')+'><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(thumbOf(p, d))+'" alt="'+esc(name)+'">'+
       '<span class="badge">'+esc(S.view==='pose' ? p.p : nA(d.a))+'</span>'+
-      '<a class="dl" href="'+esc(fullOf(p, d))+'" download="'+esc(file)+'" title="'+esc(t('dlOne'))+'" aria-label="'+esc(t('dlOne'))+'">'+DL_ICON+'</a></div>'+
+      '<a class="dl" href="'+esc(fullOf(p, d))+'" download="'+esc(file)+'" title="'+esc(t('dlOne'))+'" aria-label="'+esc(t('dlOne'))+'">'+DL_ICON+'</a>'+
+      PL.recipe.addBtn(recItem(p, d))+'</div>'+
     '<div class="info"><h3>'+esc(name)+'</h3><div class="sub">'+esc(nS(p.s)+' · '+nC(p.c)+(S.view==='card'?' · '+p.p:''))+'</div></div>'+strip+'</article>';
 }
 /* 切换线稿 / 深度图：只换已渲染图片的地址，不重画网格 */
@@ -486,6 +532,7 @@ function swapVariant(k){
     const dl = c.querySelector('.dl'); dl.href = fullOf(o.p, v); dl.download = o.p.p + '-' + v.a + (VAR === 'depth' ? '-depth' : '') + '__EXT__';
   });
   if (modal.classList.contains('open')){ if (MV !== 'cmp') MV = VAR; showM(); }
+  PL.recipe.refresh();
 }
 if (VSW) VSW.addEventListener('click', () => swapVariant(VAR === 'depth' ? 'line' : 'depth'));
 document.addEventListener('keydown', e => {
@@ -501,6 +548,7 @@ grid.addEventListener('mouseover', e => {
   const v = o.p.v.find(x => x.a === b.dataset.a); if (!v) return;
   c.querySelector('.ph>img').src = thumbOf(o.p, v);
   c.querySelectorAll('.strip button').forEach(x => x.classList.toggle('on', x === b));
+  PL.recipe.refresh();
 });
 moreEl.onclick = addMore;
 if ('IntersectionObserver' in window) new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) addMore(); }, {rootMargin:'800px'}).observe(moreEl);
@@ -583,6 +631,7 @@ function showM(){
   $('#mang').innerHTML = p.v.map(x => '<button type="button" data-a="'+esc(x.a)+'" class="'+(x.a===v.a?'on':'')+'" aria-label="'+esc(nA(x.a))+'">'+
     '<img src="'+esc(thumbOf(p, x, k))+'" alt=""><span>'+esc(nA(x.a))+'</span></button>').join('');
   $('#mprev').disabled = $('#mnext').disabled = p.v.length < 2;
+  PL.recipe.refresh();
 }
 /* 对比：拖动或用键盘调 range，--x 控制上层深度图的裁切位置 */
 const cmp = $('#cmp'), cmpR = $('#cmpR');
@@ -604,12 +653,19 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowLeft'){ e.preventDefault(); stepA(-1); }
   else if (e.key === 'ArrowDown'){ e.preventDefault(); stepP(1); }
   else if (e.key === 'ArrowUp'){ e.preventDefault(); stepP(-1); }
+  else if (e.key === 'a' || e.key === 'A'){ e.preventDefault(); if (!$('#mrec').disabled) $('#mrec').click(); }
 });
 let tx = null;
 mwrap.addEventListener('touchstart', e => { if (MV === 'cmp') return; tx = e.touches[0].clientX; }, {passive:true});
 mwrap.addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx;
   if (Math.abs(dx) > 40) stepA(dx < 0 ? 1 : -1); tx = null; }, {passive:true});
 $('#mcopy').addEventListener('click', () => { if (VIEW[M.i]) PL.copy(new URL($('#mfull').getAttribute('href'), location.href).href); });
+$('#mprompt').addEventListener('click', () => { const o = VIEW[M.i]; if (o) PL.copy(promptOf(o.p, M.d || o.d)); });
+/* 配方：卡片「+」取卡片当前显示的视角；大图按钮取大图当前的视角与版本 */
+const cardItemOf = c => { const o = c && VIEW[+c.dataset.i]; if (!o) return null;
+  const cur = c.querySelector('.strip .on'); return recItem(o.p, (cur && o.p.v.find(x => x.a === cur.dataset.a)) || o.d); };
+PL.recipe.grid(grid, cardItemOf);
+PL.recipe.button($('#mrec'), () => { const o = VIEW[M.i]; return o ? {item: recItem(o.p, M.d || o.d), adult: !!o.p.x} : null; });
 
 /* ══ 偏好变化 ══ */
 addEventListener('pl:lang', () => {

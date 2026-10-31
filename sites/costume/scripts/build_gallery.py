@@ -18,7 +18,7 @@ import json, os, sys, csv
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "shared"))
 from translations import CAT_ZH, TAG_ZH, TAG_JA, TAG_GROUPS, UI
-import adult, landing, ui  # noqa: E402
+import adult, landing, recipe, ui  # noqa: E402
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 rows = json.load(open(os.path.join(root, "manifest.json"), encoding="utf-8"))
@@ -39,13 +39,17 @@ items = [{"i": r["id"], "c": r["分类"], "t": r["标签"], "th": r["thumb_path"
 # 三档路径都是 <档>/<分类>/<id>.<扩展名>：页面里按规则拼，内联数据只留 id、分类、标签（省掉约 140 KB）
 RULE = all(x["th"] == f'thumbs/{x["c"]}/{x["i"]}.webp' and x["im"] == f'img/{x["c"]}/{x["i"]}.webp'
            and x["pg"] == f'png/{x["c"]}/{x["i"]}.png' for x in items)
-inline = [{k: v for k, v in x.items() if not RULE or k not in ("th", "im", "pg")} for x in items]
+# 标签按出现次数排序、内联成下标（省掉约 60 KB），页面加载时还原
+from collections import Counter  # noqa: E402
+TAGS = [tg for tg, _ in Counter(tg for x in items for tg in x["t"]).most_common()]
+_ti = {tg: n for n, tg in enumerate(TAGS)}
+inline = [{**{k: v for k, v in x.items() if not RULE or k not in ("th", "im", "pg")}, "t": [_ti[tg] for tg in x["t"]]} for x in items]
 
 cats = [c for c in CAT_ORDER if any(x["c"] == c for x in items)]
 groups = [{"k": k, "ja": ja, "zh": zh, "tags": ts} for k, ja, zh, ts in TAG_GROUPS]
 
 payload = json.dumps({
-    "items": inline, "cats": cats, "groups": groups, "rule": RULE,
+    "items": inline, "tags": TAGS, "cats": cats, "groups": groups, "rule": RULE,
     "catZh": CAT_ZH, "tagZh": TAG_ZH, "tagJa": TAG_JA, "ui": UI,
 }, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 
@@ -106,6 +110,7 @@ html[data-theme="dark"] .sw{box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)}
 .mtags button{height:36px;padding:0 13px;border:0;border-radius:999px;background:var(--sf);color:var(--tx);font-size:13px;cursor:pointer}
 .mtags button:hover{background:var(--sf2)}
 @media(max-width:640px){.fpanel{max-height:60vh;padding:12px}.fpanel .chip{height:36px}}
+__RC_CSS__
 .seo-intro{--si-max:var(--w)}
 __SEO_CSS__
 </style>
@@ -159,6 +164,7 @@ __SEO_INTRO__
       <div class="mtags" id="mtags"></div>
       <div class="macts">
         <a id="mdl" class="btn pri" href="#" download></a>
+        __RC_BTNS__
         <a id="mfull" class="btn" href="#" target="_blank" rel="noopener"></a>
         <button type="button" id="mcopy" class="btn ghost"></button>
       </div>
@@ -168,10 +174,13 @@ __SEO_INTRO__
 </div>
 __UI_DIALOGS__
 __UI_JS__
+__RC_HTML__
+__RC_JS__
 <script>
 (function(){
 const DB = __PAYLOAD__;
 const ITEMS = DB.items, CATS = DB.cats, GROUPS = DB.groups;
+ITEMS.forEach(x => { x.t = x.t.map(n => DB.tags[n]); });   // 标签下标 → 英文标签
 const CZ = DB.catZh, TZ = DB.tagZh, TJ = DB.tagJa, UI = DB.ui;
 const DL_ICON = __DL_ICON__;
 const $ = s => document.querySelector(s);
@@ -187,11 +196,16 @@ const SW = {black:'#151515',white:'#ffffff',ivory:'#fbf6e6',beige:'#e3d3b4',crea
   blue:'#2f6fd4',navy:'#1e2a58',lavender:'#bba8e6',purple:'#7c3ec6',pink:'#f2a7c2',silver:'#c3c4cc',khaki:'#b8a67a'};
 const sw = tg => SW[tg] ? '<i class="sw" style="background:' + SW[tg] + '" aria-hidden="true"></i>' : '';
 const G_COLOR = new Set((GROUPS.find(g => g.k === 'color') || {tags:[]}).tags), G_ITEM = new Set((GROUPS.find(g => g.k === 'item') || {tags:[]}).tags);
-function nameOf(x){
+const nTl = (x, zh) => zh ? (TZ[x]||x) : (TJ[x]||x);
+function nameIn(x, zh){
   const col = x.t.find(tg => G_COLOR.has(tg)), its = x.t.filter(tg => G_ITEM.has(tg)).slice(0, 2);
-  const parts = (its.length ? its : x.t.filter(tg => tg !== col).slice(0, 2)).map(nT);
-  return (col ? nT(col) + ' ' : '') + parts.join(isZh() ? '、' : '・');
+  const parts = (its.length ? its : x.t.filter(tg => tg !== col).slice(0, 2)).map(tg => nTl(tg, zh));
+  return (col ? nTl(col, zh) + ' ' : '') + parts.join(zh ? '、' : '・');
 }
+const nameOf = x => nameIn(x, isZh());
+/* 配方条目（路径相对站点根）；成人向不能加入 */
+const recItem = x => !x || x.x ? null : {k:'costume', id:x.i, site:'costume', th:'costume/' + TH(x), im:'costume/' + IM(x),
+  n:{zh:nameIn(x, true), ja:nameIn(x, false), en:x.t.slice(0, 4).join(' ')}, kw:x.t.join(', '), kz:x.t.map(z => TZ[z] || z).join('、')};
 const subOf = x => nC(x.c) + ' · ' + x.i;
 // 三档路径：<档>/<分类>/<id>.<扩展名>（规则不成立时内联数据里带 th / im / pg）；PATHS 段由 tests/run.py 单独执行核对
 /*PATHS*/
@@ -220,6 +234,7 @@ function applyText(){
   $('#sort').ariaLabel = t('sortLabel'); $('#clearTags').textContent = t('clearTags');
   $('#mhint').innerHTML = t('hint');
   $('#mdl').textContent = t('dlPng'); $('#mfull').textContent = t('openFull'); $('#mcopy').textContent = t('copyLink');
+  $('#mprompt span').textContent = PL.recipe.t('prompt');
   $('#mclose').ariaLabel = t('close'); $('#mprev').ariaLabel = t('prev'); $('#mnext').ariaLabel = t('next');
 }
 
@@ -289,6 +304,7 @@ function card(x, i){
   return '<article class="card" tabindex="0" data-i="'+i+'" aria-label="'+esc(nameOf(x)+' '+x.i)+'">'+
     '<div class="ph"><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(TH(x))+'" alt="'+esc(nameOf(x))+'">'+
       '<a class="dl" href="'+esc(PG(x))+'" download="'+esc(x.i+'.png')+'" title="'+esc(t('dlOne'))+'" aria-label="'+esc(t('dlOne'))+'">'+DL_ICON+'</a>'+
+      PL.recipe.addBtn(recItem(x))+
       '<div class="tagbar">'+tagHtml(x)+'</div></div>'+
     '<div class="info"><h3>'+esc(nameOf(x))+'</h3><div class="sub">'+esc(subOf(x))+'</div></div></article>';
 }
@@ -330,6 +346,7 @@ function showM(){
     .map(([a,b]) => '<dt>'+esc(a)+'</dt><dd>'+esc(b)+'</dd>').join('');
   $('#mtags').innerHTML = x.t.map(tg => '<button type="button" data-t="'+esc(tg)+'" title="'+esc(tg)+'">'+sw(tg)+esc(nT(tg))+'</button>').join('');
   $('#mprev').disabled = MI <= 0; $('#mnext').disabled = MI >= VIEW.length - 1;
+  PL.recipe.refresh();
 }
 $('#mtags').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
   PL.closeDialog(modal); S.tags.add(b.dataset.t); drawTagGroups(); draw(); });
@@ -339,11 +356,15 @@ modal.addEventListener('click', e => { if (e.target === modal) PL.closeDialog(mo
 // 翻到还没渲染的那一页时先追加卡片，关闭大图后焦点能回到对应的卡片
 function step(n){ const j = MI + n; if (j < 0 || j >= VIEW.length) return; MI = j; if (MI >= S.n) addMore(); showM(); }
 document.addEventListener('keydown', e => { if (PL.top() !== modal) return;
-  if (e.key === 'ArrowRight'){ e.preventDefault(); step(1); } else if (e.key === 'ArrowLeft'){ e.preventDefault(); step(-1); } });
+  if (e.key === 'ArrowRight'){ e.preventDefault(); step(1); } else if (e.key === 'ArrowLeft'){ e.preventDefault(); step(-1); }
+  else if (e.key === 'a' || e.key === 'A'){ e.preventDefault(); if (!$('#mrec').disabled) $('#mrec').click(); } });
 let tx = null;
 mwrap.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
 mwrap.addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1); tx = null; }, {passive:true});
 $('#mcopy').addEventListener('click', () => { const x = VIEW[MI]; if (x) PL.copy(new URL(PG(x), location.href).href); });
+$('#mprompt').addEventListener('click', () => { const x = VIEW[MI]; if (x) PL.copy(x.t.join(', ')); });
+PL.recipe.grid(grid, c => recItem(c && VIEW[+c.dataset.i]));
+PL.recipe.button($('#mrec'), () => { const x = VIEW[MI]; return x ? {item: recItem(x), adult: !!x.x} : null; });
 
 // 切换语言只更新文字，保留已加载的页数与滚动位置
 addEventListener('pl:lang', () => {
@@ -376,6 +397,7 @@ stats = [(f"{len(items):,}", "套服装", "着の衣装"), (f"{len(items) * 3:,}
 for k, v in {
     "__UI_HEAD__": ui.head_script(), "__UI_CSS__": ui.head_css(), "__UI_BAR__": ui.bar("costume"),
     "__UI_DIALOGS__": ui.dialogs(ui.COSTUME_KEYS), "__UI_JS__": ui.body_script(),
+    "__RC_CSS__": recipe.CSS, "__RC_HTML__": recipe.html("../"), "__RC_JS__": recipe.script(), "__RC_BTNS__": recipe.viewer_buttons(),
     "__SEO_INTRO__": seo_intro, "__SEO_CSS__": landing.SEO_INTRO_CSS, "__FAQ_LD__": landing.faq_ld_script(FAQ),
     "__EYEBROW__": ui.bi(UI["zh"]["eyebrow"], UI["ja"]["eyebrow"]), "__H1__": ui.bi(UI["zh"]["h1"], UI["ja"]["h1"]),
     "__LEAD__": ui.bi(UI["zh"]["sub1"], UI["ja"]["sub1"]),

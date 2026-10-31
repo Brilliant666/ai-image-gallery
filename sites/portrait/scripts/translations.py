@@ -135,6 +135,71 @@ UI = {
 }
 
 
+# ── 英文（配方拼提示词用）──────────────────────────────
+HAIR_EN = {"ショート": "short hair", "ミディアム": "medium-length hair", "セミロング": "shoulder-length hair",
+           "ロング": "long hair", "未分類": "hair"}
+STYLE_EN = {
+    "2wayバングのワンカールミディアムボブ": "medium bob with a single curl and two-way bangs",
+    "2wayバングの韓国レイヤー": "Korean layered cut with two-way bangs",
+    "くびれショート（襟足長め・シースルーバング）": "curved short layered cut, longer nape, see-through bangs",
+    "くびれセミロング（透明感カラー）": "curved shoulder-length layers, translucent hair color",
+    "くびれボブ（インナーカラー）": "curved bob with peekaboo inner color",
+    "くるくるハードパーマミディアム": "medium hair with tight hard-perm curls",
+    "たっぷりレイヤー（ラベンダーグレージュ）": "heavily layered cut, lavender greige",
+    "ぱっつん前髪のミディアムストレート": "medium straight hair with blunt bangs",
+    "ウェットヘアの前髪長めショートボブ": "short bob with long bangs, wet-look styling",
+    "ショートウルフ（ミニウルフ）": "short wolf cut (mini wolf)",
+    "シースルーぱっつん前髪のシャギーレイヤー": "shaggy layers with see-through blunt bangs",
+    "スパイラルパーマショートボブ（黒髪）": "short bob with spiral perm, black hair",
+    "スパイラルパーマ韓国風セミロング": "Korean-style shoulder-length hair with spiral perm",
+    "セミロングウルフ（チェリーレッド）": "shoulder-length wolf cut, cherry red",
+    "セミロングストレート（前髪あり・暗髪）": "shoulder-length straight hair with bangs, dark hair",
+    "セミロングニュアンスパーマ": "shoulder-length hair with a soft textured perm",
+    "セミロング顔まわりレイヤー（ミルクティーベージュ）": "shoulder-length hair with face-framing layers, milk-tea beige",
+    "セミロング黒髪ツヤレイヤー": "glossy layered shoulder-length black hair",
+    "ハイトーンミルクティーグレージュミディアム": "medium hair, light milk-tea greige",
+    "ハイトーンミルクティーショートボブ": "short bob, light milk-tea color",
+    "ハイライト入り丸みショート": "rounded short cut with highlights",
+    "ハイレイヤー×裾カラー（ブロンド）": "high layers with blonde-dyed ends",
+    "ハッシュカット（グレージュ）": "hush cut, greige",
+    "ハッシュカット（韓国ヘア）": "Korean hush cut",
+    "バタフライカット（ヘーゼルカラー）": "butterfly cut, hazel",
+    "バタフライカット（ミントベージュ・シースルーバング）": "butterfly cut with see-through bangs, mint beige",
+    "バーガンディのシースルーレイヤー": "airy burgundy layers",
+    "マッシュショート（前髪長め）": "mushroom short cut with long bangs",
+    "ミディアムウルフパーマ": "medium wolf cut with a perm",
+    "ミディアムニュアンスパーマ（コテ巻き風）": "medium hair with soft curling-iron waves",
+    "ミディアムレイヤー内巻きワンカール（まろベージュ）": "medium layers with an inward curl, soft beige",
+    "ミニボブパーマ（くせ毛風）": "mini bob with a natural-wave perm",
+    "ミニボブ（オン眉ぱっつん前髪）": "mini bob with blunt bangs above the eyebrows",
+    "レイヤーショートボブ（顔まわりレイヤー）": "layered short bob with face-framing layers",
+    "ロブレイヤー（ミントベージュ）": "layered lob, mint beige",
+    "ロングウルフ（クラゲヘア）": "long wolf cut (jellyfish haircut)",
+    "ワンカールレイヤーと後れ毛（ショコラブラウン）": "layers with a single curl and loose face strands, chocolate brown",
+    "丸みショートボブ（シースルーバング・ダークブラウン）": "rounded short bob with see-through bangs, dark brown",
+    "内巻きワンカールボブ（ラベンダーアッシュ）": "bob with an inward curl, lavender ash",
+    "切りっぱなしストレートボブ（前髪なし）": "blunt straight bob, no bangs",
+    "切りっぱなし外ハネミディアムボブ": "blunt medium bob with flipped-out ends",
+    "前下がりひし形ショートボブ（黒髪）": "A-line diamond-shaped short bob, black hair",
+    "前下がりミディアムボブ（マロンベージュ）": "A-line medium bob, marron beige",
+    "外ハネボブ（暗髪）": "flipped-out bob, dark hair",
+    "斜めバングのエアリーカール": "airy curls with side-swept bangs",
+    "耳掛けハンサムショート（前髪なし）": "short cut tucked behind the ears, no bangs",
+    "艶さらストレートミディアムボブ（前髪なし）": "glossy sleek straight medium bob, no bangs",
+    "重めミディアムレイヤー（バレイヤージュ）": "heavy medium layers with balayage",
+    "鎖骨丈ミディアムレイヤーボブ（アッシュグレージュ）": "collarbone-length layered bob, ash greige",
+    "韓国風タッセルボブ（サイドバング）": "Korean tassel bob with side bangs",
+}
+
+
+def style_en(s):
+    return STYLE_EN.get(s, "")
+
+
+def hair_en(h):
+    return HAIR_EN.get(h, "hair")
+
+
 def style_zh(s):
     return STYLE_ZH.get(s, s)
 

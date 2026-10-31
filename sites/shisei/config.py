@@ -116,6 +116,9 @@ CONFIG = {
     "seriesZh": SERIES_ZH,
     "catZh": CAT_ZH,
     "angZh": ANG_ZH,
+    # 图片按 <档>/<系列码>_<编号>_<视角码>.webp 平铺（上游文件名），页面里按规则拼路径
+    "flatPaths": {"s": {"全身・標準": "std", "上半身": "upper", "全身・セクシー": "sexy", "ふたり": "duo"},
+                  "a": {"正面": "front", "斜め": "diag", "横": "side", "上から": "above", "下から": "below"}},
     "nameZh": None,                 # 姿势名中文直接取 manifest 的「姿势名_zh」
     "author": "Shisei", "authorUrl": REPO, "authorMeta": "Shisei (wquguru/shisei, CC0 1.0)",
     "imgExt": ".webp",

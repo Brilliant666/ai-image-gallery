@@ -11,7 +11,7 @@ import json, os, sys
 from html import escape
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "shared"))
-import landing, ui  # noqa: E402
+import landing, recipe, ui  # noqa: E402
 
 HUB  = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HUB)
@@ -131,6 +131,7 @@ html[data-theme="dark"] .credits .lic.ok{background:#14301d;color:#86efac}
 }
 </style>
 __SEO_CSS__
+<style>__RC_CSS__</style>
 __FAQ_LD__
 </head>
 <body>
@@ -152,6 +153,8 @@ __UI_BAR__
 </main>
 __UI_DIALOGS__
 __UI_JS__
+__RC_HTML__
+__RC_JS__
 </body>
 </html>
 """
@@ -217,6 +220,7 @@ def page(cfg, shown, base, title, desc, ld, seo):
             .replace("__UI_BAR__", ui.bar(None, "./"))
             .replace("__UI_DIALOGS__", ui.dialogs(ui.HUB_KEYS))
             .replace("__UI_JS__", ui.body_script())
+            .replace("__RC_CSS__", recipe.CSS).replace("__RC_HTML__", recipe.html("./")).replace("__RC_JS__", recipe.script())
             .replace("__SEO_CSS__", "<style>" + landing.SEO_INTRO_CSS + ".seo-intro{padding:0}</style>")
             .replace("__FAQ_LD__", landing.faq_ld_script(seo["faq"]))
             .replace("__SEO_INTRO__", seo["intro"])
@@ -286,13 +290,14 @@ def guide_page(cfg, base):
         lic_rows.append(
             f'<tr><td>{ui.bi(s["name"]["zh"], s["name"]["ja"])}</td><td><span class="lic {cls}">{ui.bi(lic["zh"], lic["ja"])}</span></td>'
             f'<td>{e(s["author"]["name"])} · <a href="{e(s["source"])}" target="_blank" rel="noopener noreferrer">{e(s["source"].split("//")[-1].rstrip("/"))}</a></td></tr>')
-    keys = [ui.K_NAV, ui.K_HOME, ui.K_SEARCH, ui.K_THEME, ui.K_LANG, ui.K_DEPTH, ui.K_LR, ui.K_POSE_LR, ui.K_POSE_UD, ui.K_ESC, ui.K_HELP]
+    keys = [ui.K_NAV, ui.K_HOME, ui.K_SEARCH, ui.K_THEME, ui.K_LANG, ui.K_DEPTH, ui.K_LR, ui.K_POSE_LR, ui.K_POSE_UD, ui.K_ADD, ui.K_ESC, ui.K_HELP]
     key_rows = "".join("<tr><td>" + "".join(f"<kbd>{e(k)}</kbd>" for k in ks) + f"</td><td>{ui.bi(zh, ja)}</td></tr>"
                        for ks, zh, ja in keys)
     repo, issues = ui.REPO_URL, ui.REPO_URL + "/issues"
     blank = 'target="_blank" rel="noopener noreferrer"'
     toc = [("libs", "四个图库", "4 つのギャラリー"), ("browse", "浏览与筛选", "閲覧と絞り込み"), ("viewer", "大图", "拡大表示"),
-           ("pose", "线稿与深度图", "線画とデプス"), ("adult", "18+ 内容", "18+ コンテンツ"), ("keys", "快捷键", "ショートカット"),
+           ("pose", "线稿与深度图", "線画とデプス"), ("recipe", "配方与提示词", "レシピとプロンプト"),
+           ("adult", "18+ 内容", "18+ コンテンツ"), ("keys", "快捷键", "ショートカット"),
            ("notes", "注意事项与授权", "注意事項とライセンス"), ("feedback", "反馈", "フィードバック")]
     body = f"""
 <nav class="crumb" aria-label="位置"><a href="../">photoai.life</a> / {ui.bi("使用说明", "使い方")}</nav>
@@ -338,6 +343,22 @@ def guide_page(cfg, base):
 <li>{ui.bi("/pose-depth/ 是默认显示深度图的入口，和 /pose/ 是同一个模块。", "/pose-depth/ はデプス表示から始まる入口で、/pose/ と同じモジュールです。")}</li>
 </ul></section>
 
+<section id="recipe"><h2>{ui.bi("配方与提示词", "レシピとプロンプト")}</h2>
+<p>{ui.bi("配方把人像、服装、姿势各一项组合起来，生成可直接使用的提示词。四个图库共用同一份配方，切换图库不会丢失。",
+           "レシピは、ポートレート・衣装・ポーズを 1 つずつ組み合わせて、そのまま使えるプロンプトを作る機能です。4 つのギャラリーで共通です。")}</p>
+<ul>
+<li>{bh("在大图里点「加入配方」或按 <kbd>A</kbd>；桌面上把鼠标移到卡片上，右上角的 <b>+</b> 也可以直接加入。同一类再加一项会替换原来的。",
+       "拡大表示の「レシピに追加」か <kbd>A</kbd> キーで追加します。デスクトップではカード右上の <b>+</b> からも追加でき、同じ種類を追加すると置き換わります。")}</li>
+<li>{ui.bi("右下角的「配方」按钮打开面板：可选英文或中文、多图参考或纯文字，再选一种画风，然后复制提示词。",
+           "右下の「レシピ」ボタンでパネルを開き、英語／中国語、複数画像参照／テキストのみ、スタイルを選んでプロンプトをコピーします。")}</li>
+<li>{ui.bi("「多图参考」按图 1、图 2、图 3 的顺序引用参考图，适合 Nano Banana、GPT Image、Seedream、Qwen-Image-Edit 等能接收多张图的模型；点「下载参考拼图」得到一张三格拼图，或者按同样顺序分别上传三张图。",
+           "「複数画像参照」は画像 1・2・3 の順に参照するので、Nano Banana、GPT Image、Seedream、Qwen-Image-Edit など複数画像を受け付けるモデル向けです。「参考ボードを保存」で 3 枚を並べた画像を保存するか、同じ順に 3 枚をアップロードします。")}</li>
+<li>{ui.bi("「纯文字」只用文字描述，适合 Midjourney、Stable Diffusion 等。大图里的「复制提示词」只复制这一项的英文描述。",
+           "「テキストのみ」は文章だけのプロンプトで、Midjourney や Stable Diffusion 向けです。拡大表示の「プロンプトをコピー」はその 1 件の英語の説明だけをコピーします。")}</li>
+<li>{ui.bi("成人向内容不能加入配方。配方只保存在你的浏览器里。参考拼图需要在线打开本站才能下载，只供你自己出图参考，其中的姿势和服装图片同样不能再分发。",
+           "成人向けの内容はレシピに追加できません。レシピはブラウザ内にのみ保存されます。参考ボードの保存はオンラインで開いたときのみ使え、ご自身の制作の参考用です。中のポーズ・衣装画像も再配布できません。")}</li>
+</ul></section>
+
 <section id="adult"><h2>{ui.bi("18+ 内容", "18+ コンテンツ")}</h2>
 <p>{ui.bi(ui.AGE_WHAT["zh"], ui.AGE_WHAT["ja"])}</p>
 <p>{ui.bi("这些内容默认隐藏。点顶部栏的「18+」并确认已满 18 岁后显示，各图库通用，随时可以关闭。它们不会出现在分类、标签等落地页和站点地图里。",
@@ -370,7 +391,7 @@ def guide_page(cfg, base):
 <a class="btn ghost" href="{e(ui.AUTHOR_URL)}" {blank}>@{e(ui.AUTHOR)}</a></div></section>
 """
     title = "使用说明与注意事项 · photoai.life AI 绘画参考图库"
-    desc = ("photoai.life 使用说明：四个参考图库的浏览与筛选、大图、姿势线稿与深度图切换、18+ 内容、快捷键，"
+    desc = ("photoai.life 使用说明：四个参考图库的浏览与筛选、线稿与深度图、配方与提示词、18+ 内容、快捷键，"
             "以及各图库的授权（CC0 / 禁止再分发）与注意事项。")
     ld = json.dumps({"@context": "https://schema.org", "@type": "WebPage", "name": title, "description": desc,
                      "url": base + "/guide/", "inLanguage": ["zh-CN", "ja"],

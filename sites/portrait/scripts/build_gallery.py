@@ -18,8 +18,8 @@ import json, os, sys, csv
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "shared"))
 from translations import (HAIR_ZH, HAIR_ORDER, SECTION_ZH, SECTION_NOTE_ZH, SECTION_NOTE_JA,
-                          STYLE_ZH, UI, hair_zh, style_zh)
-import landing, ui  # noqa: E402
+                          STYLE_ZH, UI, hair_zh, style_zh, hair_en, style_en)
+import landing, recipe, ui  # noqa: E402
 
 RANK = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ranking.json")
 
@@ -53,7 +53,7 @@ TOP = [_pos[i] for i in _top if i in _pos]
 
 payload = json.dumps({
     "items": inline, "rule": RULE, "ui": UI, "top": TOP,
-    "hairs": [[h, hair_zh(h)] for h in HAIRS], "styles": [[s, style_zh(s)] for s in STYLES],
+    "hairs": [[h, hair_zh(h), hair_en(h)] for h in HAIRS], "styles": [[s, style_zh(s), style_en(s)] for s in STYLES],
     "secNote": {"zh": SECTION_NOTE_ZH, "ja": SECTION_NOTE_JA},
 }, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 
@@ -96,6 +96,7 @@ __UI_CSS__
 .mbox .lb-note{flex:1 1 100%;font-size:12px;color:var(--mu)}
 .rk{position:absolute;left:10px;top:10px;min-width:30px;height:26px;padding:0 9px;border-radius:999px;display:grid;place-items:center;
   background:var(--grad);color:#fff;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;box-shadow:var(--sh1)}
+__RC_CSS__
 .seo-intro{--si-max:var(--w)}
 __SEO_CSS__
 </style>
@@ -149,6 +150,7 @@ __SEO_INTRO__
       <dl class="mkv" id="lb-kv"></dl>
       <div class="macts">
         <a id="lb-dl" class="btn pri" href="#" download></a>
+        __RC_BTNS__
         <a id="lb-full" class="btn" href="#" target="_blank" rel="noopener"></a>
         <button type="button" id="lb-copy" class="btn ghost"></button>
         <span class="lb-note" id="lb-note"></span>
@@ -159,6 +161,8 @@ __SEO_INTRO__
 </div>
 __UI_DIALOGS__
 __UI_JS__
+__RC_HTML__
+__RC_JS__
 <script>
 (function(){
 const DB = __PAYLOAD__;
@@ -173,6 +177,12 @@ const SEC = ['face', 'styling'];
 const hairName = it => HAIRS[it.h][L()];
 const styleName = it => it.y == null ? '' : STYLES[it.y][L()];
 const labelOf = it => { const s = styleName(it); return s ? hairName(it) + '・' + s : hairName(it); };
+// l：0 日文、1 中文、2 英文（英文只用发型风格名，没有风格时用发长）
+const labelIn = (it, l) => { const h = HAIRS[it.h][l], s = it.y == null ? '' : STYLES[it.y][l];
+  return l === 2 ? (s || h) : (s ? h + '・' + s : h); };
+/* 配方条目（路径相对站点根）；midOf 在大图部分定义，渲染时已就绪 */
+const recItem = it => it ? {k:'portrait', id:it.i, site:'portrait', th:'portrait/' + TH(it), im:'portrait/' + midOf(FU(it)),
+  n:{zh:labelIn(it, 1), ja:labelIn(it, 0), en:labelIn(it, 2)}} : null;
 const fmt = n => Number(n).toLocaleString('zh-CN');
 const mb = b => (b / 1048576).toFixed(1) + ' MB';
 /*PATHS*/  // 由 tests/run.py 单独执行，与 manifest 对照
@@ -202,6 +212,7 @@ const grid = $('#grid'), countEl = $('#count'), moreEl = $('#more'), emptyEl = $
 function applyText(){
   document.title = t('title');
   $('#lb-dl').textContent = t('download'); $('#lb-full').textContent = t('openFull'); $('#lb-copy').textContent = t('copyLink');
+  $('#mprompt span').textContent = PL.recipe.t('prompt');
   $('#lb-close').ariaLabel = t('close'); $('#lb-prev').ariaLabel = t('prev'); $('#lb-next').ariaLabel = t('next');
   $('#lb-hint').innerHTML = t('hint'); $('#sections').ariaLabel = t('secLabel'); $('#filters').ariaLabel = t('hairLabel');
 }
@@ -228,7 +239,8 @@ function card(it, i){
   return '<article class="card" tabindex="0" data-i="'+i+'" aria-label="'+esc(labelOf(it))+'">'+
     '<div class="ph"><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(TH(it))+'" alt="'+esc(labelOf(it))+'">'+
       (S.hair === -2 ? '<span class="rk">#'+(i+1)+'</span>' : '')+
-      '<a class="dl" href="'+esc(FU(it))+'" download="'+esc(dlName(it))+'" title="'+esc(t('dlOne')+' · '+mb(it.b))+'" aria-label="'+esc(t('dlOne')+' · '+mb(it.b))+'">'+DL_ICON+'</a></div>'+
+      '<a class="dl" href="'+esc(FU(it))+'" download="'+esc(dlName(it))+'" title="'+esc(t('dlOne')+' · '+mb(it.b))+'" aria-label="'+esc(t('dlOne')+' · '+mb(it.b))+'">'+DL_ICON+'</a>'+
+      PL.recipe.addBtn(recItem(it))+'</div>'+
     '<div class="info"><h3>'+esc(hairName(it))+'</h3><div class="sub">'+esc(styleName(it) || (it.w + '×' + it.ht))+'</div></div></article>';
 }
 let VIEW = [];
@@ -282,6 +294,7 @@ function showLb(){
   img.src = midOf(FU(it)); if (img.complete && img.naturalWidth) settle();
   [VIEW[LB + 1], VIEW[LB - 1]].forEach(n => n && warm(midOf(FU(n))));
   $('#lb-prev').disabled = LB <= 0; $('#lb-next').disabled = LB >= VIEW.length - 1;
+  PL.recipe.refresh();
 }
 function stepLb(d){ const n = LB + d; if (n < 0 || n >= VIEW.length) return; LB = n; if (LB >= S.n) addMore(); showLb(); }
 grid.addEventListener('load', e => { if (e.target.tagName === 'IMG') done(e.target); }, true);
@@ -300,11 +313,15 @@ $('#lb-close').addEventListener('click', () => PL.closeDialog(lb));
 $('#lb-prev').addEventListener('click', () => stepLb(-1)); $('#lb-next').addEventListener('click', () => stepLb(1));
 lb.addEventListener('click', e => { if (e.target === lb) PL.closeDialog(lb); });
 document.addEventListener('keydown', e => { if (PL.top() !== lb) return;
-  if (e.key === 'ArrowLeft'){ e.preventDefault(); stepLb(-1); } else if (e.key === 'ArrowRight'){ e.preventDefault(); stepLb(1); } });
+  if (e.key === 'ArrowLeft'){ e.preventDefault(); stepLb(-1); } else if (e.key === 'ArrowRight'){ e.preventDefault(); stepLb(1); }
+  else if (e.key === 'a' || e.key === 'A'){ e.preventDefault(); if (!$('#mrec').disabled) $('#mrec').click(); } });
 let tx = null;
 wrapEl.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
 wrapEl.addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) stepLb(dx < 0 ? 1 : -1); tx = null; }, {passive:true});
 $('#lb-copy').addEventListener('click', () => { const it = VIEW[LB]; if (it) PL.copy(new URL(FU(it), location.href).href); });
+$('#mprompt').addEventListener('click', () => { const it = VIEW[LB]; if (it) PL.copy(labelIn(it, 2)); });
+PL.recipe.grid(grid, c => recItem(c && VIEW[+c.dataset.i]));
+PL.recipe.button($('#mrec'), () => { const it = VIEW[LB]; return it ? {item: recItem(it), adult: false} : null; });
 
 // 切换语言只更新文字，保留已加载的页数与滚动位置
 addEventListener('pl:lang', () => {
@@ -331,6 +348,7 @@ stats = [(f"{len(items):,}", "张人像", "枚"), (f"{n_face:,}", "张面部", "
 for k, v in {
     "__UI_HEAD__": ui.head_script(), "__UI_CSS__": ui.head_css(), "__UI_BAR__": ui.bar("portrait"),
     "__UI_DIALOGS__": ui.dialogs(ui.PORTRAIT_KEYS), "__UI_JS__": ui.body_script(),
+    "__RC_CSS__": recipe.CSS, "__RC_HTML__": recipe.html("../"), "__RC_JS__": recipe.script(), "__RC_BTNS__": recipe.viewer_buttons(),
     "__SEO_INTRO__": seo_intro, "__SEO_CSS__": landing.SEO_INTRO_CSS, "__FAQ_LD__": landing.faq_ld_script(FAQ),
     "__EYEBROW__": ui.bi(UI["zh"]["eyebrow"], UI["ja"]["eyebrow"]), "__H1__": ui.bi(UI["zh"]["h1"], UI["ja"]["h1"]),
     "__LEAD__": ui.bi(UI["zh"]["lead"], UI["ja"]["lead"]),
