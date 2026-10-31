@@ -18,8 +18,8 @@ from mid import mid_rel  # noqa: E402
 
 CFG = load_cfg()
 SITES = [s["id"] for s in CFG["sites"]]
-PAGES = ["hub/index.html", "hub/404.html"] + [f"sites/{s}/{f}" for s in SITES for f in ("index.html", "404.html")]
-BUILD_OUTPUT = ["hub/index.html", "hub/404.html", "hub/robots.txt", "hub/sitemap.xml", "hub/llms.txt"] + [
+PAGES = ["hub/index.html", "hub/404.html", "hub/guide/index.html"] + [f"sites/{s}/{f}" for s in SITES for f in ("index.html", "404.html")]
+BUILD_OUTPUT = ["hub/index.html", "hub/404.html", "hub/guide/index.html", "hub/robots.txt", "hub/sitemap.xml", "hub/llms.txt"] + [
     f"sites/{s}/{f}" for s in SITES for f in ("index.html", "404.html", "robots.txt", "sitemap.xml")] + [
     f"sites/{s}/data/landing.json" for s in SITES]
 
@@ -226,6 +226,8 @@ class Landing(unittest.TestCase):
                 target = os.path.normpath(os.path.join(base, html.unescape(href)))
                 if target == sites_dir:
                     target = os.path.join(ROOT, "hub")
+                elif os.path.dirname(target) == sites_dir and os.path.basename(target) not in SITES:
+                    target = os.path.join(ROOT, "hub", os.path.basename(target))
                 if href.endswith("/"):
                     target = os.path.join(target, "index.html")
                 if not os.path.exists(target):
@@ -300,11 +302,28 @@ class Landing(unittest.TestCase):
                 self.assertIn(f'href="{up}{o}/"', bar, f"{rel} 的顶部栏缺 {o}")
             want = [] if cur is None else [ui.sites()[[x["id"] for x in ui.sites()].index(cur)].get("mergedInto", cur)]
             self.assertEqual(re.findall(r'href="[^"]*?([^"/]+)/" aria-current="page"', bar), want, rel)
-            for el in ('id="plAdult"', 'id="plTheme"', 'id="plLang"', 'id="plHelpBtn"'):
+            for el in ('id="plAdult"', 'id="plTheme"', 'id="plLang"', 'id="plInfo"', 'id="plMenu"', 'id="plHelpBtn"',
+                       f'href="{up}guide/"', f'href="{up}guide/#notes"', f'href="{ui.REPO_URL}"', f'href="{ui.REPO_URL}/issues"'):
                 self.assertIn(el, bar, f"{rel} 顶部栏缺 {el}")
+            # 1–4 按顶部栏顺序对应各图库
+            self.assertEqual(re.findall(r'href="[^"]*?([^"/]+)/"(?: aria-current="page")? aria-keyshortcuts="(\d)"', bar),
+                             [(o, str(i)) for i, o in enumerate(shown, 1)], rel)
             for el in ('id="plHelp"', 'id="plAge"'):
                 self.assertIn(el, h, rel)
             self.assertLess(h.index('class="pl-bar"'), h.index("<h1"), f"{rel} 顶部栏应在标题之前")
+
+    def test_guide_page(self):
+        # 使用说明页：带顶部栏、各章节锚点（顶部栏的「注意事项」链到 #notes）、进了根 sitemap 与 llms.txt、发布时一起复制
+        h = read("hub/guide/index.html")
+        self.assertIn('class="pl-bar"', h)
+        for a in ("libs", "browse", "viewer", "pose", "adult", "keys", "notes", "feedback"):
+            self.assertIn(f'<section id="{a}">', h)
+        self.assertIn('rel="canonical" href="https://example.com/guide/"', h)
+        for s in CFG["sites"]:
+            self.assertIn(s["source"], h, f"使用说明缺 {s['id']} 的原站")
+        self.assertIn("<loc>https://example.com/guide/</loc>", read("hub/sitemap.xml"))
+        self.assertIn("https://example.com/guide/", read("hub/llms.txt"))
+        self.assertIn('HUB_DIRS = ["guide"]', read("tools/release.py"))
 
     def test_shared_prefs(self):
         # 主题、语言全站共用 pl.theme / pl.lang；页面不再读写各站自己的旧键（只在迁移代码里出现前缀表）

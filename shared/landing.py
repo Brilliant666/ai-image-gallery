@@ -97,7 +97,7 @@ CSS = """
 .lchips a{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;background:var(--sf);
   color:var(--tx);text-decoration:none;font-size:13px}
 .lchips a:hover{background:var(--sf2)}
-.lchips small{color:var(--mu)}
+.lchips small{color:var(--mu);font-size:12px}
 .more{color:var(--tx2);font-size:13px;margin-top:12px}
 dl.faq dt{font-weight:700;margin-top:16px}dl.faq dd{margin:4px 0 0;color:var(--tx2);line-height:1.8}
 .groups h3{font-size:14px;margin:22px 0 8px;color:var(--mu)}
@@ -151,7 +151,7 @@ def _page(site, *, slug, title, h1, description, crumbs, body, ld, depth):
 <p>{esc(site.license_note)} 素材作者：<a href="{esc(site.author_url)}" rel="noopener">{esc(site.author)}</a> · 原站：<a href="{esc(site.source)}" rel="noopener">{esc(site.source)}</a></p>
 <p><a href="{up}">返回{esc(site.name)}画廊</a> · <a href="{up}browse/">全部分类与标签</a> · <a href="{up}../">photoai.life 全部 {len(ui.nav_sites())} 个参考图库</a></p>
 </footer>
-{ui.dialogs(ui.HUB_KEYS)}
+{ui.dialogs(ui.PAGE_KEYS)}
 {ui.body_script()}
 </body>
 </html>
@@ -308,7 +308,7 @@ SEO_INTRO_CSS = (
     "max-width:var(--si-max,1180px);margin:0 auto;padding:0 clamp(16px,4vw,48px) 56px}"
     ".seo-card{border:1px solid var(--si-line);border-radius:16px;background:var(--si-bg);"
     "padding:22px clamp(18px,3vw,28px);font-size:13.5px;line-height:1.75;color:var(--si-tx2)}"
-    ".seo-eyebrow{margin:0 0 6px;font-size:11px;font-weight:600;letter-spacing:.14em;color:var(--si-tx3)}"
+    ".seo-eyebrow{margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--si-tx3)}"
     ".seo-lead{margin:0 0 14px;color:var(--si-tx);font-size:14.5px;max-width:880px}"
     ".seo-facts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0;list-style:none}"
     ".seo-facts li{border:1px solid var(--si-line);border-radius:999px;padding:3px 11px;font-size:12px;color:var(--si-tx)}"

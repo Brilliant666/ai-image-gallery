@@ -30,5 +30,6 @@
 
 ## 其他
 
+- [使用说明与注意事项](https://example.com/guide/)：浏览与筛选、线稿与深度图、18+、快捷键、各图库授权
 - [站点地图](https://example.com/sitemap.xml)
 - [源代码（MIT）](https://github.com/Brilliant666/ai-image-gallery)

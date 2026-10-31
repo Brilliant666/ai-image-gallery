@@ -85,7 +85,11 @@ __UI_CSS__
 .tagbar{position:absolute;left:0;right:0;bottom:0;padding:26px 10px 9px;display:flex;flex-wrap:wrap;gap:4px;
   background:linear-gradient(transparent,rgba(8,10,14,.78));opacity:0;transition:opacity .18s;pointer-events:none}
 .card:hover .tagbar,.card:focus-visible .tagbar{opacity:1}
-.tagbar i{font-style:normal;font-size:10.5px;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;white-space:nowrap}
+.tagbar i{font-style:normal;font-size:12px;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;white-space:nowrap}
+/* 颜色标签前的色点 */
+.sw{display:inline-block;width:12px;height:12px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+html[data-theme="dark"] .sw{box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)}
+.mtags button{display:inline-flex;align-items:center;gap:6px}
 .fpanel{display:none;margin-top:2px;padding:14px 16px;border-radius:18px;background:var(--sf);max-height:min(56vh,560px);overflow:auto}
 .fpanel.open{display:block}
 .fp-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
@@ -93,13 +97,13 @@ __UI_CSS__
 .tgrp{margin-bottom:12px}.tgrp:last-child{margin-bottom:0}
 .tgrp h4{margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--mu)}
 .tgrp .chips{flex-wrap:wrap;overflow:visible}
-.fpanel .chip{background:var(--bg2);height:32px;font-size:13px;padding:0 12px}
+.fpanel .chip{background:var(--bg2);height:36px;font-size:13px;padding:0 13px}
 .fpanel .chip[aria-pressed="true"]{background:var(--sel);color:var(--on-sel)}
 .fbtn[aria-expanded="true"]{background:var(--sel);color:var(--on-sel)}
-.fbtn b{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--ac);color:#fff;font-size:11px;display:none;place-items:center}
+.fbtn b{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--ac);color:#fff;font-size:12px;display:none;place-items:center}
 .fbtn b.on{display:inline-grid}
 .mtags{display:flex;flex-wrap:wrap;gap:6px}
-.mtags button{height:32px;padding:0 12px;border:0;border-radius:999px;background:var(--sf);color:var(--tx);font-size:12.5px;cursor:pointer}
+.mtags button{height:36px;padding:0 13px;border:0;border-radius:999px;background:var(--sf);color:var(--tx);font-size:13px;cursor:pointer}
 .mtags button:hover{background:var(--sf2)}
 @media(max-width:640px){.fpanel{max-height:60vh;padding:12px}.fpanel .chip{height:36px}}
 .seo-intro{--si-max:var(--w)}
@@ -177,6 +181,18 @@ const isZh = () => PL.lang === 'zh';
 const nC = c => isZh() ? (CZ[c]||c) : c;
 const nT = x => isZh() ? (TZ[x]||x) : (TJ[x]||x);
 const gName = g => isZh() ? g.zh : g.ja;
+// 颜色标签的色点；卡片标题用「第一个颜色 + 前两个单品」，没有单品时取前两个标签
+const SW = {black:'#151515',white:'#ffffff',ivory:'#fbf6e6',beige:'#e3d3b4',cream:'#f6ecd0',grey:'#9b9b9b',brown:'#7a4a2b',
+  red:'#d22b2b',burgundy:'#7b1f2e',orange:'#ef8a24',yellow:'#f2cf2c',gold:'#c9a23a',green:'#3d9a4c',olive:'#7a7a32',mint:'#a3e2c8',
+  blue:'#2f6fd4',navy:'#1e2a58',lavender:'#bba8e6',purple:'#7c3ec6',pink:'#f2a7c2',silver:'#c3c4cc',khaki:'#b8a67a'};
+const sw = tg => SW[tg] ? '<i class="sw" style="background:' + SW[tg] + '" aria-hidden="true"></i>' : '';
+const G_COLOR = new Set((GROUPS.find(g => g.k === 'color') || {tags:[]}).tags), G_ITEM = new Set((GROUPS.find(g => g.k === 'item') || {tags:[]}).tags);
+function nameOf(x){
+  const col = x.t.find(tg => G_COLOR.has(tg)), its = x.t.filter(tg => G_ITEM.has(tg)).slice(0, 2);
+  const parts = (its.length ? its : x.t.filter(tg => tg !== col).slice(0, 2)).map(nT);
+  return (col ? nT(col) + ' ' : '') + parts.join(isZh() ? '、' : '・');
+}
+const subOf = x => nC(x.c) + ' · ' + x.i;
 // 三档路径：<档>/<分类>/<id>.<扩展名>（规则不成立时内联数据里带 th / im / pg）；PATHS 段由 tests/run.py 单独执行核对
 /*PATHS*/
 const TH = x => DB.rule ? 'thumbs/' + x.c + '/' + x.i + '.webp' : x.th;
@@ -221,7 +237,7 @@ function drawTagGroups(){
     const avail = g.tags.filter(tg => vis.some(x => x.t.includes(tg)) || S.tags.has(tg));
     if (!avail.length) return '';
     return '<div class="tgrp"><h4>'+esc(gName(g))+'</h4><div class="chips">' + avail.map(tg =>
-      '<button type="button" class="chip" data-t="'+esc(tg)+'" title="'+esc(tg)+'" aria-pressed="'+S.tags.has(tg)+'">'+esc(nT(tg))+
+      '<button type="button" class="chip" data-t="'+esc(tg)+'" title="'+esc(tg)+'" aria-pressed="'+S.tags.has(tg)+'">'+sw(tg)+esc(nT(tg))+
       '<small>'+vis.filter(x=>x.t.includes(tg)).length+'</small></button>').join('') + '</div></div>';
   }).join('');
 }
@@ -270,11 +286,11 @@ const sweep = () => grid.querySelectorAll('img').forEach(im => { if (im.complete
 function syncMore(){ const rest = VIEW.length - S.n; moreEl.hidden = rest <= 0; moreEl.textContent = rest > 0 ? t('more').replace('{n}', rest) : ''; }
 const tagHtml = x => x.t.slice(0, 6).map(tg => '<i>'+esc(nT(tg))+'</i>').join('') + (x.t.length > 6 ? '<i>+'+(x.t.length-6)+'</i>' : '');
 function card(x, i){
-  return '<article class="card" tabindex="0" data-i="'+i+'" aria-label="'+esc(x.i+' '+nC(x.c))+'">'+
-    '<div class="ph"><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(TH(x))+'" alt="'+esc(x.i)+'">'+
+  return '<article class="card" tabindex="0" data-i="'+i+'" aria-label="'+esc(nameOf(x)+' '+x.i)+'">'+
+    '<div class="ph"><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(TH(x))+'" alt="'+esc(nameOf(x))+'">'+
       '<a class="dl" href="'+esc(PG(x))+'" download="'+esc(x.i+'.png')+'" title="'+esc(t('dlOne'))+'" aria-label="'+esc(t('dlOne'))+'">'+DL_ICON+'</a>'+
       '<div class="tagbar">'+tagHtml(x)+'</div></div>'+
-    '<div class="info"><h3>'+esc(x.i)+'</h3><div class="sub">'+esc(nC(x.c)+' · '+x.t.length+' '+t('tagUnit'))+'</div></div></article>';
+    '<div class="info"><h3>'+esc(nameOf(x))+'</h3><div class="sub">'+esc(subOf(x))+'</div></div></article>';
 }
 moreEl.onclick = addMore;
 if ('IntersectionObserver' in window) new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) addMore(); }, {rootMargin:'800px'}).observe(moreEl);
@@ -308,11 +324,11 @@ function showM(){
   const settle = () => { mimg.classList.add('rd'); clearTimeout(loT); loT = setTimeout(() => { mimgLo.style.opacity = '0'; }, 340); };
   mimg.onload = settle; mimg.src = IM(x); if (mimg.complete && mimg.naturalWidth) settle();
   [VIEW[MI+1], VIEW[MI-1]].forEach(n => n && warm(IM(n)));
-  $('#mid').textContent = x.i + ' · ' + nC(x.c);
+  $('#mid').textContent = nameOf(x);
   $('#mfull').href = PG(x); $('#mdl').href = PG(x); $('#mdl').setAttribute('download', x.i + '.png');
   $('#mkv').innerHTML = [[t('kCat'), nC(x.c)], [t('kId'), x.i], [t('kTagN'), x.t.length + ' ' + t('tagUnit')]]
     .map(([a,b]) => '<dt>'+esc(a)+'</dt><dd>'+esc(b)+'</dd>').join('');
-  $('#mtags').innerHTML = x.t.map(tg => '<button type="button" data-t="'+esc(tg)+'" title="'+esc(tg)+'">'+esc(nT(tg))+'</button>').join('');
+  $('#mtags').innerHTML = x.t.map(tg => '<button type="button" data-t="'+esc(tg)+'" title="'+esc(tg)+'">'+sw(tg)+esc(nT(tg))+'</button>').join('');
   $('#mprev').disabled = MI <= 0; $('#mnext').disabled = MI >= VIEW.length - 1;
 }
 $('#mtags').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
@@ -327,17 +343,14 @@ document.addEventListener('keydown', e => { if (PL.top() !== modal) return;
 let tx = null;
 mwrap.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
 mwrap.addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1); tx = null; }, {passive:true});
-$('#mcopy').addEventListener('click', function(){ const x = VIEW[MI]; if (!x) return;
-  const url = new URL(PG(x), location.href).href;
-  const fin = ok => { this.textContent = ok ? t('copied') : t('copyFail'); setTimeout(() => { this.textContent = t('copyLink'); }, 1400); };
-  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => fin(true)).catch(() => fin(false)); else fin(false); });
+$('#mcopy').addEventListener('click', () => { const x = VIEW[MI]; if (x) PL.copy(new URL(PG(x), location.href).href); });
 
 // 切换语言只更新文字，保留已加载的页数与滚动位置
 addEventListener('pl:lang', () => {
   applyText(); drawTabs(); drawTagGroups(); count(); syncMore();
   grid.querySelectorAll('.card').forEach(c => { const x = VIEW[+c.dataset.i]; if (!x) return;
-    c.querySelector('.sub').textContent = nC(x.c) + ' · ' + x.t.length + ' ' + t('tagUnit');
-    c.ariaLabel = x.i + ' ' + nC(x.c);
+    c.querySelector('h3').textContent = nameOf(x); c.querySelector('.sub').textContent = subOf(x);
+    c.ariaLabel = nameOf(x) + ' ' + x.i; c.querySelector('.ph>img').alt = nameOf(x);
     const dl = c.querySelector('.dl'); dl.title = dl.ariaLabel = t('dlOne');
     c.querySelector('.tagbar').innerHTML = tagHtml(x); });
   if (!grid.querySelector('.card')) draw();

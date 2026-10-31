@@ -185,7 +185,7 @@ python3 tools/release.py --out dist-stage
 
 ```bash
 test ! -e dist-prev || exit 1
-for x in index.html 404.html sitemap.xml robots.txt llms.txt portrait costume pose pose-depth shisei; do
+for x in index.html 404.html sitemap.xml robots.txt llms.txt guide portrait costume pose pose-depth shisei; do
   if [ -e "dist/$x" ]; then mv -T --exchange "dist-stage/$x" "dist/$x" || break
   else mv -T "dist-stage/$x" "dist/$x"; fi
 done
@@ -226,7 +226,7 @@ python3 tools/release.py --site pose --out dist-stage
 
 ```bash
 cd /srv/ai-image-gallery
-for x in index.html 404.html sitemap.xml robots.txt llms.txt portrait costume pose pose-depth shisei; do
+for x in index.html 404.html sitemap.xml robots.txt llms.txt guide portrait costume pose pose-depth shisei; do
   [ -e "dist-prev/$x" ] && { mv -T --exchange "dist-prev/$x" "dist/$x" || break; }
 done
 ```

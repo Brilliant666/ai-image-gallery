@@ -225,7 +225,7 @@ html:not([data-theme="dark"]) .ph>img,html:not([data-theme="dark"]) .strip img,h
 .filters{display:none;flex-wrap:wrap;gap:8px;align-items:center}
 .filters.open{display:flex}
 .fbtn[aria-expanded="true"]{background:var(--sel);color:var(--on-sel)}
-.fbtn b{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--ac);color:#fff;font-size:11px;display:none;place-items:center}
+.fbtn b{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--ac);color:#fff;font-size:12px;display:none;place-items:center}
 .fbtn b.on{display:inline-grid}
 .fbtn[aria-expanded="true"] b{background:var(--on-sel);color:var(--sel)}
 /* 大图：线稿 / 深度图 / 对比 */
@@ -238,14 +238,14 @@ html:not([data-theme="dark"]) .ph>img,html:not([data-theme="dark"]) .strip img,h
 .cmp .ln::after{content:"";position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;
   background:var(--bg2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 6-6 6 6 6M15 6l6 6-6 6'/%3E%3C/svg%3E") center/18px no-repeat;
   box-shadow:var(--sh2)}
-.cmp .tg{position:absolute;top:10px;padding:2px 10px;border-radius:999px;background:rgba(17,17,17,.62);color:#fff;font-size:11.5px;font-weight:600;pointer-events:none}
+.cmp .tg{position:absolute;top:10px;padding:2px 10px;border-radius:999px;background:rgba(17,17,17,.62);color:#fff;font-size:12px;font-weight:600;pointer-events:none}
 .cmp .tg.a{left:10px}.cmp .tg.b{right:10px}
 .cmp input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize}
 .mang{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .mang button{position:relative;padding:0;border:0;border-radius:10px;overflow:hidden;background:var(--imgbg);aspect-ratio:3/4;cursor:pointer;
   outline:2px solid transparent;outline-offset:-2px}
 .mang button img{width:100%;height:100%;object-fit:contain;display:block}
-.mang button span{position:absolute;left:0;right:0;bottom:0;font-size:10px;line-height:1.7;text-align:center;background:rgba(17,17,17,.6);color:#fff}
+.mang button span{position:absolute;left:0;right:0;bottom:0;font-size:12px;line-height:1.6;text-align:center;background:rgba(17,17,17,.6);color:#fff}
 .mang button.on{outline-color:var(--sel)}
 .mview{display:flex}
 .mview button{flex:1}
@@ -609,12 +609,7 @@ let tx = null;
 mwrap.addEventListener('touchstart', e => { if (MV === 'cmp') return; tx = e.touches[0].clientX; }, {passive:true});
 mwrap.addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx;
   if (Math.abs(dx) > 40) stepA(dx < 0 ? 1 : -1); tx = null; }, {passive:true});
-$('#mcopy').addEventListener('click', function(){
-  const o = VIEW[M.i]; if (!o) return;
-  const url = new URL($('#mfull').getAttribute('href'), location.href).href;
-  const fin = ok => { this.textContent = ok ? t('copied') : t('copyFail'); setTimeout(() => { this.textContent = t('copyLink'); }, 1400); };
-  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => fin(true)).catch(() => fin(false)); else fin(false);
-});
+$('#mcopy').addEventListener('click', () => { if (VIEW[M.i]) PL.copy(new URL($('#mfull').getAttribute('href'), location.href).href); });
 
 /* ══ 偏好变化 ══ */
 addEventListener('pl:lang', () => {

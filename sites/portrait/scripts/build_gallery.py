@@ -21,6 +21,8 @@ from translations import (HAIR_ZH, HAIR_ORDER, SECTION_ZH, SECTION_NOTE_ZH, SECT
                           STYLE_ZH, UI, hair_zh, style_zh)
 import landing, ui  # noqa: E402
 
+RANK = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ranking.json")
+
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 rows = json.load(open(os.path.join(root, "manifest.json"), encoding="utf-8"))
 
@@ -43,8 +45,14 @@ for x in items:
         o.update(t=x["t"], f=x["f"])
     inline.append(o)
 
+# 原站的人气排行（综合前 10，都在面部分区）：存下标，页面里作为「人气 Top 10」筛选
+with open(RANK, encoding="utf-8") as f:
+    _top = json.load(f)["top"].get("総合", [])
+_pos = {x["i"]: n for n, x in enumerate(items)}
+TOP = [_pos[i] for i in _top if i in _pos]
+
 payload = json.dumps({
-    "items": inline, "rule": RULE, "ui": UI,
+    "items": inline, "rule": RULE, "ui": UI, "top": TOP,
     "hairs": [[h, hair_zh(h)] for h in HAIRS], "styles": [[s, style_zh(s)] for s in STYLES],
     "secNote": {"zh": SECTION_NOTE_ZH, "ja": SECTION_NOTE_JA},
 }, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
@@ -84,8 +92,10 @@ __UI_CSS__
 .ph{aspect-ratio:4/5}
 .ph>img{object-fit:cover}
 .card .size{font-size:11.5px;color:var(--mu);font-variant-numeric:tabular-nums}
-.secnote{margin:0;font-size:12.5px;color:var(--mu)}
-.mbox .lb-note{font-size:12px;color:var(--mu)}
+.secnote{margin:0 0 14px;font-size:13px;color:var(--mu)}
+.mbox .lb-note{flex:1 1 100%;font-size:12px;color:var(--mu)}
+.rk{position:absolute;left:10px;top:10px;min-width:30px;height:26px;padding:0 9px;border-radius:999px;display:grid;place-items:center;
+  background:var(--grad);color:#fff;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;box-shadow:var(--sh1)}
 .seo-intro{--si-max:var(--w)}
 __SEO_CSS__
 </style>
@@ -110,11 +120,11 @@ __UI_BAR__
       <div class="chips" id="filters" role="group"></div>
       <span class="count" id="count" aria-live="polite"></span>
     </div>
-    <p id="sec-note" class="secnote"></p>
   </div>
 </div>
 
 <main id="gallery">
+  <p id="sec-note" class="secnote"></p>
   <div class="grid" id="grid"></div>
   <p id="empty" class="empty" hidden></p>
   <button type="button" id="more" class="btn loadmore" hidden></button>
@@ -176,6 +186,7 @@ const S = { sec: 0, hair: -1, n: PAGE };
 // 落地页「在画廊中查看」带过来的筛选：#sec=styling&hair=ロング
 (function(){
   const m = /(?:^#|&)sec=([^&]*)/.exec(location.hash); if (m && SEC.includes(m[1])) S.sec = SEC.indexOf(m[1]);
+  if (/(?:^#|&)top=1(?:&|$)/.test(location.hash)) S.hair = -2;
   const h = /(?:^#|&)hair=([^&]*)/.exec(location.hash);
   if (h){ try { const v = decodeURIComponent(h[1]); const i = HAIRS.findIndex(x => x[0] === v); if (i >= 0) S.hair = i; } catch(_){} }
 })();
@@ -183,6 +194,7 @@ function writeHash(){
   const p = [];
   if (S.sec) p.push('sec=' + SEC[S.sec]);
   if (S.hair >= 0) p.push('hair=' + encodeURIComponent(HAIRS[S.hair][0]));
+  if (S.hair === -2) p.push('top=1');
   history.replaceState(null, '', p.length ? '#' + p.join('&') : location.pathname + location.search);
 }
 
@@ -194,7 +206,9 @@ function applyText(){
   $('#lb-hint').innerHTML = t('hint'); $('#sections').ariaLabel = t('secLabel'); $('#filters').ariaLabel = t('hairLabel');
 }
 const pool = () => ITEMS.filter(it => it.s === S.sec);
-const view = () => S.hair < 0 ? pool() : pool().filter(it => it.h === S.hair);
+// S.hair：-1 全部，-2 人气 Top 10（只在面部分区），其余为发型下标
+const TOPS = (DB.top || []).map(n => ITEMS[n]).filter(Boolean);
+const view = () => S.hair === -2 ? TOPS.filter(it => it.s === S.sec) : S.hair < 0 ? pool() : pool().filter(it => it.h === S.hair);
 function drawSections(){
   [['face', 'secFace'], ['styling', 'secStyling']].forEach(([k, lab], i) => {
     const b = $('#seg-' + k), on = S.sec === i;
@@ -205,12 +219,15 @@ function drawSections(){
 }
 function drawFilters(){
   const c = new Array(HAIRS.length).fill(0); pool().forEach(it => c[it.h]++);
-  $('#filters').innerHTML = '<button type="button" class="chip" data-hair="-1" aria-pressed="'+(S.hair<0)+'">'+esc(t('all'))+'<small>'+fmt(pool().length)+'</small></button>' +
+  const nTop = TOPS.filter(it => it.s === S.sec).length;
+  $('#filters').innerHTML = '<button type="button" class="chip" data-hair="-1" aria-pressed="'+(S.hair===-1)+'">'+esc(t('all'))+'<small>'+fmt(pool().length)+'</small></button>' +
+    (nTop ? '<button type="button" class="chip" data-hair="-2" aria-pressed="'+(S.hair===-2)+'">'+esc(t('top'))+'<small>'+nTop+'</small></button>' : '') +
     HAIRS.map((h, i) => c[i] ? '<button type="button" class="chip" data-hair="'+i+'" aria-pressed="'+(S.hair===i)+'">'+esc(h[L()])+'<small>'+fmt(c[i])+'</small></button>' : '').join('');
 }
 function card(it, i){
   return '<article class="card" tabindex="0" data-i="'+i+'" aria-label="'+esc(labelOf(it))+'">'+
     '<div class="ph"><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(TH(it))+'" alt="'+esc(labelOf(it))+'">'+
+      (S.hair === -2 ? '<span class="rk">#'+(i+1)+'</span>' : '')+
       '<a class="dl" href="'+esc(FU(it))+'" download="'+esc(dlName(it))+'" title="'+esc(t('dlOne')+' · '+mb(it.b))+'" aria-label="'+esc(t('dlOne')+' · '+mb(it.b))+'">'+DL_ICON+'</a></div>'+
     '<div class="info"><h3>'+esc(hairName(it))+'</h3><div class="sub">'+esc(styleName(it) || (it.w + '×' + it.ht))+'</div></div></article>';
 }
@@ -287,10 +304,7 @@ document.addEventListener('keydown', e => { if (PL.top() !== lb) return;
 let tx = null;
 wrapEl.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
 wrapEl.addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) stepLb(dx < 0 ? 1 : -1); tx = null; }, {passive:true});
-$('#lb-copy').addEventListener('click', function(){ const it = VIEW[LB]; if (!it) return;
-  const url = new URL(FU(it), location.href).href, btn = this;
-  const fin = ok => { btn.textContent = ok ? t('copied') : t('copyFail'); setTimeout(() => { btn.textContent = t('copyLink'); }, 1400); };
-  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => fin(true)).catch(() => fin(false)); else fin(false); });
+$('#lb-copy').addEventListener('click', () => { const it = VIEW[LB]; if (it) PL.copy(new URL(FU(it), location.href).href); });
 
 // 切换语言只更新文字，保留已加载的页数与滚动位置
 addEventListener('pl:lang', () => {

@@ -11,6 +11,7 @@
 产物结构:
   dist/
   ├── index.html          ← 入口页
+  ├── guide/              ← 使用说明
   ├── portrait/
   ├── costume/
   ├── pose/
@@ -44,6 +45,8 @@ def landing_dirs(sd):
 # 入口页与根级文件（sitemap / robots / 社交分享图）
 HUB_FILES = ["index.html", "404.html", "sitemap.xml", "robots.txt", "og-cover.jpg", "llms.txt",
              "favicon.ico", "favicon.svg", "apple-touch-icon.png", "icon-512.png"]
+# 入口页旁的根级页面目录（使用说明）
+HUB_DIRS = ["guide"]
 
 
 def link_or_copy(src, dst):
@@ -157,8 +160,14 @@ def main():
             if os.path.exists(src):
                 shutil.copy2(src, os.path.join(out, fn))
                 n += 1
+        for dn in HUB_DIRS:
+            src = os.path.join(ROOT, "hub", dn)
+            if os.path.isdir(src):
+                shutil.rmtree(os.path.join(out, dn), ignore_errors=True)
+                shutil.copytree(src, os.path.join(out, dn))
+                n += sum(len(f) for _, _, f in os.walk(src))
         if n:
-            print(f"\n  [hub] {n} 个根级文件已复制（{', '.join(HUB_FILES)}）")
+            print(f"\n  [hub] {n} 个根级文件已复制（{', '.join(HUB_FILES + [d + '/' for d in HUB_DIRS])}）")
 
     print(f"\n发布目录: {out}")
     print(f"总体积: {human(dir_size(out))}")

@@ -15,6 +15,8 @@
   addEventListener('pl:lang' | 'pl:theme' | 'pl:adult', …)   切换后触发
   PL.openDialog(el, opener) / PL.closeDialog(el)   锁焦点、Esc 关闭、关闭后焦点回到 opener
   PL.askAdult()                       与点顶部栏 18+ 相同（第一次会弹年龄确认）
+  PL.copy(text) / PL.toast(text)      复制到剪贴板（带提示）/ 底部轻提示
+快捷键 1–4 按顶部栏顺序切换图库，0 回入口页（链接取顶部栏，file:// 下同样可用）。
 中日文案两种写法：静态的写成 <span class="zh">…</span><span class="ja">…</span>，CSS 按 html[data-lang] 显示；
 动态的由页面自己的 t() 按 PL.lang 取。
 """
@@ -82,17 +84,22 @@ html:not([data-lang="ja"]) .ja,html[data-lang="ja"] .zh{display:none!important}
 .btn.pri{background:var(--sel);color:var(--on-sel)}.btn.pri:hover{opacity:.9}
 .btn.ghost{background:transparent;box-shadow:inset 0 0 0 1px var(--line2)}.btn.ghost:hover{background:var(--sf)}
 .btn svg{width:16px;height:16px;flex:none}
-.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 0;scroll-snap-type:x proximity;scroll-padding:0 24px}
 .chips::-webkit-scrollbar{display:none}
+.chips>*{scroll-snap-align:start}
+/* 横滑行还有内容时两端渐隐（.ovl / .ovr 由 BODY_JS 按滚动位置加上） */
+.chips.ovr{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent)}
+.chips.ovl{-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px);mask-image:linear-gradient(90deg,transparent,#000 40px)}
+.chips.ovl.ovr{-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent)}
 .chip{flex:none;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 15px;border:0;border-radius:999px;background:var(--sf);
   color:var(--tx);font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background-color .15s,color .15s}
 .chip:hover{background:var(--sf2)}
 .chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--sel);color:var(--on-sel)}
 .chip small{font-size:12px;opacity:.6;font-variant-numeric:tabular-nums}
-.seg{display:inline-flex;background:var(--sf);border-radius:999px;padding:3px;gap:2px}
-.seg button{height:30px;padding:0 13px;border:0;border-radius:999px;background:transparent;color:var(--tx2);font-size:13px;cursor:pointer;white-space:nowrap}
+.seg{display:inline-flex;background:var(--sf);border-radius:999px;padding:0}
+.seg button{height:36px;padding:0 15px;border:0;border-radius:999px;background:transparent;color:var(--tx2);font-size:13px;cursor:pointer;white-space:nowrap}
 .seg button:hover{color:var(--tx)}
-.seg button[aria-pressed="true"]{background:var(--bg2);color:var(--tx);font-weight:600;box-shadow:var(--sh1)}
+.seg button[aria-pressed="true"]{background:var(--bg2);color:var(--tx);font-weight:600;box-shadow:inset 0 0 0 3px var(--sf)}
 /* 滑动开关：role=switch，aria-checked 决定滑块位置 */
 .toggle{position:relative;display:inline-grid;grid-template-columns:1fr 1fr;align-items:center;height:36px;padding:3px;border:0;
   border-radius:999px;background:var(--sf);cursor:pointer;font-size:13px;font-weight:600;color:var(--tx2)}
@@ -123,6 +130,14 @@ select.sel{height:36px;padding:0 32px 0 14px;border:0;border-radius:999px;backgr
 .tools{position:sticky;top:var(--stick);z-index:30;background:var(--bg);transition:box-shadow .2s}
 .tools.stuck{box-shadow:0 1px 0 var(--line)}
 .tools-in{max-width:var(--w);margin:0 auto;padding:10px var(--gut) 10px;display:flex;flex-direction:column;gap:10px}
+/* 宽屏：分类标签与搜索 / 筛选排成一行，吸顶部分（顶部栏 + 工具栏）约 120px；展开的筛选面板换到下一行 */
+@media(min-width:1200px){
+  .tools-in{flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px 18px}
+  .tools-in>.chips{flex:1 1 320px;min-width:0}
+  .tools-in>.trow{flex:0 1 auto;flex-wrap:nowrap}
+  .tools-in>.trow .search{flex:0 1 300px}
+  .tools-in>:not(.chips):not(.trow){flex:1 1 100%}
+}
 .trow{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
 .trow .search{flex:1 1 260px;max-width:420px}
 .count{margin-left:auto;font-size:13px;color:var(--mu);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -143,9 +158,10 @@ main{max-width:var(--w);margin:0 auto;padding:10px var(--gut) 64px}
 html[data-theme="dark"] .ph:not(.done)::before{background-image:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%)}
 @keyframes pl-sh{to{background-position:-150% 0}}
 .badge{position:absolute;left:10px;top:10px;padding:2px 9px;border-radius:999px;background:rgba(255,255,255,.88);color:#333;
-  font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}
-.ph .dl{position:absolute;right:8px;top:8px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
-  background:rgba(255,255,255,.9);color:#111;text-decoration:none;opacity:0;transform:scale(.9);transition:.2s var(--ease);box-shadow:var(--sh1)}
+  font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.ph .dl{position:absolute;right:6px;top:6px;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.9);background-clip:content-box;padding:2px;color:#111;text-decoration:none;opacity:0;transform:scale(.9);transition:.2s var(--ease);
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.12))}
 .card:hover .ph .dl,.ph .dl:focus-visible{opacity:1;transform:none}
 @media (hover:none){.ph .dl{opacity:1;transform:none}}
 .ph .dl svg{width:16px;height:16px}
@@ -181,11 +197,13 @@ html[data-theme="dark"] .ph:not(.done)::before{background-image:linear-gradient(
 .mside .mid{margin-top:4px;font-family:var(--mono);font-size:12px;color:var(--mu);word-break:break-all}
 .mkv{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin:0;font-size:13px}
 .mkv dt{color:var(--mu);white-space:nowrap}.mkv dd{margin:0;text-align:right;overflow-wrap:anywhere}
-.macts{display:flex;flex-direction:column;gap:8px;margin-top:auto}
-.macts .btn{height:40px}
-.hint{font-size:11.5px;color:var(--mu);line-height:1.8}
+.macts{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.macts .btn{height:40px;flex:1 1 auto}
+.macts .btn.pri{flex:1 1 100%}
+.macts .btn svg{width:16px;height:16px}
+.hint{font-size:12px;color:var(--mu);line-height:1.8}
 kbd{display:inline-block;min-width:22px;padding:0 6px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:6px;
-  background:var(--bg2);color:var(--tx);font:11.5px/1.6 var(--mono);text-align:center}
+  background:var(--bg2);color:var(--tx);font:12px/1.6 var(--mono);text-align:center}
 @media(max-width:980px){
   .mbox{grid-template-columns:1fr;overflow:auto;padding:12px;border-radius:20px}
   .mimg{height:56vh}
@@ -202,6 +220,12 @@ kbd{display:inline-block;min-width:22px;padding:0 6px;border:1px solid var(--lin
 .dlg-card .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .dlg-card dl{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;margin:0 0 20px;font-size:13.5px;align-items:center}
 .dlg-card dt{white-space:nowrap}.dlg-card dd{margin:0;color:var(--tx2)}
+
+/* 轻提示：PL.toast(文字) */
+.pl-toast{position:fixed;left:50%;bottom:24px;z-index:90;transform:translate(-50%,12px);padding:10px 18px;border-radius:999px;
+  background:var(--sel);color:var(--on-sel);font-size:13.5px;font-weight:600;box-shadow:var(--sh2);opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s var(--ease);max-width:calc(100vw - 32px);text-align:center}
+.pl-toast.on{opacity:1;transform:translate(-50%,0)}
 
 /* 回到顶部 */
 .totop{position:fixed;right:18px;bottom:18px;z-index:25;width:44px;height:44px;border:0;border-radius:50%;background:var(--bg2);
@@ -228,8 +252,9 @@ kbd{display:inline-block;min-width:22px;padding:0 6px;border:1px solid var(--lin
   .trow .search{flex:1 1 auto;max-width:none}
   .count{display:none}
   .btn,.chip,.toggle,select.sel{height:40px}
+  .seg button{height:40px}
   .info h3{font-size:13px}
-  .badge{left:6px;top:6px;font-size:10.5px}
+  .badge{left:6px;top:6px;font-size:12px;padding:1px 8px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
   transition-duration:.01ms!important;scroll-behavior:auto!important}}
@@ -255,9 +280,22 @@ BAR_CSS = r"""
 .pl-ic:hover{background:var(--sf);color:var(--tx)}
 .pl-ic svg{width:19px;height:19px}
 html[data-theme="dark"] .pl-ic .sun,html:not([data-theme="dark"]) .pl-ic .moon{display:none}
-.pl-lang{display:inline-flex;background:var(--sf);border-radius:999px;padding:3px}
-.pl-lang button{height:34px;min-width:36px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--tx2);font-size:12.5px;cursor:pointer}
-.pl-lang button[aria-pressed="true"]{background:var(--bg2);color:var(--tx);font-weight:700;box-shadow:var(--sh1)}
+.pl-lang{display:inline-flex;background:var(--sf);border-radius:999px}
+.pl-lang button{height:40px;min-width:42px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--tx2);font-size:13px;cursor:pointer}
+.pl-lang button[aria-pressed="true"]{background:var(--bg2);color:var(--tx);font-weight:700;box-shadow:inset 0 0 0 3px var(--sf)}
+/* ⓘ 菜单：使用说明、快捷键、注意事项、GitHub */
+.pl-mw{position:relative}
+.pl-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:45;width:264px;padding:8px;border-radius:18px;background:var(--bg2);
+  box-shadow:var(--sh3);border:1px solid var(--line)}
+.pl-menu[hidden]{display:none}
+.pl-menu .who{padding:8px 10px 10px;font-size:12.5px;line-height:1.6;color:var(--mu)}
+.pl-menu .who b{display:block;color:var(--tx);font-size:14px}
+.pl-menu a,.pl-menu button{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;padding:0 10px;border:0;border-radius:10px;
+  background:transparent;color:var(--tx);font-size:14px;text-align:left;text-decoration:none;cursor:pointer}
+.pl-menu a:hover,.pl-menu button:hover,.pl-menu a:focus-visible,.pl-menu button:focus-visible{background:var(--sf);outline:none}
+.pl-menu svg{flex:none;width:17px;height:17px;color:var(--mu)}
+.pl-menu kbd,.pl-menu .ext{margin-left:auto;color:var(--mu)}
+.pl-menu hr{margin:6px 4px;border:0;border-top:1px solid var(--line)}
 /* 18+：小滑块 */
 .pl-adult{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 10px 0 6px;border:0;border-radius:999px;background:transparent;
   color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer}
@@ -268,6 +306,7 @@ html[data-theme="dark"] .pl-ic .sun,html:not([data-theme="dark"]) .pl-ic .moon{d
 .pl-adult[aria-checked="true"] .trk{background:var(--ac)}
 .pl-adult[aria-checked="true"] .trk::after{transform:translateX(14px)}
 @media(max-width:860px){
+  .pl-gh{display:none!important}
   /* 手机：顶部栏两行（图标 + 开关 / 图库链接横滑），随页面滚走，把吸顶空间留给各站的筛选工具栏 */
   :root{--stick:0px}
   .pl-bar{position:relative}
@@ -279,7 +318,7 @@ html[data-theme="dark"] .pl-ic .sun,html:not([data-theme="dark"]) .pl-ic .moon{d
     -webkit-mask-image:linear-gradient(90deg,#000 86%,transparent);mask-image:linear-gradient(90deg,#000 86%,transparent)}
   .pl-nav a{padding:0 14px;font-size:14px}
 }
-@media(max-width:380px){.pl-lang button{min-width:30px;padding:0 8px}.pl-adult{padding:0 6px 0 4px}}
+@media(max-width:380px){.pl-lang button{min-width:40px;padding:0 10px}.pl-adult{padding:0 6px 0 4px}.pl-tools{gap:2px}}
 """
 
 LOGO = ('<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="plG" x1="0" y1="0" x2="1" y2="1">'
@@ -293,6 +332,31 @@ SUN = ('<svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" s
        '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>')
 MOON = ('<svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">'
         '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>')
+def _ic(body, vb="0 0 24 24", fill=False):
+    paint = ('fill="currentColor"' if fill else
+             'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"')
+    return f'<svg viewBox="{vb}" {paint} aria-hidden="true">{body}</svg>'
+
+
+INFO_ICON = _ic('<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>')
+GH_ICON = _ic('<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94'
+              '-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07'
+              '-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27'
+              '.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95'
+              '.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>', "0 0 16 16", True)
+BOOK_ICON = _ic('<path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/>')
+KEY_ICON = _ic('<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>')
+NOTE_ICON = _ic('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/>')
+MSG_ICON = _ic('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>')
+USER_ICON = _ic('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>')
+COPY_ICON = _ic('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>')
+LINK_ICON = _ic('<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>')
+
+# 作者与仓库（「关于」菜单、使用说明页、llms.txt 共用）
+REPO_URL = "https://github.com/Brilliant666/ai-image-gallery"
+AUTHOR = "Brilliant666"
+AUTHOR_URL = "https://github.com/Brilliant666"
+
 DL_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
            'aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg>')
 SEARCH_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">'
@@ -308,10 +372,26 @@ def bar(current=None, up="../"):
     by_id = {s["id"]: s for s in sites()}
     cur = by_id[current].get("mergedInto", current) if current in by_id else current
     links = []
-    for s in nav_sites():
+    for n, s in enumerate(nav_sites(), 1):
         lab = LABELS.get(s["id"], s["name"])
         aria = ' aria-current="page"' if s["id"] == cur else ""
-        links.append(f'<a href="{up}{escape(s["id"])}/"{aria}>{bi(lab["zh"], lab["ja"])}</a>')
+        links.append(f'<a href="{up}{escape(s["id"])}/"{aria} aria-keyshortcuts="{n}">{bi(lab["zh"], lab["ja"])}</a>')
+    ext = '<span class="ext" aria-hidden="true">↗</span>'
+    blank = 'target="_blank" rel="noopener noreferrer"'
+    who = bi(f"AI 绘画参考图库合集，由 {AUTHOR} 整理维护。", f"{AUTHOR} が整理・運営する AI イラスト参考画像集です。")
+    menu = (
+        '<div class="pl-mw">'
+        f'<button type="button" class="pl-ic" id="plInfo" aria-haspopup="menu" aria-expanded="false" aria-controls="plMenu">{INFO_ICON}</button>'
+        '<div class="pl-menu" id="plMenu" role="menu" hidden>'
+        f'<div class="who" role="presentation"><b>photoai.life</b>{who}</div>'
+        f'<a role="menuitem" href="{up}guide/">{BOOK_ICON}{bi("使用说明", "使い方")}</a>'
+        f'<button type="button" role="menuitem" id="plHelpBtn">{KEY_ICON}{bi("快捷键", "ショートカット")}<kbd>?</kbd></button>'
+        f'<a role="menuitem" href="{up}guide/#notes">{NOTE_ICON}{bi("注意事项与授权", "注意事項とライセンス")}</a>'
+        '<hr role="presentation">'
+        f'<a role="menuitem" href="{REPO_URL}" {blank}>{GH_ICON}{bi("GitHub 仓库", "GitHub リポジトリ")}{ext}</a>'
+        f'<a role="menuitem" href="{REPO_URL}/issues" {blank}>{MSG_ICON}{bi("反馈问题", "フィードバック")}{ext}</a>'
+        f'<a role="menuitem" href="{AUTHOR_URL}" {blank}>{USER_ICON}{bi("作者", "作者")} @{AUTHOR}{ext}</a>'
+        '</div></div>')
     return (
         '<header class="pl-bar" id="plBar"><div class="pl-in">'
         f'<a class="pl-brand" href="{up}" aria-label="photoai.life">{LOGO}<span class="nm">photoai.life</span></a>'
@@ -322,7 +402,8 @@ def bar(current=None, up="../"):
         f'<button type="button" class="pl-ic" id="plTheme">{SUN}{MOON}</button>'
         '<div class="pl-lang" id="plLang" role="group"><button type="button" data-l="zh" lang="zh-CN">中</button>'
         '<button type="button" data-l="ja" lang="ja">日</button></div>'
-        '<button type="button" class="pl-ic" id="plHelpBtn" aria-haspopup="dialog">?</button>'
+        f'<a class="pl-ic pl-gh" href="{REPO_URL}" {blank} aria-label="GitHub" title="GitHub">{GH_ICON}</a>'
+        + menu +
         '</div></div></header>')
 
 
@@ -336,11 +417,22 @@ K_LR = (["←", "→"], "大图：上一张 / 下一张", "拡大表示：前 / 
 K_POSE_LR = (["←", "→"], "大图：切换视角", "拡大表示：アングル切り替え")
 K_POSE_UD = (["↑", "↓"], "大图：上一个 / 下一个姿势", "拡大表示：前 / 次のポーズ")
 K_DEPTH = (["D"], "线稿 / 深度图", "線画 / デプス")
-HUB_KEYS = [K_THEME, K_LANG, K_HELP]
-PORTRAIT_KEYS = [K_THEME, K_LANG, K_LR, K_ESC, K_HELP]
-COSTUME_KEYS = [K_SEARCH, K_THEME, K_LANG, K_LR, K_ESC, K_HELP]
-POSE_KEYS = [K_SEARCH, K_DEPTH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ESC, K_HELP]
-LINE_KEYS = [K_SEARCH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ESC, K_HELP]
+
+
+def _k_nav():
+    labs = [LABELS.get(s["id"], s["name"]) for s in nav_sites()]
+    return ([str(i) for i in range(1, len(labs) + 1)],
+            "切换图库：" + " / ".join(x["zh"] for x in labs), "ギャラリー切り替え：" + " / ".join(x["ja"] for x in labs))
+
+
+K_NAV = _k_nav()
+K_HOME = (["0"], "回到入口页", "トップページへ")
+HUB_KEYS = [K_NAV, K_THEME, K_LANG, K_HELP]
+PORTRAIT_KEYS = [K_NAV, K_HOME, K_THEME, K_LANG, K_LR, K_ESC, K_HELP]
+COSTUME_KEYS = [K_NAV, K_HOME, K_SEARCH, K_THEME, K_LANG, K_LR, K_ESC, K_HELP]
+POSE_KEYS = [K_NAV, K_HOME, K_SEARCH, K_DEPTH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ESC, K_HELP]
+LINE_KEYS = [K_NAV, K_HOME, K_SEARCH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ESC, K_HELP]
+PAGE_KEYS = [K_NAV, K_HOME, K_THEME, K_LANG, K_HELP]      # 落地页、使用说明页
 
 AGE_WHAT = {"zh": "包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类；CC0 线稿里偏性感的姿势关闭时模糊显示。",
             "ja": "ポーズ集の 2人絡み・全身セクシー系・上半身の胸寄せ／セクシー露骨寄り、衣装集のランジェリー・セクシー、CC0 線画の suggestive ポーズ（オフの間はぼかし表示）が対象です。"}
@@ -388,14 +480,14 @@ const PL = window.PL = {
   get adult(){ return d.dataset.adult === '1'; },
 };
 const fire = (n) => dispatchEvent(new Event('pl:' + n));
-const T = {zh:{dark:'切换到深色',light:'切换到浅色',help:'快捷键',lang:'语言',adultOn:'成人向内容已显示，点击隐藏',adultOff:'成人向内容已隐藏，点击显示',top:'回到顶部',nav:'图库'},
-           ja:{dark:'ダークに切り替え',light:'ライトに切り替え',help:'ショートカット',lang:'言語',adultOn:'成人向けの内容を表示中。クリックで非表示',adultOff:'成人向けの内容は非表示。クリックで表示',top:'トップへ',nav:'ギャラリー'}};
+const T = {zh:{dark:'切换到深色',light:'切换到浅色',info:'关于与帮助',lang:'语言',adultOn:'成人向内容已显示，点击隐藏',adultOff:'成人向内容已隐藏，点击显示',top:'回到顶部',nav:'图库',copied:'已复制',copyFail:'复制失败，请手动选择复制'},
+           ja:{dark:'ダークに切り替え',light:'ライトに切り替え',info:'このサイトについて・ヘルプ',lang:'言語',adultOn:'成人向けの内容を表示中。クリックで非表示',adultOff:'成人向けの内容は非表示。クリックで表示',top:'トップへ',nav:'ギャラリー',copied:'コピーしました',copyFail:'コピーできませんでした'}};
 function syncBar(){
   const t = T[PL.lang], th = $('#plTheme'), ad = $('#plAdult');
   th.title = th.ariaLabel = PL.theme === 'dark' ? t.light : t.dark;
   ad.setAttribute('aria-checked', PL.adult ? 'true' : 'false');
   ad.title = ad.ariaLabel = PL.adult ? t.adultOn : t.adultOff;
-  $('#plHelpBtn').title = $('#plHelpBtn').ariaLabel = t.help;
+  $('#plInfo').title = $('#plInfo').ariaLabel = t.info;
   $('#plLang').ariaLabel = t.lang; $('#plTop').ariaLabel = t.top;
   document.querySelector('.pl-nav').ariaLabel = t.nav;
   document.querySelectorAll('#plLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === PL.lang ? 'true' : 'false'));
@@ -412,6 +504,7 @@ const focusables = el => [...el.querySelectorAll('a[href],button:not([disabled])
   .filter(x => x.offsetParent !== null || x === document.activeElement);
 PL.openDialog = (el, opener, fallback) => {
   if (stack.some(s => s.el === el)) return;
+  const mn = document.getElementById('plMenu'); if (mn && !mn.hidden){ mn.hidden = true; document.getElementById('plInfo').setAttribute('aria-expanded', 'false'); }
   stack.push({el, opener: opener || document.activeElement, fallback});
   if (el.classList.contains('modal')) el.classList.add('open'); else el.hidden = false;
   document.body.style.overflow = 'hidden';
@@ -446,7 +539,24 @@ document.addEventListener('click', e => {
 const help = $('#plHelp'), age = $('#plAge');
 $('#plTheme').addEventListener('click', () => PL.setTheme(PL.theme === 'dark' ? 'light' : 'dark'));
 $('#plLang').addEventListener('click', e => { const b = e.target.closest('[data-l]'); if (b) PL.setLang(b.dataset.l); });
-$('#plHelpBtn').addEventListener('click', e => help.hidden ? PL.openDialog(help, e.currentTarget) : PL.closeDialog(help));
+/* ⓘ 菜单：非模态下拉。Esc / 点外面关闭，↑↓ 移动，关闭后焦点回到按钮 */
+const info = $('#plInfo'), menu = $('#plMenu');
+const items = () => [...menu.querySelectorAll('[role="menuitem"]')];
+function menuOpen(focusFirst){ menu.hidden = false; info.setAttribute('aria-expanded', 'true'); if (focusFirst) items()[0].focus(); }
+function menuClose(back){ if (menu.hidden) return; menu.hidden = true; info.setAttribute('aria-expanded', 'false'); if (back) info.focus(); }
+info.addEventListener('click', () => menu.hidden ? menuOpen(false) : menuClose(false));
+info.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' '){ e.preventDefault(); menuOpen(true); } });
+menu.addEventListener('keydown', e => {
+  const l = items(), i = l.indexOf(document.activeElement);
+  if (e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); menuClose(true); }
+  else if (e.key === 'ArrowDown'){ e.preventDefault(); l[(i + 1) % l.length].focus(); }
+  else if (e.key === 'ArrowUp'){ e.preventDefault(); l[(i - 1 + l.length) % l.length].focus(); }
+  else if (e.key === 'Home'){ e.preventDefault(); l[0].focus(); }
+  else if (e.key === 'End'){ e.preventDefault(); l[l.length - 1].focus(); }
+  else if (e.key === 'Tab') menuClose(false);
+});
+document.addEventListener('click', e => { if (!menu.hidden && !e.target.closest('.pl-mw')) menuClose(false); });
+$('#plHelpBtn').addEventListener('click', () => { menuClose(false); PL.openDialog(help, info); });
 PL.askAdult = (opener) => {
   let ok = false; try{ ok = localStorage.getItem('hub.ageOk') === '1'; }catch(_){}
   if (ok) return PL.setAdult(true);
@@ -463,10 +573,42 @@ document.addEventListener('keydown', e => {
   const el = document.activeElement;
   if (el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable)) return;
   const k = e.key;
-  if (k === '?'){ e.preventDefault(); PL.openDialog(help, $('#plHelpBtn')); }
+  if (/^[0-9]$/.test(k)){
+    const a = k === '0' ? $('.pl-brand') : document.querySelector('.pl-nav a[aria-keyshortcuts="' + k + '"]');
+    const same = u => u.split('#')[0].replace(/index\.html$/, '');
+    if (a && a.getAttribute('aria-current') !== 'page' && same(a.href) !== same(location.href)){ e.preventDefault(); location.href = a.href; }
+    return;
+  }
+  if (k === '?'){ e.preventDefault(); menuClose(false); PL.openDialog(help, info); }
   else if (k === 't' || k === 'T'){ PL.setTheme(PL.theme === 'dark' ? 'light' : 'dark'); }
   else if (k === 'l' || k === 'L'){ PL.setLang(PL.lang === 'zh' ? 'ja' : 'zh'); }
   else if (k === '/'){ const q = document.querySelector('[data-pl-search]'); if (q){ e.preventDefault(); q.focus(); q.select(); } }
+});
+
+/* 轻提示与复制：PL.toast(文字)；PL.copy(文字) 成功或失败都会提示，返回 Promise<boolean> */
+let toastEl = null, toastT = 0;
+PL.toast = msg => {
+  if (!toastEl){ toastEl = document.createElement('div'); toastEl.className = 'pl-toast'; toastEl.setAttribute('role', 'status'); document.body.appendChild(toastEl); }
+  toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 1800);
+};
+PL.copy = text => {
+  const fallback = () => { const back = document.activeElement, ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:-1000px;opacity:0'; (PL.top() || document.body).appendChild(ta); ta.select();
+    let ok = false; try{ ok = document.execCommand('copy'); }catch(_){} ta.remove(); if (back && back.focus) back.focus({preventScroll:true}); return ok; };
+  const fin = ok => { PL.toast(T[PL.lang][ok ? 'copied' : 'copyFail']); return ok; };
+  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext)
+    return navigator.clipboard.writeText(text).then(() => fin(true), () => fin(fallback()));
+  return Promise.resolve(fin(fallback()));
+};
+
+/* 横滑的胶囊行：还有内容可滑时两端渐隐（.chips 由页面动态填充，所以监听尺寸与内容变化） */
+const ovf = el => { const l = el.scrollLeft > 2, r = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
+  el.classList.toggle('ovl', l); el.classList.toggle('ovr', r); };
+document.querySelectorAll('.chips').forEach(el => {
+  el.addEventListener('scroll', () => ovf(el), {passive:true});
+  if ('ResizeObserver' in window) new ResizeObserver(() => ovf(el)).observe(el);
+  if ('MutationObserver' in window) new MutationObserver(() => ovf(el)).observe(el, {childList:true});
+  ovf(el);
 });
 
 /* 其他标签页改了偏好：跟着变（不再写回存储） */
