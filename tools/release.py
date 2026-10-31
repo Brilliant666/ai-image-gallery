@@ -43,7 +43,7 @@ def landing_dirs(sd):
         return json.load(f)["dirs"]
 
 # 入口页与根级文件（sitemap / robots / 社交分享图）
-HUB_FILES = ["index.html", "404.html", "sitemap.xml", "robots.txt", "og-cover.jpg", "llms.txt",
+HUB_FILES = ["index.html", "404.html", "sitemap.xml", "robots.txt", "og-cover.jpg", "llms.txt", "gen-sw.js",
              "favicon.ico", "favicon.svg", "apple-touch-icon.png", "icon-512.png"]
 # 入口页旁的根级页面目录（使用说明）
 HUB_DIRS = ["guide"]

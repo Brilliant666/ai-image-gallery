@@ -141,8 +141,8 @@ class Pages(unittest.TestCase):
         for s in SITES:
             size = os.path.getsize(os.path.join(ROOT, f"sites/{s}/index.html"))
             self.assertLess(size, 240 * 1024, f"{s}/index.html {size // 1024} KB，超出 240 KB")
-        # 入口页 2026-11 起带配方面板（约 22 KB 脚本），可以在首页查看、复制配方
-        self.assertLess(os.path.getsize(os.path.join(ROOT, "hub/index.html")), 100 * 1024)
+        # 入口页带配方栏与生图（约 55 KB 脚本与样式），在首页也能直接生成
+        self.assertLess(os.path.getsize(os.path.join(ROOT, "hub/index.html")), 130 * 1024)
 
     def test_json_ld_parses(self):
         # 所有页面里的 JSON-LD 都能解析；CC0 图库的结构化数据带 license
@@ -320,7 +320,7 @@ class Landing(unittest.TestCase):
         styles = json.dumps(recipe.STYLES, ensure_ascii=False)
         for rel in ["hub/index.html"] + [f"sites/{s}/index.html" for s in SITES]:
             h = read(rel)
-            for el in ('id="rcFab"', 'id="rcPan"', 'id="rcCopy"', 'id="rcBoard"'):
+            for el in ('id="rc"', 'id="rcBody"', 'id="rcGo"', 'id="rcRun"', 'id="rcCopy"', 'id="rcBoard"', 'id="rcSet"', 'PL.gen = {'):
                 self.assertIn(el, h, f"{rel} 缺 {el}")
             self.assertIn(styles, h, f"{rel} 的画风预设与 shared/recipe.py 不一致")
             if rel.startswith("sites/"):
@@ -337,6 +337,24 @@ class Landing(unittest.TestCase):
         sys.path.insert(0, os.path.join(ROOT, "sites", "portrait", "scripts"))
         import translations as ptr
         self.assertEqual(sorted(set(ptr.STYLE_ZH) - set(ptr.STYLE_EN)), [])
+
+    def test_gen_service_worker(self):
+        # 生图中继：根目录有 gen-sw.js 并随发布复制；它不拦截任何请求（没有 fetch 处理），只接受 https 地址；
+        # 页面不把 API Key 写进任务记录
+        sw = read("hub/gen-sw.js")
+        self.assertNotIn("addEventListener('fetch'", sw)
+        self.assertNotIn('addEventListener("fetch"', sw)
+        self.assertIn("/^https:\\/\\//i.test(q.url)", sw)
+        self.assertIn('"gen-sw.js"', read("tools/release.py"))
+        h = read("sites/pose/index.html")
+        self.assertIn("register(up + 'gen-sw.js'", h)
+        put = re.search(r"await put\(\{id, at: Date\.now\(\)(.*?)\}\);", h)
+        self.assertIsNotNone(put)
+        self.assertNotIn("key", put.group(1).lower(), "任务记录里不应有 Key")
+        node = shutil.which("node")
+        if node:
+            r = subprocess.run([node, "--check", os.path.join(ROOT, "hub", "gen-sw.js")], capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stderr)
 
     def test_guide_page(self):
         # 使用说明页：带顶部栏、各章节锚点（顶部栏的「注意事项」链到 #notes）、进了根 sitemap 与 llms.txt、发布时一起复制
