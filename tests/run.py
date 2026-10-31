@@ -261,20 +261,46 @@ class Landing(unittest.TestCase):
         self.assertNotIn('"adult"', read("hub/index.html"))
 
     def test_shisei_suggestive(self):
-        # Shisei：上游标为 suggestive 的姿势在画廊里带模糊标记，不出现在任何落地页
+        # Shisei：上游标为 suggestive 的姿势在画廊里带成人向标记（模糊模式），不出现在任何落地页
         if "shisei" not in SITES:
             self.skipTest("没有 shisei")
         rows = json.loads(read("sites/shisei/manifest.json"))
         sugg = {r["编号"] for r in rows if r["rating"] == "suggestive"}
         db = page_db(read("sites/shisei/index.html"))
-        self.assertEqual({p["p"] for p in db["poses"] if p.get("r")}, sugg)
-        self.assertIn("const BLUR = true;", read("sites/shisei/index.html"))
+        self.assertEqual({p["p"] for p in db["poses"] if p.get("x")}, sugg)
+        self.assertIn("const ADULT_MODE = 'blur';", read("sites/shisei/index.html"))
         for rel in self.site_pages("shisei"):
             shown = set(re.findall(r"<figcaption>([A-Z]\d+) ", read(rel)))
             self.assertFalse(shown & sugg, f"{rel} 出现了 suggestive 姿势: {sorted(shown & sugg)[:5]}")
             self.assertFalse(re.search(r"ふたり|セクシー", rel), f"{rel} 不应为双人或性感系列生成落地页")
-        for s in ("pose", "pose-depth"):
-            self.assertIn("const BLUR = false;", read(f"sites/{s}/index.html"))
+
+    def test_adult_switch_in_galleries(self):
+        # 18+ 开关：有 adult 规则的站点渲染开关、年龄确认框，内联数据里的成人向标记与规则一致；
+        # 状态存 hub.adult（五个子站同源，一处打开处处生效）
+        sys.path.insert(0, os.path.join(ROOT, "shared"))
+        import adult
+        mode = {"pose": "hide", "pose-depth": "hide", "costume": "hide", "shisei": "blur"}
+        for s in SITES:
+            h = read(f"sites/{s}/index.html")
+            rule = adult.rules(s)
+            if not rule:
+                self.assertNotIn('id="adultSw"', h, f"{s} 没有成人向内容，不应有 18+ 开关")
+                continue
+            self.assertIn('id="adultSw"', h, s)
+            self.assertIn('id="ageBox"', h, s)
+            self.assertIn(f"const ADULT_MODE = '{mode[s]}';", h, s)
+            self.assertIn("localStorage.getItem('hub.adult')", h, s)
+            db = page_db(h)
+            rows = json.loads(read(f"sites/{s}/manifest.json"))
+            if s == "costume":
+                want = {r["id"] for r in rows if adult.is_adult(r, rule)}
+                got = {x["i"] for x in db["items"] if x.get("x")}
+            else:
+                want = {(r["系列"], r["编号"]) for r in rows if adult.is_adult(r, rule)}
+                got = {(p["s"], p["p"]) for p in db["poses"] if p.get("x")}
+            self.assertEqual(got, want, f"{s} 的成人向标记与 sites.json 规则不一致")
+            for lang in ("zh", "ja"):
+                self.assertTrue(db["ui"][lang].get("ageWhat"), f"{s} 缺 {lang} 的 ageWhat 说明")
 
     def test_sitemaps_cover_landing_pages(self):
         root_sm = read("hub/sitemap.xml")

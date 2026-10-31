@@ -16,6 +16,7 @@ import json, os, sys, csv
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "shared"))
 from translations import CAT_ZH, TAG_ZH, TAG_JA, TAG_GROUPS, UI
+import adult  # noqa: E402
 import landing  # noqa: E402
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,6 +27,11 @@ SITE_URL = os.environ.get("SITE_URL", "https://example.com").rstrip("/")
 
 CAT_ORDER = ["春", "夏", "秋", "冬", "ランジェリー", "セクシー", "水着", "パーティ"]
 
+# 成人向服装（sites.json 的 adult 规则）：不进落地页；画廊里 18+ 开关关闭时隐藏（shared/adult.py）
+ADULT_RULE = adult.rules("costume")
+adult_ids = {r["id"] for r in rows if adult.is_adult(r, ADULT_RULE)}
+UI = adult.ui(UI, {"zh": "包括内衣、性感两类服装。", "ja": "ランジェリー・セクシーの 2 カテゴリが対象です。"})
+
 items = []
 for r in rows:
     items.append({
@@ -35,6 +41,7 @@ for r in rows:
         "th": r["thumb_path"],
         "im": r["img_path"],
         "pg": r["png_path"],
+        **({"x": 1} if r["id"] in adult_ids else {}),
     })
 
 cats = [c for c in CAT_ORDER if any(x["c"] == c for x in items)]
@@ -307,6 +314,7 @@ footer a{color:var(--tx3)}
 footer a:hover{color:var(--ac)}
 
 @media(max-width:1080px){ .count{margin-left:0} .switches{margin-left:auto} }
+__ADULT_CSS__
 @media(max-width:980px){
   .mbox{grid-template-columns:1fr;overflow:auto;padding:12px}
   .mimg{height:54vh}
@@ -347,7 +355,7 @@ __FAQ_LD__
       </label>
       <button class="ftog" id="ftog" aria-expanded="false"><span data-i18n="filter">筛选</span><b id="fn"></b></button>
       <span class="count" id="count"></span>
-      <div class="switches">
+      <div class="switches">__ADULT_SW__
         <div class="switch" id="themeSw" role="group">
           <button data-t="light" title="Light" aria-label="Light">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
@@ -407,6 +415,7 @@ __SEO_INTRO__
     </div>
   </div>
 </div>
+__ADULT_BOX__
 
 <script>
 const DB = __PAYLOAD__;
@@ -433,6 +442,15 @@ const isZh = () => LANG === 'zh';
 const nC = c => isZh() ? (CZ[c]||c) : c;
 const nT = x => isZh() ? (TZ[x]||x) : (TJ[x]||x);
 const gName = g => isZh() ? g.zh : g.ja;
+__ADULT_JS__
+// 18+ 关闭时，成人向服装不参与列表、计数、分类和标签选项
+const visible = () => ADULT ? ITEMS : ITEMS.filter(x => !x.x);
+const visCats = () => CATS.filter(c => visible().some(x => x.c === c));
+function onAdult(){
+  if (S.cat && !visCats().includes(S.cat)) S.cat = null;
+  drawTabs(); drawCatSel(); drawTagGroups(); draw();
+  if (modal.classList.contains('open') && !VIEW[MI]) closeM();
+}
 
 /* ── 静态文案 ── */
 function applyStatic(){
@@ -444,6 +462,7 @@ function applyStatic(){
   $('#foot').innerHTML = t('footer');
   document.querySelectorAll('#themeSw button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.t===THEME?'true':'false'));
   document.querySelectorAll('#langSw button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.l===LANG?'true':'false'));
+  adultStatic();
 }
 
 /* ── 主题 / 语言 ── */
@@ -474,29 +493,31 @@ function drawTabs(){
     b.onclick=()=>{ S.cat=k; drawTabs(); drawCatSel(); draw(); };
     box.appendChild(b);
   };
-  mk(null, t('all'), ITEMS.length);
-  CATS.forEach(c=>mk(c, nC(c), ITEMS.filter(x=>x.c===c).length));
+  mk(null, t('all'), visible().length);
+  visCats().forEach(c=>mk(c, nC(c), visible().filter(x=>x.c===c).length));
 }
 
 function drawCatSel(){
   const sel=$('#cat'); sel.innerHTML='';
   const add=(v,label)=>{const o=document.createElement('option');o.value=v;o.textContent=label;sel.appendChild(o)};
-  add('', t('catAll')+' ('+ITEMS.length+')');
-  CATS.forEach(c=>add(c, nC(c)+' ('+ITEMS.filter(x=>x.c===c).length+')'));
+  add('', t('catAll')+' ('+visible().length+')');
+  visCats().forEach(c=>add(c, nC(c)+' ('+visible().filter(x=>x.c===c).length+')'));
   sel.value = S.cat||'';
 }
 
 /* ── 标签分面 ── */
 function drawTagGroups(){
   const box=$('#tgrps'); box.innerHTML='';
+  const vis = visible();
   GROUPS.forEach(g=>{
-    const avail = g.tags.filter(tg=>ITEMS.some(x=>x.t.includes(tg)));
+    // 18+ 关闭时只剩成人向服装才有的标签（例如 bra）不显示；已选中的保留，方便取消
+    const avail = g.tags.filter(tg=>vis.some(x=>x.t.includes(tg)) || S.tags.has(tg));
     if(!avail.length) return;
     const wrap=document.createElement('div'); wrap.className='tgrp';
     const h=document.createElement('h4'); h.textContent=gName(g); wrap.appendChild(h);
     const chips=document.createElement('div'); chips.className='chips';
     avail.forEach(tg=>{
-      const n = ITEMS.filter(x=>x.t.includes(tg)).length;
+      const n = vis.filter(x=>x.t.includes(tg)).length;
       const b=document.createElement('button');
       b.className='chip';
       b.title = tg;
@@ -568,13 +589,15 @@ const grid=$('#grid'), countEl=$('#count'), moreEl=$('#more');
 let VIEW=[];
 
 function draw(){
-  VIEW = ITEMS.filter(hit).sort(SORTERS[S.sort] || SORTERS.cat);
+  VIEW = visible().filter(hit).sort(SORTERS[S.sort] || SORTERS.cat);
   countEl.innerHTML = S.tags.size
     ? t('count').replace('{n}',VIEW.length).replace('{t}',S.tags.size)
     : t('countNoTag').replace('{n}',VIEW.length);
 
   if(!VIEW.length){
-    grid.innerHTML = '<div class="empty"><b>'+esc(t('emptyTitle'))+'</b>'+esc(t('emptyDesc'))+'</div>';
+    // 只是被 18+ 开关隐藏了（例如分享链接带 #cat=ランジェリー）：提示打开开关，而不是「没有符合条件」
+    const hidden = !ADULT && ITEMS.some(x => x.x && hit(x));
+    grid.innerHTML = hidden ? adultEmpty() : '<div class="empty"><b>'+esc(t('emptyTitle'))+'</b>'+esc(t('emptyDesc'))+'</div>';
     moreEl.hidden = true;
     badge(); return;
   }
@@ -775,13 +798,14 @@ applyStatic(); drawTabs(); drawCatSel(); drawTagGroups(); draw();
 </html>"""
 
 # 静态落地页（分类 + 标签，成人向服装不进落地页）与主页里不依赖 JS 的介绍、FAQ
-import adult, seo  # noqa: E402
-ADULT_RULE = adult.rules("costume")
-adult_ids = {r["id"] for r in rows if adult.is_adult(r, ADULT_RULE)}
+import seo  # noqa: E402
 landing_urls, seo_intro, FAQ = seo.build(root, SITE_URL, items, cats, adult_ids)
 html = (html.replace("__SEO_INTRO__", seo_intro).replace("__SEO_CSS__", landing.SEO_INTRO_CSS)
             .replace("__FAQ_LD__", landing.faq_ld_script(FAQ)))
 
+a_css, a_sw, a_box, a_js = adult.parts("hide" if adult_ids else None)
+html = (html.replace("__ADULT_CSS__", a_css).replace("__ADULT_SW__", a_sw)
+            .replace("__ADULT_BOX__", a_box).replace("__ADULT_JS__", a_js))
 html = html.replace("__PAYLOAD__", payload).replace("__SITE__", SITE_URL)
 out = os.path.join(root, "index.html")
 open(out, "w", encoding="utf-8").write(html)

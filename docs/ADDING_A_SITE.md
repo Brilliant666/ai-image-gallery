@@ -24,7 +24,7 @@ sites/<新站id>/
 | `manifest.json` | 每条记录对 `sites.json` 里的每个档位 `<tier>` 都有 `<tier>_url` 和 `<tier>_path`（例如 `thumb_url` / `thumb_path`）。`tools/fetch.py` 和 `tools/verify.py` 只靠这条规则工作 |
 
 结构和姿势集相同的站，直接复用 `shared/pose_gallery.py` 与 `shared/pose_source.py`，只写一份 `config.py`（参考 `sites/pose/config.py`）。
-数据来自别的项目、系列和名称不同的，参考 `sites/shisei/config.py`：系列与视角顺序、中文名表、作者、`blurRatings`（默认模糊）都在配置里。
+数据来自别的项目、系列和名称不同的，参考 `sites/shisei/config.py`：系列与视角顺序、中文名表、作者、`adultMode`（成人向默认隐藏 `hide` 或模糊 `blur`）都在配置里。
 
 ## 2. 在 `sites.json` 追加一条
 
@@ -55,7 +55,7 @@ sites/<新站id>/
 | `tiers` | 下载与校验的档位，对应 manifest 里的 `<tier>_url` / `<tier>_path` |
 | `imageDirs` | `release.py` 硬链接的目录；含 `mid` 时 `mid.py` 会为该站生成中图（`tiers` 里已有 `mid` 的站点由上游提供，不生成） |
 | `license` | `cc0` / `conditional` / `restricted`，决定入口页卡片上的授权徽章 |
-| `adult` | 可选。成人向内容的判定规则：`{manifest 字段名: [取值, …]}`，任一字段命中即算成人向，例如 `{"分类": ["ランジェリー"]}`。命中的图不进任何静态落地页，`tests/run.py` 会检查（见 `shared/adult.py`） |
+| `adult` | 可选。成人向内容的判定规则：`{manifest 字段名: [取值, …]}`，任一字段命中即算成人向，例如 `{"分类": ["ランジェリー"]}`。命中的图不进任何静态落地页；画廊里默认隐藏，工具栏「18+」开关打开后显示。`tests/run.py` 会检查（见 `shared/adult.py`） |
 
 站点在入口页的顺序 = `sites.json` 数组顺序。
 

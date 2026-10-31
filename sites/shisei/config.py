@@ -79,7 +79,7 @@ UI = {
         "themeLight": "ライト", "themeDark": "ダーク",
         "langJa": "日本語", "langZh": "中文",
         "themeAria": "表示テーマ", "langAria": "言語",
-        "blurOff": "ぼかしを解除", "blurOn": "ぼかす", "blurTap": "タップで表示",
+        "blurTap": "タップで表示",
     },
     "zh": {
         "title": SEO["title"],
@@ -111,7 +111,7 @@ UI = {
         "themeLight": "浅色", "themeDark": "深色",
         "langJa": "日本語", "langZh": "中文",
         "themeAria": "主题", "langAria": "语言",
-        "blurOff": "取消模糊", "blurOn": "恢复模糊", "blurTap": "点开查看",
+        "blurTap": "点开查看",
     },
 }
 
@@ -167,5 +167,7 @@ CONFIG = {
     "imgExt": ".webp",
     "favicon": "S",
     "schemaImages": N_IMAGES,
-    "blurRatings": ["suggestive"],
+    # 18+ 开关（shared/adult.py）：上游标为 suggestive 的姿势默认模糊，与上游站点一致
+    "adultMode": "blur",
+    "ageWhat": {"zh": "上游标为 suggestive 的偏性感姿势，关闭时模糊显示。", "ja": "上流で suggestive とされたポーズで、オフの間はぼかし表示です。"},
 }

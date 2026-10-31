@@ -54,7 +54,7 @@ Screenshots are taken from the live site to show the UI. The artwork belongs to 
 | [Costume](https://photoai.life/costume/) | Outfits without models, 86 faceted tags | 1,407 items / 4,221 files | No redistribution |
 | [Shisei line art](https://photoai.life/shisei/) | Faceless mannequin line art, 4 series × 5 angles; suggestive poses blurred by default | 280 poses / 1,133 | **CC0** |
 
-Every site has paginated grids, filters and search, a lightbox (`←` `→` to step, `Esc` to close, swipe on touch), original downloads, and theme and language switches. Each page is a single `index.html` with embedded data and no framework, CDN or web fonts.
+Every site has paginated grids, filters and search, a lightbox (`←` `→` to step, `Esc` to close, swipe on touch), original downloads, and theme and language switches. Adult-oriented items are hidden by default on Pose, Pose Depth and Costume, and blurred on Shisei; the 18+ switch in the toolbar shows them after a one-time age check, shared across all five sites. They never appear on static landing pages or in the sitemap. Each page is a single `index.html` with embedded data and no framework, CDN or web fonts.
 
 > **Portrait and Shisei images are CC0.** The other three sites forbid redistribution. Shisei's pose list follows ai-pose-gallery and is credited only. See `sites/<id>/NOTICE.md`.
 

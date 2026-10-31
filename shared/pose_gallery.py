@@ -28,7 +28,8 @@ def build(root, cfg):
       storageKey               localStorage 前缀，两站共用 pg
       imgExt                   下载文件的扩展名
       favicon                  页面内嵌图标的字母
-      blurRatings              这些 rating 的姿势在网格里默认模糊，点开或打开开关才清晰
+      adultMode                成人向姿势（sites.json 的 adult 规则）在画廊里的默认处理：
+                               hide 隐藏（默认）/ blur 模糊；打开「18+」开关后显示（见 shared/adult.py）
     """
     UI = cfg["ui"]
     rows = json.load(open(os.path.join(root, "manifest.json"), encoding="utf-8"))
@@ -46,10 +47,11 @@ def build(root, cfg):
     AUTHOR, AUTHOR_URL = cfg.get("author", "ギア"), cfg.get("authorUrl", "https://x.com/giaaibusi")
     KEY = cfg.get("storageKey", "pg")
     EXT = cfg.get("imgExt", ".png")
-    BLUR = list(cfg.get("blurRatings", []))
+    ADULT_MODE = cfg.get("adultMode", "hide") if ADULT_RULE else None
+    UI = adult.ui(UI, cfg.get("ageWhat", {})) if ADULT_MODE else UI
 
     poses = {}
-    adult_keys = set()      # 成人向姿势 (系列, 分類, 编号)，不进落地页
+    adult_keys = set()      # 成人向姿势 (系列, 分類, 编号)，不进落地页，画廊里按 ADULT_MODE 处理
     for r in rows:
         key = (r["系列"], r["分類"], r["编号"])
         if adult.is_adult(r, ADULT_RULE):
@@ -58,13 +60,13 @@ def build(root, cfg):
             zh = r.get("姿势名_zh") if N_ZH is None else N_ZH.get(r["姿势名"], r["姿势名"])
             poses[key] = {"s": r["系列"], "c": r["分類"], "p": r["编号"], "n": r["姿势名"],
                           "z": zh or r["姿势名"], "v": []}
-            if BLUR:
-                poses[key]["r"] = 1 if r.get("rating") in BLUR else 0
         poses[key]["v"].append({
             "a": r["视角"],
             "t": r["thumb_path"].replace("\\", "/"),
             "f": r["full_path"].replace("\\", "/"),
         })
+    for key in adult_keys:
+        poses[key]["x"] = 1     # 成人向标记
 
     for p in poses.values():
         p["v"].sort(key=lambda v: ANG_ORDER.index(v["a"]) if v["a"] in ANG_ORDER else 99)
@@ -263,12 +265,12 @@ main{max-width:1600px;margin:0 auto;padding:22px clamp(16px,4vw,48px) 90px}
 .badge span{background:var(--badge-bg);color:#fff;font-size:11px;padding:3px 8px;border-radius:99px;
   backdrop-filter:blur(4px);font-variant-numeric:tabular-nums}
 .badge span.alt{background:var(--ac);color:var(--on-ac);font-weight:700}
-/* suggestive 姿势默认模糊（只在配置了 blurRatings 的站点生效），点开或打开开关后清晰 */
-html.blur-on .card[data-r="1"]:not(.unblur) .ph>img,html.blur-on .card[data-r="1"]:not(.unblur) .strip img{filter:blur(14px)}
-html.blur-on .card[data-r="1"]:not(.unblur) .ph::after{content:attr(data-blur);position:absolute;left:50%;top:50%;
+/* 成人向姿势：adultMode=blur 的站点在 18+ 开关关闭时模糊显示（hide 的站点直接不渲染），点开或打开开关后清晰 */
+html.blur-on .card[data-x="1"]:not(.unblur) .ph>img,html.blur-on .card[data-x="1"]:not(.unblur) .strip img{filter:blur(14px)}
+html.blur-on .card[data-x="1"]:not(.unblur) .ph::after{content:attr(data-blur);position:absolute;left:50%;top:50%;
   transform:translate(-50%,-50%);padding:6px 12px;border-radius:99px;background:rgba(13,15,18,.66);color:#fff;
   font-size:12px;white-space:nowrap;pointer-events:none}
-.switch.blursw button{width:auto;padding:0 10px;font-size:12px}
+__ADULT_CSS__
 .meta{padding:12px 14px 13px}
 .meta h3{margin:0;font-size:14.5px;font-weight:600;line-height:1.4;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.8em}
@@ -408,7 +410,7 @@ __FAQ_LD__
         </div>
       </div>
       <span class="count" id="count"></span>
-      <div class="switches">__BLUR_SW__
+      <div class="switches">__ADULT_SW__
         <div class="switch" id="themeSw" role="group" data-i18n-aria="themeAria">
           <button data-t="light" title="Light" aria-label="Light">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
@@ -458,15 +460,12 @@ __SEO_INTRO__
     </div>
   </div>
 </div>
+__ADULT_BOX__
 
 <script>
 const DB = __PAYLOAD__;
 const POSES = DB.poses, SERIES = DB.series, CATS = DB.cats, ANGS = DB.angs;
-const BLUR = __BLUR_ON__;   // 是否启用 suggestive 默认模糊
-let SHOW_ALL = false;       // 模糊开关：true 时全部清晰
-try{ SHOW_ALL = BLUR && localStorage.getItem('__KEY__.unblur') === '1'; }catch(_){}
-const unblurred = new Set();   // 单独点开过的姿势
-const BLUR_SW = BLUR ? document.querySelector('.blursw') : null;   // 只在开启模糊的站点渲染
+const unblurred = new Set();   // 模糊模式下单独点开过的姿势
 const SZ = DB.seriesZh, CZ = DB.catZh, AZ = DB.angZh, UI = DB.ui;
 
 const $ = s => document.querySelector(s);
@@ -491,6 +490,16 @@ const nS = s => isZh() ? (SZ[s]||s) : s;          // 系列名
 const nC = c => isZh() ? (CZ[c]||c) : c;          // 分类名
 const nA = a => isZh() ? (AZ[a]||a) : a;          // 视角名
 const nN = p => isZh() ? (p.z||p.n) : p.n;        // 姿势名
+__ADULT_JS__
+// hide 模式下 18+ 关闭时，成人向姿势不参与列表、计数和筛选项
+const visible = () => (ADULT || ADULT_MODE !== 'hide') ? POSES : POSES.filter(p => !p.x);
+function onAdult(){
+  document.documentElement.classList.toggle('blur-on', ADULT_MODE === 'blur' && !ADULT);
+  if (ADULT_MODE !== 'hide') return;
+  if (S.series && !visible().some(p => p.s === S.series)) { S.series = null; }
+  drawTabs(); drawCats(); draw();
+  if (modal.classList.contains('open') && !VIEWLIST[M.i]) closeM();
+}
 
 /* ══ 静态文案 ══ */
 function applyStatic(){
@@ -504,10 +513,8 @@ function applyStatic(){
   // 开关状态
   document.querySelectorAll('#themeSw button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.t===THEME?'true':'false'));
   document.querySelectorAll('#langSw button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.l===LANG?'true':'false'));
-  if (BLUR) {
-    document.documentElement.classList.toggle('blur-on', !SHOW_ALL);
-    const sw = BLUR_SW && BLUR_SW.querySelector('button'); if (sw) { sw.textContent = t(SHOW_ALL ? 'blurOn' : 'blurOff'); sw.setAttribute('aria-pressed', SHOW_ALL ? 'true' : 'false'); }
-  }
+  document.documentElement.classList.toggle('blur-on', ADULT_MODE === 'blur' && !ADULT);
+  adultStatic();
 }
 
 /* ══ 主题 / 语言切换 ══ */
@@ -527,12 +534,6 @@ $('#langSw').addEventListener('click', e=>{
   if($('#modal').classList.contains('open')) showM();
 });
 
-if (BLUR_SW) BLUR_SW.addEventListener('click', ()=>{
-  SHOW_ALL = !SHOW_ALL;
-  try{ localStorage.setItem('__KEY__.unblur', SHOW_ALL ? '1' : '0'); }catch(_){}
-  applyStatic();
-});
-
 /* ══ 排序 ══ */
 const SERIES_IDX = s => { const i = SERIES.indexOf(s); return i<0?99:i; };
 const SORTERS = {
@@ -545,6 +546,7 @@ const SORTERS = {
 /* ══ 系列 tabs ══ */
 function drawTabs(){
   const box = $('#tabs'); box.innerHTML='';
+  const vis = visible();
   const mk = (k, label, n) => {
     const b=document.createElement('button');
     b.className='tab'; b.setAttribute('role','tab');
@@ -553,14 +555,15 @@ function drawTabs(){
     b.onclick=()=>{ S.series=k; S.cat=null; drawTabs(); drawCats(); draw(); };
     box.appendChild(b);
   };
-  mk(null, t('all'), POSES.length);
-  SERIES.forEach(s=>mk(s, nS(s), POSES.filter(p=>p.s===s).length));
+  mk(null, t('all'), vis.length);
+  // 整个系列都是成人向时，18+ 关闭就不显示这个系列（hide 模式）
+  SERIES.forEach(s=>{ const n = vis.filter(p=>p.s===s).length; if (n) mk(s, nS(s), n); });
 }
 
 /* ══ 分类 select ══ */
 function drawCats(){
   const sel=$('#cat');
-  const pool = POSES.filter(p=>!S.series||p.s===S.series);
+  const pool = visible().filter(p=>!S.series||p.s===S.series);
   const avail = CATS.filter(c=>pool.some(p=>p.c===c));
   sel.innerHTML='';
   const add=(v,label)=>{const o=document.createElement('option');o.value=v;o.textContent=label;sel.appendChild(o)};
@@ -632,7 +635,7 @@ let VIEWLIST=[];
 function pageSize(){ return S.view==='pose' ? PAGE_POSE : PAGE_IMG; }
 
 function draw(){
-  const ORDERED = POSES.slice().sort(SORTERS[S.sort] || SORTERS.series);
+  const ORDERED = visible().slice().sort(SORTERS[S.sort] || SORTERS.series);
 
   if(S.view==='pose'){
     const ps = ORDERED.filter(hitPose);
@@ -646,7 +649,9 @@ function draw(){
   }
 
   if(!VIEWLIST.length){
-    grid.innerHTML = '<div class="empty"><b>'+esc(t('emptyTitle'))+'</b>'+esc(t('emptyDesc'))+'</div>';
+    // 只是被 18+ 开关隐藏了（例如落地页或分享链接带 #series=成人向系列）：提示打开开关，而不是「没有匹配」
+    const hidden = !ADULT && ADULT_MODE === 'hide' && POSES.some(p => p.x && hitPose(p));
+    grid.innerHTML = hidden ? adultEmpty() : '<div class="empty"><b>'+esc(t('emptyTitle'))+'</b>'+esc(t('emptyDesc'))+'</div>';
     moreEl.hidden = true;
     badge(); return;
   }
@@ -685,8 +690,8 @@ function cardPose(p, d, i){
     '<button data-a="'+esc(v.a)+'" class="'+(v.a===d.a?'on':'')+'" title="'+esc(nA(v.a))+'">'+
       '<img loading="lazy" decoding="async" src="'+esc(v.t)+'" alt="'+esc(nA(v.a))+'"><span>'+esc(nA(v.a))+'</span>'+
     '</button>').join('');
-  return '<article class="card'+(unblurred.has(p.p)?' unblur':'')+'" tabindex="0" data-i="'+i+'"'+(p.r?' data-r="1"':'')+'>'+
-    '<div class="ph"'+(p.r?' data-blur="'+esc(t('blurTap'))+'"':'')+'><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(d.t)+'" alt="'+esc(nN(p))+'">'+
+  return '<article class="card'+(unblurred.has(p.p)?' unblur':'')+'" tabindex="0" data-i="'+i+'"'+(p.x?' data-x="1"':'')+'>'+
+    '<div class="ph"'+(p.x?' data-blur="'+esc(t('blurTap'))+'"':'')+'><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(d.t)+'" alt="'+esc(nN(p))+'">'+
       '<div class="badge"><span>'+esc(p.p)+'</span></div>'+
       '<a class="dl" href="'+esc(d.f)+'" download="'+esc(p.p + '-' + d.a + '__EXT__')+'" title="下载原图" aria-label="下载原图">'+
         '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg></a></div>'+
@@ -697,8 +702,8 @@ function cardPose(p, d, i){
 }
 
 function cardImg(p, v, i){
-  return '<article class="card'+(unblurred.has(p.p)?' unblur':'')+'" tabindex="0" data-i="'+i+'"'+(p.r?' data-r="1"':'')+'>'+
-    '<div class="ph"'+(p.r?' data-blur="'+esc(t('blurTap'))+'"':'')+'><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(v.t)+'" alt="'+esc(nN(p))+'">'+
+  return '<article class="card'+(unblurred.has(p.p)?' unblur':'')+'" tabindex="0" data-i="'+i+'"'+(p.x?' data-x="1"':'')+'>'+
+    '<div class="ph"'+(p.x?' data-blur="'+esc(t('blurTap'))+'"':'')+'><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(v.t)+'" alt="'+esc(nN(p))+'">'+
       '<div class="badge"><span class="alt">'+esc(nA(v.a))+'</span></div>'+
       '<a class="dl" href="'+esc(v.f)+'" download="'+esc(p.p + '-' + v.a + '__EXT__')+'" title="下载原图" aria-label="下载原图">'+
         '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg></a></div>'+
@@ -779,7 +784,7 @@ addEventListener('resize', ()=>{ if(modal.classList.contains('open')) fitStage()
 
 function openM(i, v){
   M={i, d:v};
-  if (BLUR && VIEWLIST[i] && VIEWLIST[i].p.r) {
+  if (ADULT_MODE === 'blur' && VIEWLIST[i] && VIEWLIST[i].p.x) {
     unblurred.add(VIEWLIST[i].p.p);
     document.querySelectorAll('.card[data-i="'+i+'"]').forEach(c=>c.classList.add('unblur'));
   }
@@ -919,7 +924,12 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
     else:
         html = html.replace("__SEO_INTRO__", "").replace("__SEO_CSS__", "").replace("__FAQ_LD__", "")
 
+    a_css, a_sw, a_box, a_js = adult.parts(ADULT_MODE)
     html = (html.replace("__PAYLOAD__", payload)
+                .replace("__ADULT_CSS__", a_css)
+                .replace("__ADULT_SW__", a_sw)
+                .replace("__ADULT_BOX__", a_box)
+                .replace("__ADULT_JS__", a_js)
                 .replace("__SITE__", SITE_URL)
                 .replace("__CODE__", cfg["code"])
                 .replace("__KEY__", KEY)
@@ -928,8 +938,6 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
                 .replace("__AUTHOR_URL__", AUTHOR_URL)
                 .replace("__AUTHOR__", AUTHOR)
                 .replace("__ICON__", cfg.get("favicon", "P"))
-                .replace("__BLUR_ON__", "true" if BLUR else "false")
-                .replace("__BLUR_SW__", '\n        <div class="switch blursw" role="group"><button type="button"></button></div>' if BLUR else "")
                 .replace("__TITLE__", cfg["title"])
                 .replace("__DESC__", cfg["desc"])
                 .replace("__OG_SITE__", cfg["ogSite"])
