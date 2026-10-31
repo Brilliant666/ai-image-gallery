@@ -1,0 +1,25 @@
+[Unit]
+Description=photoai.life optional generation API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=photoai
+Group=photoai
+WorkingDirectory=/srv/ai-image-gallery
+Environment=PHOTOAI_ORIGINS=https://photoai.life
+Environment=PHOTOAI_STATE_DIR=/var/lib/photoai-generation
+ExecStart=/srv/ai-image-gallery/.venv-generation/bin/uvicorn backend.app:production_app --factory --host 127.0.0.1 --port 8090 --workers 1 --no-access-log
+StateDirectory=photoai-generation
+StateDirectoryMode=0700
+UMask=0077
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/photoai-generation
+
+[Install]
+WantedBy=multi-user.target

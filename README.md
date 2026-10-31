@@ -54,7 +54,7 @@
 | [服装集](https://photoai.life/costume/) | 不含真人的服装图，86 个标签分面筛选 | 1,407 件 / 4,221 张 | 禁止再分发 |
 | [Shisei 姿势线稿](https://photoai.life/shisei/) | 无脸人偶线稿，四个系列、每个姿势 5 个视角，性感与双人系列默认隐藏 | 280 个姿势 / 1,133 张 | **CC0** |
 
-每个站都有：网格分页加载、筛选与搜索、灯箱（`←` `→` 翻页，`Esc` 关闭，手机可滑动）、原图下载、主题与语言切换。页首是全站共用的顶部栏：图库切换、18+、深浅色、中 / 日都在上面，偏好全站通用；右上角 ⓘ 菜单里有使用说明（`/guide/`）、注意事项与授权、GitHub 仓库和反馈入口。快捷键：`1`–`4` 切换图库、`0` 回入口页、`?` 查看全部、`/` 跳到搜索框。右下角常驻「配方」栏：跨图库各选一项人像、服装、姿势，用自己的 API Key 直接生图（OpenAI GPT Image、Gemini、豆包 Seedream、通义 Qwen-Image 或 OpenAI 兼容中转），生成中可以切换图库；也可以复制中英文提示词或下载三格参考拼图。Key 与生成记录只存在浏览器里，由浏览器直接请求服务商；成人向内容不能加入配方。姿势集用一个开关在线稿和深度图之间切换，大图里可以拖动竖线左右对比。
+每个站都有：网格分页加载、筛选与搜索、灯箱（`←` `→` 翻页，`Esc` 关闭，手机可滑动）、原图下载、主题与语言切换。页首是全站共用的顶部栏：图库切换、18+、深浅色、中 / 日都在上面，偏好全站通用；右上角 ⓘ 菜单里有使用说明（`/guide/`）、注意事项与授权、GitHub 仓库和反馈入口。快捷键：`1`–`4` 切换图库、`0` 回入口页、`?` 查看全部、`/` 跳到搜索框。右下角常驻「配方」栏：跨图库各选一项人像、服装、姿势，用自己的 API Key 直接生图（OpenAI GPT Image、Gemini、豆包 Seedream、通义 Qwen-Image 或 OpenAI 兼容中转），生成中可以切换图库；也可以复制中英文提示词或下载三格参考拼图。生图由可选后端执行；每位访客的 Key 加密保存在服务端且不回传前端，浏览器缓存最近 30 条结果；成人向内容不能加入配方。姿势集用一个开关在线稿和深度图之间切换，大图里可以拖动竖线左右对比。
 姿势、深度姿势、服装集和 Shisei 的成人向内容默认隐藏；顶部栏的「18+」确认一次年龄后打开，各图库通用。成人向内容不进任何静态落地页和 sitemap。页面是单个 `index.html`，数据内嵌，没有框架、CDN 和外部字体。
 
 > **人像集和 Shisei 是 CC0**，其余三个站的素材禁止再分发。Shisei 的姿势目录沿用 ai-pose-gallery，只注明出处。详见各站的 `sites/<id>/NOTICE.md`。
@@ -155,3 +155,8 @@ ai-image-gallery/
 | `data/` 中的中文译文 | CC BY 4.0 |
 
 素材来自各原站：人像集作者 [あぎ](https://x.com/agi_aibusi)（[原站](https://ai-portrait-gallery.pages.dev/)），姿势集、深度姿势集、服装集作者 [ギア](https://x.com/giaaibusi)（[姿势](https://ai-pose-gallery.pages.dev/) · [深度姿势](https://ai-pose-depth-gallery.pages.dev/) · [服装](https://ai-costume-gallery.pages.dev/)）。Shisei 线稿来自 [wquguru/shisei](https://github.com/wquguru/shisei)（CC0）。本项目是个人学习用途的中文镜像。
+
+
+## 生图后端（可选）
+
+[Generation runtime / 生图服务](deploy/GENERATION.md)

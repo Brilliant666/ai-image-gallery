@@ -119,13 +119,15 @@ CSS = r"""
 .rc-msg{margin:0 12px 10px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.1);font-size:12.5px;line-height:1.6}
 .rc-msg[hidden]{display:none}.rc-msg.err{background:rgba(239,68,68,.22)}
 .rc-msg a,.rc-msg button.lk{color:#d7efa0;background:none;border:0;padding:0;cursor:pointer;font:inherit;text-decoration:underline}
+.rc [hidden]{display:none!important}
 /* Key 设置 */
 .rc-set{margin-top:14px;padding:12px 14px;border-radius:16px;background:var(--sf)}
 .rc-set[hidden]{display:none}
 .rc-set h4{margin:0 0 8px;font-size:14px}
 .rc-set .g{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;align-items:center;font-size:13px}
-.rc-set .g>span{color:var(--mu)}
-.rc-set input[type=password],.rc-set input[type=url],.rc-set input[type=text]{width:100%;height:36px;padding:0 12px;border:0;border-radius:10px;background:var(--bg2);color:var(--tx);font:13px var(--mono)}
+.rc-set .g>span,.rc-set .g>label{color:var(--mu)}
+.rc-set select{width:100%;min-width:0}.rc-set summary{cursor:pointer;font-size:13px}.rc-set details .g{margin-top:10px}
+.rc-set input[type=password],.rc-set input[type=url],.rc-set input[type=text],.rc-set input[type=number]{width:100%;height:36px;padding:0 12px;border:0;border-radius:10px;background:var(--bg2);color:var(--tx);font:13px var(--mono)}
 .rc-set label.ck{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--tx2)}
 .rc-set .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
 .rc-set p{margin:8px 0 0;font-size:12px;color:var(--mu);line-height:1.7}
@@ -233,18 +235,36 @@ def html(up):
         </div>
       </div>
     </div>
+    <details class="rc-set" id="rcParams"><summary id="rcParamsT"></summary><div class="g">
+      <label for="rcSize" id="rcSizeL"></label><input type="text" id="rcSize" placeholder="auto / 1024x1536">
+      <label for="rcQuality" id="rcQualityL"></label><select class="sel" id="rcQuality"><option>low</option><option>auto</option><option>medium</option><option>high</option><option>xhigh</option><option>max</option></select>
+      <label for="rcFormat" id="rcFormatL"></label><select class="sel" id="rcFormat"><option>png</option><option>jpeg</option><option>webp</option></select>
+      <label for="rcBackground" id="rcBackgroundL"></label><select class="sel" id="rcBackground"><option>auto</option><option>opaque</option><option>transparent</option></select>
+      <label for="rcCompression" id="rcCompressionL"></label><input type="number" id="rcCompression" min="0" max="100" placeholder="0–100">
+      <label for="rcModeration" id="rcModerationL"></label><select class="sel" id="rcModeration"><option value="">Default</option><option>auto</option><option>low</option></select>
+    </div></details>
     <div class="rc-set" id="rcSet" hidden>
       <h4 id="rcSetT"></h4>
       <div class="g">
-        <span id="rcProvL"></span><select class="sel" id="rcProv"></select>
-        <span id="rcKeyL"></span><input type="password" id="rcKey" autocomplete="off" spellcheck="false">
-        <span id="rcBaseL"></span><input type="url" id="rcBase" placeholder="https://…/v1">
-        <span id="rcMidL"></span><input type="text" id="rcMid" list="rcModels" spellcheck="false"><datalist id="rcModels"></datalist>
-        <span id="rcProtoL" hidden></span><select class="sel" id="rcProto" hidden><option value="edits">images/edits · multipart</option><option value="json">images/generations · JSON</option></select>
-        <span id="rcFieldL" hidden></span><select class="sel" id="rcField" hidden><option>image[]</option><option>image</option></select>
+        <label for="rcProfile" id="rcProfileL"></label><select class="sel" id="rcProfile"></select>
+        <label for="rcName" id="rcNameL"></label><input type="text" id="rcName" maxlength="80">
+        <label for="rcProv" id="rcProvL"></label><select class="sel" id="rcProv"></select>
+        <label for="rcKey" id="rcKeyL"></label><input type="password" id="rcKey" autocomplete="new-password" spellcheck="false">
+        <label for="rcBase" id="rcBaseL"></label><input type="url" id="rcBase" placeholder="https://…/v1">
+        <label for="rcBaseMode" id="rcBaseModeL"></label><select class="sel" id="rcBaseMode"><option value="versioned">/v1</option><option value="custom">Custom</option></select>
+        <label for="rcMid" id="rcMidL"></label><input type="text" id="rcMid" list="rcModels" spellcheck="false"><datalist id="rcModels"></datalist>
+        <label for="rcTimeout" id="rcTimeoutL"></label><input type="number" id="rcTimeout" min="1" max="1800" value="300">
+        <label for="rcNetwork" id="rcNetworkL"></label><select class="sel" id="rcNetwork"><option value="direct">Direct</option><option value="environment">Environment</option><option value="proxy">Proxy</option></select>
+        <label for="rcProxy" id="rcProxyL"></label><input type="password" id="rcProxy" autocomplete="new-password" spellcheck="false">
+        <label for="rcProto" id="rcProtoL"></label><select class="sel" id="rcProto"><option value="edits">images/edits · multipart</option><option value="json">images/generations · JSON</option></select>
+        <label for="rcField" id="rcFieldL"></label><select class="sel" id="rcField"><option>image[]</option><option>image</option></select>
+        <label for="rcStream" id="rcStreamL"></label><input type="checkbox" id="rcStream">
+        <label for="rcPartial" id="rcPartialL"></label><select class="sel" id="rcPartial"><option>0</option><option>1</option><option>2</option><option>3</option></select>
+        <label for="rcResponse" id="rcResponseL"></label><select class="sel" id="rcResponse"><option value="auto">Auto</option><option value="b64_json">Base64</option></select>
       </div>
-      <div class="row"><label class="ck"><input type="checkbox" id="rcRem"><span id="rcRemL"></span></label>
-        <button type="button" class="btn pri" id="rcSave"></button><button type="button" class="btn ghost" id="rcTest"></button><button type="button" class="btn ghost" id="rcForget"></button></div>
+      <div class="row"><button type="button" class="btn pri" id="rcSave"></button><button type="button" class="btn ghost" id="rcTest"></button>
+        <button type="button" class="btn ghost" id="rcNew"></button><button type="button" class="btn ghost" id="rcDefault"></button><button type="button" class="btn ghost" id="rcDelete"></button><button type="button" class="btn ghost" id="rcForget"></button>
+        <button type="button" class="btn ghost" id="rcErase"></button></div>
       <p id="rcSetHelp"></p><p id="rcTestMsg" role="status"></p><p id="rcSetNote"></p>
     </div>
     <div class="rc-res" id="rcRes" hidden><h4><span id="rcResT"></span><button type="button" id="rcResClr"></button></h4><div class="rc-gal" id="rcGal"></div></div>
@@ -273,14 +293,14 @@ const T = {
      add:'加入配方', inRec:'已在配方中', adult:'不可加入配方', adultWhy:'成人向内容不能加入配方', prompt:'复制提示词',
      sub0:'在大图里点「加入配方」', subN:'{n}/3 · 点开编辑', gen:'生成', running:'生成中 {s}s', pn:'画面与融合描述', gn:'图像生成',
      model:'模型', ratio:'比例', count:'张数', setT:'生图服务', prov:'服务商', key:'API Key', base:'Base URL', mid:'模型 ID', proto:'接口协议', field:'图片字段名', test:'测试连接', testing:'连接中…', connected:'模型列表读取成功，共 {n} 项；生图仍需实际测试。', noModels:'此接口未提供模型列表，无法用此方式验证；可保存后直接尝试生图。', testTimeout:'连接测试超过 15 秒，请检查地址或稍后重试。', relayHelp:'填写中转商的 Base URL、Key 和模型 ID；接口与图片字段按中转文档选择。支持多张参考图的模型才能合成配方。', directHelp:'可修改 Base URL；留空使用官方地址。',
-     remember:'在这台设备上记住 Key', save:'保存', forget:'清除 Key', getKey:'获取 Key',
-     setNote:'Key 只保存在你的浏览器里，生成时由浏览器直接发给服务商，不经过本站服务器。默认只在当前标签页有效，勾选「记住」后才长期保存。生成会按服务商的价格计费。',
+     save:'保存', forget:'清除 Key', getKey:'获取 Key',
+     setNote:'',
      res:'生成结果', resClr:'清空记录', dl:'下载', delOne:'删除', cancel:'取消', retry:'重试', line:'线稿', depth:'深度图',
      needOne:'先在配方里放至少一张参考图', needKey:'先填写 API Key', badBase:'Base URL 需要以 https:// 开头', offline:'生图需要在线打开本站（file:// 下不可用）',
-     inPage:'这个浏览器不支持后台生成，生成完成前请留在本页', done:'已生成 {n} 张', saved:'已保存',
+     done:'已生成 {n} 张', saved:'已保存',
      e_auth:'Key 无效或没有权限，请检查 Key、模型和账号', e_rate:'请求太频繁或额度不足，请稍后再试或检查余额', e_safety:'被服务商的安全审核拦截了，可以换一张参考图或修改描述',
      e_model:'模型不存在或接口地址不对，请检查模型 ID 与 Base URL', e_server:'服务商暂时出错，请稍后重试', e_timeout:'超过 3 分钟没有返回，已停止',
-     e_network:'连不上服务商：可能是网络或地区限制（OpenAI、Gemini 不对中国大陆开放），也可能是该接口不允许浏览器直接调用', e_cancel:'已取消',
+     e_network:'服务端连接失败，请检查地址与网络模式', e_cancel:'已取消',
      e_empty:'服务商没有返回图片', e_bad:'请求被拒绝',
      note:'「多图参考」按图 1、图 2、图 3 的顺序引用，适合 Nano Banana、GPT Image、Seedream、Qwen-Image-Edit 等支持多张参考图的模型，按同样顺序上传图片即可；「纯文字」只用文字描述，适合 Midjourney、Stable Diffusion。'},
  ja:{fab:'レシピ', title:'レシピ', clear:'クリア', portrait:'ポートレート', costume:'衣装', pose:'ポーズ', pick:'選びに行く', remove:'外す',
@@ -290,16 +310,18 @@ const T = {
      add:'レシピに追加', inRec:'レシピに追加済み', adult:'レシピに追加できません', adultWhy:'成人向けの内容はレシピに追加できません', prompt:'プロンプトをコピー',
      sub0:'拡大表示で「レシピに追加」', subN:'{n}/3 · 開いて編集', gen:'生成', running:'生成中 {s}秒', pn:'画面と合成の説明', gn:'画像生成',
      model:'モデル', ratio:'比率', count:'枚数', setT:'画像生成サービス', prov:'サービス', key:'API Key', base:'Base URL', mid:'モデル ID', proto:'API 形式', field:'画像フィールド', test:'接続テスト', testing:'接続中…', connected:'モデル一覧を取得しました（{n} 件）。画像生成は別途テストしてください。', noModels:'モデル一覧 API がないため確認できません。保存後に画像生成をお試しください。', testTimeout:'接続テストが 15 秒を超えました。URL を確認するか、後でもう一度お試しください。', relayHelp:'中継の Base URL・Key・モデル ID を入力し、API 形式と画像フィールドを選びます。複数の参考画像に対応するモデルを選んでください。', directHelp:'Base URL は変更できます。空欄なら公式 URL を使います。',
-     remember:'この端末に Key を記憶する', save:'保存', forget:'Key を消去', getKey:'Key を取得',
-     setNote:'Key はブラウザ内にのみ保存され、生成時にブラウザから直接サービスへ送られます。本サイトのサーバーは経由しません。初期状態ではこのタブの間だけ有効で、「記憶する」をオンにすると保存されます。料金は各サービスの規定に従います。',
+     save:'保存', forget:'Key を消去', getKey:'Key を取得',
+     setNote:'',
      res:'生成結果', resClr:'履歴を消去', dl:'保存', delOne:'削除', cancel:'キャンセル', retry:'再試行', line:'線画', depth:'デプス',
      needOne:'レシピに参考画像を 1 枚以上入れてください', needKey:'API Key を入力してください', badBase:'Base URL は https:// で始めてください', offline:'画像生成はオンラインで開いたときのみ使えます（file:// 不可）',
-     inPage:'このブラウザはバックグラウンド生成に対応していません。完了までこのページに留まってください', done:'{n} 枚生成しました', saved:'保存しました',
+     done:'{n} 枚生成しました', saved:'保存しました',
      e_auth:'Key が無効か権限がありません。Key・モデル・アカウントを確認してください', e_rate:'リクエストが多すぎるか残高不足です', e_safety:'サービスの安全審査でブロックされました。参考画像か説明を変えてください',
      e_model:'モデルが存在しないか URL が違います', e_server:'サービス側のエラーです。しばらくしてから再試行してください', e_timeout:'3 分以上応答がないため停止しました',
-     e_network:'サービスに接続できません。ネットワークや地域制限、またはブラウザからの直接呼び出しが許可されていない可能性があります', e_cancel:'キャンセルしました',
+     e_network:'サーバーから接続できません。URL と接続モードを確認してください', e_cancel:'キャンセルしました',
      e_empty:'画像が返されませんでした', e_bad:'リクエストが拒否されました',
      note:'「複数画像参照」は画像 1・2・3 の順に参照します。Nano Banana、GPT Image、Seedream、Qwen-Image-Edit など複数の参考画像を受け付けるモデル向けで、同じ順に画像をアップロードしてください。「テキストのみ」は Midjourney や Stable Diffusion 向けです。'}};
+Object.assign(T.zh,{partialFail:'有 {n} 次生成失败',e_timeout:'服务商响应超时，请检查生成记录后再试',e_network:'服务端连接失败，请检查地址与网络模式',e_no_image:'服务商未返回最终图片',e_stream:'流式响应未正常完成',profile:'服务配置',name:'配置名称',baseMode:'地址模式',timeout:'超时（秒）',network:'网络模式',proxy:'代理地址',stream:'流式传输',partial:'中间预览数量',response:'返回格式',newProfile:'新增配置',defaultProfile:'设为默认',deleteProfile:'删除配置',erase:'清空会话数据',keySaved:'已配置，留空保持',keyNew:'输入新的 API Key',params:'生成参数 · 以供应商支持为准',size:'像素尺寸',quality:'质量',format:'图片格式',background:'背景',compression:'压缩质量',moderation:'审核参数',unavailable:'生图服务未启用，请启动生图后端',setNote:'Key 只在提交时发送给本站生图服务，之后加密保存在服务端，不回传前端；参考图与提示词经本站后端发给所选供应商。配置闲置 7 天或创建 30 天后清除，服务端生成图片保留 24 小时。费用由你的供应商账户承担。',relayHelp:'按供应商填写地址和模型。网络设置作用于服务器；代理仅在部署者允许的出口可用。保存后可刷新模型列表。',directHelp:'Key 保存在当前访客的服务端会话中。网络设置作用于服务器，多个标签页共享同一会话。',forget:'清除 Key',test:'刷新模型列表',connected:'已读取 {n} 个模型；出图能力仍需实际测试。',e_interrupted:'服务已重启，任务已中断，请检查供应商记录',needOne:'填写提示词或先加入参考图'});
+Object.assign(T.ja,{partialFail:'{n} 件の生成に失敗しました',e_timeout:'応答がタイムアウトしました。生成履歴を確認してください',e_network:'サーバーから接続できません。URL と接続モードを確認してください',e_no_image:'最終画像が返されませんでした',e_stream:'ストリームが正常に完了しませんでした',profile:'サービス設定',name:'設定名',baseMode:'URL モード',timeout:'タイムアウト（秒）',network:'接続モード',proxy:'プロキシ URL',stream:'ストリーミング',partial:'プレビュー数',response:'応答形式',newProfile:'設定を追加',defaultProfile:'既定にする',deleteProfile:'設定を削除',erase:'セッションを消去',keySaved:'設定済み・空欄で保持',keyNew:'新しい API Key',params:'生成パラメーター（対応はサービスによります）',size:'画像サイズ',quality:'品質',format:'画像形式',background:'背景',compression:'圧縮品質',moderation:'審査設定',unavailable:'画像生成バックエンドが起動していません',setNote:'Key は送信後サーバーに暗号化保存し、ブラウザへ返しません。画像と説明は本サイトのバックエンド経由でサービスへ送ります。設定は 7 日間未使用または作成後 30 日で消去し、生成画像は 24 時間保存します。料金はご自身のサービスアカウントに発生します。',relayHelp:'URL とモデルを入力してください。接続モードはサーバー側に適用され、プロキシは管理者が許可した経路のみ利用できます。',directHelp:'Key は現在の訪問者セッションに保存します。複数のタブは同じセッションを共有します。',forget:'Key を消去',test:'モデル一覧を更新',connected:'{n} モデルを取得しました。画像生成は別途確認してください。',e_interrupted:'サービスの再起動により中断しました',needOne:'説明を入力するか参考画像を追加してください'});
 const t = k => T[PL.lang][k];
 const GO = {portrait:'portrait/', costume:'costume/', pose:'pose/'};
 
@@ -394,43 +416,48 @@ function drawPrompt(force){
   pv.placeholder = t('empty');
 }
 function drawGen(){
-  const G = PL.gen, c = G.cfg(), P = G.PROV[c.p] || G.PROV.openai;
-  $('#rcPnT').textContent = t('pn'); $('#rcGnT').textContent = t('gn'); $('#rcCopy').textContent = t('copy');
-  $('#rcServiceL').textContent = t('prov');
-  $('#rcService').innerHTML = Object.entries(G.PROV).map(([k, v]) => '<option value="'+k+'">'+esc(v.name)+'</option>').join(''); $('#rcService').value = c.p;
-  $('#rcModelL').textContent = t('model'); $('#rcRatioL').textContent = t('ratio'); $('#rcNL').textContent = t('count');
-  const ms = [...new Set([G.modelOf(c, c.p), ...P.models])];
-  $('#rcModel').innerHTML = ms.map(m => '<option>'+esc(m)+'</option>').join(''); $('#rcModel').value = G.modelOf(c, c.p);
-  $('#rcRatio').innerHTML = G.RATIOS.map(r => '<option>'+r+'</option>').join(''); $('#rcRatio').value = c.ratio;
-  $('#rcN').value = String(c.n || 1);
-  $('#rcRun span').textContent = running() ? t('cancel') : t('gen');
-  $('#rcBoard').textContent = t('board'); $('#rcClear').textContent = t('clear');
-  $('#rcSetB').title = $('#rcSetB').ariaLabel = t('setT');
+  const G=PL.gen,c=G.cfg(),pr=G.profile(),P=G.PROV[pr?.kind||c.p]||G.PROV.relay;
+  $('#rcPnT').textContent=t('pn');$('#rcGnT').textContent=t('gn');$('#rcCopy').textContent=t('copy');
+  $('#rcServiceL').textContent=t('prov');
+  $('#rcService').innerHTML=(G.profiles().length?G.profiles().map(p=>'<option value="'+esc(p.id)+'">'+esc(p.display_name)+'</option>').join(''):'<option value="">'+esc(t('setT'))+'</option>');$('#rcService').value=pr?.id||'';
+  $('#rcModelL').textContent=t('model');$('#rcRatioL').textContent=t('ratio');$('#rcNL').textContent=t('count');
+  const current=c.selectedModel||G.modelOf(c,pr?.kind||c.p),ms=[...new Set([current,...(pr?.models||[]),...P.models])].filter(Boolean);
+  $('#rcModel').innerHTML=ms.map(m=>'<option>'+esc(m)+'</option>').join('');$('#rcModel').value=current;
+  $('#rcRatio').innerHTML=G.RATIOS.map(r=>'<option>'+r+'</option>').join('');$('#rcRatio').value=c.ratio;
+  $('#rcN').value=String(c.n||1);$('#rcRun span').textContent=running()?t('cancel'):t('gen');
+  $('#rcBoard').textContent=t('board');$('#rcClear').textContent=t('clear');$('#rcSetB').title=$('#rcSetB').ariaLabel=t('setT');
+  $('#rcParamsT').textContent=t('params');$('#rcParams').hidden=['gemini','seedream','qwen'].includes(pr?.kind);
+  $('#rcRatio').hidden=$('#rcRatioL').hidden=['openai','relay'].includes(pr?.kind);
+  const pm=c.parameters||{};
+  for(const [id,k,def] of [['Size','size','auto'],['Quality','quality','low'],['Format','output_format','png'],['Background','background','auto'],['Compression','output_compression',''],['Moderation','moderation','']]){
+    $('#rc'+id+'L').textContent=t(id.toLowerCase());if(document.activeElement!==$('#rc'+id))$('#rc'+id).value=pm[k]??def;
+  }
 }
-function drawSet(){
-  const G = PL.gen, c = G.cfg();
-  $('#rcSetT').textContent = t('setT');
-  ['prov', 'key', 'base', 'mid', 'proto', 'field'].forEach(k => { $('#rc' + k[0].toUpperCase() + k.slice(1) + 'L').textContent = t(k); });
-  $('#rcProv').innerHTML = Object.entries(G.PROV).map(([k, v]) => '<option value="'+k+'">'+esc(v.name)+'</option>').join('');
-  $('#rcProv').value = c.p;
-  $('#rcKey').value = G.key(c.p); $('#rcKey').placeholder = c.p === 'gemini' ? 'AIza…' : 'sk-…';
-  const relay = c.p === 'relay'; $('#rcBase').value = (c.base && c.base[c.p]) || '';
-  $('#rcBase').placeholder = G.PROV[c.p].base || 'https://…/v1';
-  $('#rcProto').value = c.proto || 'edits'; $('#rcField').value = c.field || 'image[]';
-  $('#rcProto').hidden = $('#rcProtoL').hidden = !relay; drawField();
-  $('#rcSetHelp').textContent = t(relay ? 'relayHelp' : 'directHelp');
-  $('#rcTest').textContent = t('test'); $('#rcTestMsg').textContent = '';
-  $('#rcMid').value = G.modelOf(c, c.p);
-  $('#rcModels').innerHTML = G.PROV[c.p].models.map(m => '<option value="'+esc(m)+'">').join('');
-  $('#rcRem').checked = !!c.remember; $('#rcRemL').textContent = t('remember');
-  $('#rcSave').textContent = t('save'); $('#rcForget').textContent = t('forget');
-  const get = G.PROV[c.p].get;
-  $('#rcSetNote').innerHTML = esc(t('setNote')) + (get ? ' <a href="'+esc(get)+'" target="_blank" rel="noopener noreferrer">'+esc(t('getKey'))+' ↗</a>' : '');
+let editingId='';
+function drawSet(fresh=false){
+  const G=PL.gen,c=G.cfg(),p=fresh?null:G.profile();editingId=p?.id||'';
+  $('#rcSetT').textContent=t('setT');
+  for(const k of ['profile','name','prov','key','base','baseMode','mid','timeout','network','proxy','stream','partial','response','proto','field'])$('#rc'+k[0].toUpperCase()+k.slice(1)+'L').textContent=t(k);
+  $('#rcProfile').innerHTML='<option value="">'+esc(t('newProfile'))+'</option>'+G.profiles().map(x=>'<option value="'+esc(x.id)+'">'+esc(x.display_name)+'</option>').join('');$('#rcProfile').value=editingId;
+  $('#rcProv').innerHTML=Object.entries(G.PROV).map(([k,v])=>'<option value="'+k+'">'+esc(v.name)+'</option>').join('');$('#rcProv').value=p?.kind||c.p||'relay';
+  $('#rcName').value=p?.display_name||'';$('#rcKey').value='';$('#rcKey').placeholder=t(p?.api_key_present?'keySaved':'keyNew');
+  $('#rcBase').value=p?.base_url||G.PROV[$('#rcProv').value].base;$('#rcBase').placeholder=G.PROV[$('#rcProv').value].base||'https://…/v1';
+  $('#rcBaseMode').value=p?.base_url_mode||'versioned';$('#rcMid').value=p?.model||G.PROV[$('#rcProv').value].models[0]||'';
+  $('#rcModels').innerHTML=[...new Set([...(p?.models||[]),...G.PROV[$('#rcProv').value].models])].map(m=>'<option value="'+esc(m)+'">').join('');
+  $('#rcTimeout').value=p?.timeout||300;$('#rcNetwork').value=p?.network_mode||'direct';$('#rcProxy').value='';$('#rcProxy').placeholder=p?.proxy_url_present?t('keySaved'):'http://… / socks5://…';
+  $('#rcProto').value=p?.proto||'edits';$('#rcField').value=p?.field||'image[]';$('#rcStream').checked=!!p?.stream;$('#rcPartial').value=p?.partial_images||0;$('#rcResponse').value=p?.response_format||'auto';
+  for(const [id,k] of [['Save','save'],['Test','test'],['New','newProfile'],['Default','defaultProfile'],['Delete','deleteProfile'],['Forget','forget'],['Erase','erase']])$('#rc'+id).textContent=t(k);
+  $('#rcSetNote').textContent=t('setNote');$('#rcSetHelp').textContent=t($('#rcProv').value==='relay'?'relayHelp':'directHelp');$('#rcTestMsg').textContent=G.available()?'':t('unavailable');drawField();
 }
 function drawField(){
-  $('#rcField').hidden = $('#rcFieldL').hidden = PL.gen.cfg().p !== 'relay' || $('#rcProto').value !== 'edits';
+ const relay=$('#rcProv').value==='relay';
+ for(const k of ['Proto','Field'])$('#rc'+k).hidden=$('#rc'+k+'L').hidden=!relay||(k==='Field'&&$('#rcProto').value!=='edits');
+ const native=['gemini','seedream','qwen'].includes($('#rcProv').value);
+ for(const k of ['BaseMode','Stream','Partial','Response'])$('#rc'+k).hidden=$('#rc'+k+'L').hidden=native;
+ $('#rcProxy').hidden=$('#rcProxyL').hidden=$('#rcNetwork').value!=='proxy';
+ $('#rcNetwork').querySelectorAll('option').forEach(o=>{o.disabled=o.value!=='direct'&&!PL.gen.session()?.proxy_enabled;});
 }
-$('#rcProto').addEventListener('change', drawField);
+$('#rcProto').addEventListener('change',drawField);$('#rcNetwork').addEventListener('change',drawField);
 /* 连线：三个参考节点底部 → 提示词节点顶部，提示词右侧 → 生成节点左侧 */
 function wires(){
   const box = $('#rcFlow'), svg = $('#rcWires'); if (body.hidden || !box.offsetWidth) return;
@@ -458,86 +485,76 @@ $('#rcLang').addEventListener('click', e => { const b = e.target.closest('[data-
 $('#rcStyle').addEventListener('change', e => setOpt('style', e.target.value));
 pv.addEventListener('input', () => { edited = true; });
 $('#rcCopy').addEventListener('click', () => { if (pv.value) PL.copy(pv.value); });
-$('#rcModel').addEventListener('change', e => { const c = PL.gen.cfg(); PL.gen.setCfg({model: Object.assign({}, c.model, {[c.p]: e.target.value})}); });
-$('#rcRatio').addEventListener('change', e => PL.gen.setCfg({ratio: e.target.value}));
-$('#rcN').addEventListener('change', e => PL.gen.setCfg({n: +e.target.value}));
-$('#rcSetB').addEventListener('click', () => { const s = $('#rcSet'); s.hidden = !s.hidden; if (!s.hidden){ drawSet(); $('#rcKey').focus(); } });
-['#rcProv', '#rcService'].forEach(s => $(s).addEventListener('change', e => { PL.gen.setCfg({p: e.target.value}); drawSet(); }));
-$('#rcSave').addEventListener('click', () => {
-  const G = PL.gen, c = G.cfg(), base = $('#rcBase').value.trim();
-  if ((base && !G.httpsOk(base)) || (c.p === 'relay' && !base)){ PL.toast(t('badBase')); return; }
-  G.setCfg({remember: $('#rcRem').checked, model: Object.assign({}, c.model, {[c.p]: $('#rcMid').value.trim() || G.PROV[c.p].models[0]}),
-    base: Object.assign({}, c.base, {[c.p]: base}), proto: $('#rcProto').value, field: $('#rcField').value});
-  G.setKey(c.p, $('#rcKey').value.trim(), $('#rcRem').checked);
-  $('#rcSet').hidden = true; PL.toast(t('saved'));
+$('#rcModel').addEventListener('change',e=>PL.gen.setCfg({selectedModel:e.target.value}));
+$('#rcRatio').addEventListener('change',e=>PL.gen.setCfg({ratio:e.target.value}));
+$('#rcN').addEventListener('change',e=>PL.gen.setCfg({n:+e.target.value}));
+$('#rcSetB').addEventListener('click',async()=>{const s=$('#rcSet');s.hidden=!s.hidden;if(!s.hidden){if(!PL.gen.available())await PL.gen.init();drawSet();$('#rcKey').focus();}});
+$('#rcService').addEventListener('change',e=>{const p=PL.gen.profile(e.target.value);if(p){PL.gen.setCfg({profile:p.id,p:p.kind,selectedModel:p.model});if(!$('#rcSet').hidden)drawSet();}});
+$('#rcProfile').addEventListener('change',e=>{if(e.target.value){const p=PL.gen.profile(e.target.value);PL.gen.setCfg({profile:p.id,p:p.kind,selectedModel:p.model});drawSet();}else drawSet(true);});
+$('#rcProv').addEventListener('change',()=>{const P=PL.gen.PROV[$('#rcProv').value];$('#rcBase').value=P.base;$('#rcMid').value=P.models[0]||'';$('#rcModels').innerHTML=P.models.map(m=>'<option value="'+esc(m)+'">').join('');drawField();});
+function settingError(e){$('#rcTestMsg').textContent=e.msg||t('e_'+e.k)||t('e_bad');}
+$('#rcSave').addEventListener('click',async()=>{
+ const id=editingId||crypto.randomUUID(),k=$('#rcProv').value;
+ const value={kind:k,display_name:$('#rcName').value.trim()||PL.gen.PROV[k].name,base_url:$('#rcBase').value.trim(),api_key:$('#rcKey').value.trim(),model:$('#rcMid').value.trim(),base_url_mode:$('#rcBaseMode').value,timeout:+$('#rcTimeout').value,network_mode:$('#rcNetwork').value,proxy_url:$('#rcProxy').value.trim(),proto:$('#rcProto').value,field:$('#rcField').value,stream:$('#rcStream').checked,partial_images:+$('#rcPartial').value,response_format:$('#rcResponse').value};
+ $('#rcKey').value=$('#rcProxy').value='';
+ try{await PL.gen.saveProfile(id,value);$('#rcKey').value=$('#rcProxy').value='';drawSet();PL.toast(t('saved'));}catch(e){settingError(e);}finally{value.api_key=value.proxy_url='';}
 });
-$('#rcTest').addEventListener('click', async () => {
-  const G = PL.gen, c = G.cfg(), p = c.p, b = $('#rcBase').value.trim(), k = $('#rcKey').value.trim(), el = $('#rcTestMsg'), btn = $('#rcTest');
-  const base = G.baseOf({base:{[p]:b}}, p);
-  if (!G.httpsOk(base)){ el.textContent = t('badBase'); return; }
-  if (!k){ el.textContent = t('needKey'); return; }
-  btn.disabled = true; el.textContent = t('testing');
-  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 15000);
-  try{
-    const headers = p === 'gemini' ? {'x-goog-api-key':k} : {authorization:'Bearer ' + k};
-    const res = await fetch(base + '/models', {headers, signal:ctl.signal, credentials:'omit'});
-    const text = await res.text(); let j; try{ j = JSON.parse(text); }catch(_){}
-    const models = j && (j.data || j.models);
-    if (res.status === 404 || res.ok && !Array.isArray(models)) el.textContent = t('noModels');
-    else if (!res.ok){
-      const err = G.parse([{status:res.status, text}]).err;
-      el.textContent = t('e_' + err.k) + ' · HTTP ' + res.status;
-    } else el.textContent = t('connected').replace('{n}', models.length);
-  }catch(e){ el.textContent = t(ctl.signal.aborted ? 'testTimeout' : 'e_network'); }
-  finally{ clearTimeout(timer); btn.disabled = false; }
-});
-$('#rcForget').addEventListener('click', () => { const c = PL.gen.cfg(); PL.gen.setKey(c.p, '', false); drawSet(); });
+$('#rcTest').addEventListener('click',async()=>{if(!editingId){$('#rcTestMsg').textContent=t('save');return;}$('#rcTestMsg').textContent=t('testing');try{const ms=await PL.gen.models(editingId);$('#rcModels').innerHTML=ms.map(m=>'<option value="'+esc(m)+'">').join('');$('#rcTestMsg').textContent=t('connected').replace('{n}',ms.length);}catch(e){settingError(e);}});
+$('#rcNew').addEventListener('click',()=>drawSet(true));
+$('#rcDefault').addEventListener('click',async()=>{if(editingId)try{await PL.gen.defaultProfile(editingId);PL.toast(t('saved'));}catch(e){settingError(e);}});
+$('#rcDelete').addEventListener('click',async()=>{if(editingId)try{await PL.gen.deleteProfile(editingId);drawSet();}catch(e){settingError(e);}});
+$('#rcForget').addEventListener('click',async()=>{if(editingId)try{await PL.gen.forgetKey(editingId);drawSet();}catch(e){settingError(e);}});
+$('#rcErase').addEventListener('click',async()=>{try{await PL.gen.erase();await PL.gen.init();drawSet(true);}catch(e){settingError(e);}});
+for(const [id,k] of [['Size','size'],['Quality','quality'],['Format','output_format'],['Background','background'],['Compression','output_compression'],['Moderation','moderation']])$('#rc'+id).addEventListener('change',e=>{const pm=Object.assign({},PL.gen.cfg().parameters);if(e.target.value==='')delete pm[k];else pm[k]=id==='Compression'?+e.target.value:e.target.value;PL.gen.setCfg({parameters:pm});});
 
 /* ── 生成 ── */
-let JOBS = [];
+let JOBS = [], submitting=false;
 const running = () => JOBS.find(j => j.state === 'queued' || j.state === 'running');
 function say(msg, err){ const m = $('#rcMsg'); m.hidden = !msg; m.className = 'rc-msg' + (err ? ' err' : ''); m.innerHTML = msg || ''; }
 async function generate(){
-  const xs = items(); if (!xs.length){ say(esc(t('needOne')), true); return; }
+  if(submitting)return;
+  const xs=items();if(!xs.length&&!pv.value.trim()){say(esc(t('needOne')),true);return;}
   const G = PL.gen;
-  if (!G.key(G.cfg().p)){ if (body.hidden) openDock(true); $('#rcSet').hidden = false; drawSet(); $('#rcKey').focus(); say(esc(t('needKey')), true); return; }
+  if (!G.available()&&!await G.init()){say(esc(t('unavailable')),true);return;}
+  if (!G.profile()?.api_key_present){ if (body.hidden) openDock(true); $('#rcSet').hidden = false; drawSet(); $('#rcKey').focus(); say(esc(t('needKey')), true); return; }
   const send = xs.map(x => Object.assign({}, x, {send: x.k === 'pose' ? poseSend(x) : (x.im || x.th)}));
   const text = pv.value.trim() || prompt(opt().lang, 'ref', opt().style);
-  say('');
+  say('');submitting=true;
   try{
-    await G.run({items: send, prompt: text, up: UP});
-    if (!G.swOk) say(esc(t('inPage')));
+    await G.run({items: send, prompt: text, up: UP});await refreshJobs();
+
   }catch(e){
     const k = e && e.k;
-    say(esc(k === 'offline' ? t('offline') : k === 'nokey' ? t('needKey') : k === 'base' ? t('badBase') : t('e_network')), true);
-  }
+    say(esc(k === 'offline' ? t('offline') : k === 'nokey' ? t('needKey') : k === 'base' ? t('badBase') : (e.msg||t('e_'+k)||t('e_network'))), true);
+  }finally{submitting=false;}
 }
-go.addEventListener('click', () => { const r = running(); r ? PL.gen.cancel(r.id) : generate(); });
-$('#rcRun').addEventListener('click', () => { const r = running(); r ? PL.gen.cancel(r.id) : generate(); });
+go.addEventListener('click', () => { const r = running(); r ? PL.gen.cancel(r.id).catch(e=>say(esc(e.msg||t('e_bad')),true)) : generate(); });
+$('#rcRun').addEventListener('click', () => { const r = running(); r ? PL.gen.cancel(r.id).catch(e=>say(esc(e.msg||t('e_bad')),true)) : generate(); });
 const urls = new Map();
 const src = (j, i) => { const o = j.out[i]; if (o.url) return o.url; const k = j.id + ':' + i; if (!urls.has(k)) urls.set(k, URL.createObjectURL(o.blob)); return urls.get(k); };
 function drawJobs(){
-  const box = $('#rcRes'); box.hidden = !JOBS.length; if (!JOBS.length) return;
+  const box = $('#rcRes'); box.hidden = !JOBS.length; if (!JOBS.length){for(const url of urls.values())URL.revokeObjectURL(url);urls.clear();$('#rcGal').innerHTML='';return;}
   $('#rcResT').textContent = t('res'); $('#rcResClr').textContent = t('resClr');
+  const keep=new Set(JOBS.flatMap(j=>(j.out||[]).map((_,i)=>j.id+':'+i)));for(const [key,url]of urls)if(!keep.has(key)){URL.revokeObjectURL(url);urls.delete(key);}
   $('#rcGal').innerHTML = JOBS.slice(0, 12).map(j => {
     if (j.state === 'queued' || j.state === 'running')
-      return '<div class="rc-it run"><div><b data-at="'+j.at+'">'+Math.round((Date.now() - j.at) / 1000)+'s</b>'+esc(j.model)+'<br><button type="button" data-cancel="'+j.id+'">'+esc(t('cancel'))+'</button></div></div>';
+      return '<div class="rc-it run">'+(j.preview?'<img src="'+esc(j.preview.url)+'" alt="">':'')+'<div style="position:relative;background:var(--bg2);border-radius:8px;padding:6px"><b data-at="'+j.at+'">'+Math.round((Date.now() - j.at) / 1000)+'s</b>'+esc(j.model)+'<br><button type="button" data-cancel="'+j.id+'">'+esc(t('cancel'))+'</button></div></div>';
     if (j.state === 'error' || j.state === 'canceled'){
       const k = j.state === 'canceled' ? 'cancel' : (j.err && j.err.k) || 'bad';
       return '<div class="rc-it bad" title="'+esc(j.err && j.err.msg || '')+'"><div>'+esc(t('e_' + k) || t('e_bad'))+'<br><button type="button" data-del="'+j.id+'">'+esc(t('delOne'))+'</button></div></div>';
     }
-    return (j.out || []).map((o, i) => '<div class="rc-it"><img src="'+esc(src(j, i))+'" alt="" data-view="'+j.id+':'+i+'"><div class="ov">'+
+    return (j.errors?.length?'<div class="rc-it bad"><div>'+esc(t('partialFail').replace('{n}',j.errors.length))+'<br>'+esc(j.errors.map(e=>e.msg||t('e_'+e.k)||t('e_bad')).join(' · '))+'</div></div>':'')+(j.out || []).map((o, i) => '<div class="rc-it"><img src="'+esc(src(j, i))+'" alt="" data-view="'+j.id+':'+i+'"><div class="ov">'+
       '<a href="'+esc(src(j, i))+'" download="photoai-'+j.id+'-'+(i + 1)+'.'+(((o.mime || 'image/png').split('/')[1]) || 'png')+'" title="'+esc(t('dl'))+'" target="_blank" rel="noopener">'+DL+'</a>'+
       '<button type="button" data-del="'+j.id+'" title="'+esc(t('delOne'))+'">×</button></div></div>').join('');
   }).join('');
 }
 $('#rcGal').addEventListener('click', e => {
-  const c = e.target.closest('[data-cancel]'); if (c){ PL.gen.cancel(c.dataset.cancel); return; }
-  const d = e.target.closest('[data-del]'); if (d){ PL.gen.del(d.dataset.del); return; }
+  const c = e.target.closest('[data-cancel]'); if (c){ PL.gen.cancel(c.dataset.cancel).catch(e=>say(esc(e.msg||t('e_bad')),true)); return; }
+  const d = e.target.closest('[data-del]'); if (d){ PL.gen.del(d.dataset.del).catch(e=>say(esc(e.msg||t('e_bad')),true)); return; }
   const v = e.target.closest('[data-view]'); if (v){ const vw = $('#rcView'); vw.querySelector('img').src = v.src; vw.hidden = false; }
 });
 $('#rcView').addEventListener('click', e => { e.currentTarget.hidden = true; });
-$('#rcResClr').addEventListener('click', () => PL.gen.clear());
+$('#rcResClr').addEventListener('click', () => PL.gen.clear().catch(e=>say(esc(e.msg||t('e_bad')),true)));
 let lastDone = null;
 async function refreshJobs(){
   const prev = JOBS; JOBS = await PL.gen.jobs();
@@ -545,7 +562,7 @@ async function refreshJobs(){
   if (fresh && prev.length && lastDone !== fresh.id){ lastDone = fresh.id; $('#rcDot').hidden = !body.hidden ? true : false;
     PL.toast(t('done').replace('{n}', (fresh.out || []).length)); }
   const bad = JOBS[0] && JOBS[0].state === 'error' && !prev.some(p => p.id === JOBS[0].id && p.state === 'error') ? JOBS[0] : null;
-  if (bad && prev.length) say(esc(t('e_' + ((bad.err && bad.err.k) || 'bad'))), true);
+  if (bad && prev.length) say(esc(t('e_' + ((bad.err && bad.err.k) || 'bad'))||bad.err?.msg||t('e_bad')), true);
   drawAll();
 }
 setInterval(() => { if (running()){ drawBar(); document.querySelectorAll('#rcGal [data-at]').forEach(b => { b.textContent = Math.round((Date.now() - +b.dataset.at) / 1000) + 's'; }); } }, 1000);
@@ -613,13 +630,13 @@ PL.recipe = {
   },
 };
 addEventListener('pl:recipe', () => { drawAll(); syncAll(); });
-addEventListener('pl:lang', () => { drawAll(); syncAll(); });
+addEventListener('pl:lang', () => { drawAll(); syncAll(); if(!$('#rcSet').hidden)drawSet(); });
 addEventListener('pl:gen', refreshJobs);
-addEventListener('storage', e => { if (e.key === KEY){ R = load(); dispatchEvent(new Event('pl:recipe')); } else if (e.key === 'pl.gen' || e.key === 'pl.genkey') drawAll(); });
+addEventListener('storage', e => { if (e.key === KEY){ R = load(); dispatchEvent(new Event('pl:recipe')); } else if (e.key === 'pl.gen') drawAll(); });
 let o0 = false; try{ o0 = sessionStorage.getItem('pl.rcOpen') === '1'; }catch(_){}
 if (o0) openDock(true); else drawBar();
 refreshJobs();
-if (PL.gen.swOk) PL.gen.sw(UP);
+
 })();
 </script>"""
 

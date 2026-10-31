@@ -185,7 +185,7 @@ python3 tools/release.py --out dist-stage
 
 ```bash
 test ! -e dist-prev || exit 1
-for x in index.html 404.html sitemap.xml robots.txt llms.txt guide portrait costume pose pose-depth shisei; do
+for x in gen-sw.js index.html 404.html sitemap.xml robots.txt llms.txt guide portrait costume pose pose-depth shisei; do
   if [ -e "dist/$x" ]; then mv -T --exchange "dist-stage/$x" "dist/$x" || break
   else mv -T "dist-stage/$x" "dist/$x"; fi
 done
@@ -226,7 +226,7 @@ python3 tools/release.py --site pose --out dist-stage
 
 ```bash
 cd /srv/ai-image-gallery
-for x in index.html 404.html sitemap.xml robots.txt llms.txt guide portrait costume pose pose-depth shisei; do
+for x in gen-sw.js index.html 404.html sitemap.xml robots.txt llms.txt guide portrait costume pose pose-depth shisei; do
   [ -e "dist-prev/$x" ] && { mv -T --exchange "dist-prev/$x" "dist/$x" || break; }
 done
 ```
@@ -289,3 +289,6 @@ python3 tools/release.py --out dist-stage
 | Shisei 姿势线稿 | 图片 CC0 1.0；姿势目录仅注明出处 | ✅ 图片可自由分发；suggestive 姿势默认模糊（「18+」开关打开后清晰），不进落地页与 sitemap |
 
 成人向内容（姿势的双人与性感系列、服装的内衣与性感两类）在画廊里默认隐藏，不进任何落地页与 sitemap（`sites.json` 的 `adult` 规则）。
+
+
+可选生图 API 的独立部署和回滚见 [GENERATION.md](GENERATION.md)。静态文件更新不会自动安装或启动后端。

@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "photoai-preview",
+      "port": 8080,
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "tools/serve.py",
+        "--generation",
+        "--port",
+        "8080"
+      ]
+    }
+  ]
+}

@@ -338,36 +338,29 @@ class Landing(unittest.TestCase):
         import translations as ptr
         self.assertEqual(sorted(set(ptr.STYLE_ZH) - set(ptr.STYLE_EN)), [])
 
-    def test_gen_providers(self):
-        # 实际运行请求构造与响应解析，验证中转的 JSON/multipart、多图、地址归一化和 Key 存储。
+    def test_gen_client(self):
+        # 浏览器只使用同源 API，不保存或签发供应商鉴权。
         import gen
-        node = shutil.which("node")
-        if not node:
-            self.skipTest("node not installed")
-        with tempfile.TemporaryDirectory() as td:
-            p = os.path.join(td, "gen.js")
-            with open(p, "w", encoding="utf-8") as f:
-                f.write(gen.JS.replace("<script>", "").replace("</script>", ""))
-            r = subprocess.run([node, os.path.join(ROOT, "tests", "gen_providers.js"), p], capture_output=True, text=True)
-            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("api/generation/", gen.JS)
+        self.assertIn("localStorage.removeItem('pl.genkey')", gen.JS)
+        self.assertIn("sessionStorage.removeItem('pl.genkey')", gen.JS)
+        self.assertNotIn("Bearer ", gen.JS)
+        self.assertNotIn("setKey", gen.JS)
+        self.assertNotIn("images/edits", gen.JS)
 
     def test_gen_service_worker(self):
-        # 生图中继：根目录有 gen-sw.js 并随发布复制；它不拦截任何请求（没有 fetch 处理），只接受 https 地址；
-        # 页面不把 API Key 写进任务记录
         sw = read("hub/gen-sw.js")
         self.assertNotIn("addEventListener('fetch'", sw)
-        self.assertNotIn('addEventListener("fetch"', sw)
-        self.assertIn("/^https:\\/\\//i.test(q.url)", sw)
+        self.assertNotIn("addEventListener('message'", sw)
+        self.assertIn("registration.unregister()", sw)
         self.assertIn('"gen-sw.js"', read("tools/release.py"))
         h = read("sites/pose/index.html")
-        self.assertIn("register(up + 'gen-sw.js'", h)
-        put = re.search(r"await put\(\{id, at: Date\.now\(\)(.*?)\}\);", h)
-        self.assertIsNotNone(put)
-        self.assertNotIn("key", put.group(1).lower(), "任务记录里不应有 Key")
+        self.assertNotIn("G.setKey", h)
+        self.assertNotIn("id=\"rcRem\"", h)
         node = shutil.which("node")
         if node:
-            r = subprocess.run([node, "--check", os.path.join(ROOT, "hub", "gen-sw.js")], capture_output=True, text=True)
-            self.assertEqual(r.returncode, 0, r.stderr)
+            result = subprocess.run([node, "--check", os.path.join(ROOT, "hub", "gen-sw.js")], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_guide_page(self):
         # 使用说明页：带顶部栏、各章节锚点（顶部栏的「注意事项」链到 #notes）、进了根 sitemap 与 llms.txt、发布时一起复制
