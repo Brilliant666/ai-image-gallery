@@ -10,7 +10,7 @@
 
 | 项 | 要求 |
 |---|---|
-| 系统 | Ubuntu 20.04+ / Debian 11+ |
+| 系统 | Debian 13 / Ubuntu 24.10+（原子对调需要 GNU coreutils 9.5+ 的 `mv --exchange`） |
 | git | 任意版本（更新用 `tools/update.py`，见 §4） |
 | Python | 3.8+；`tools/mid.py` 需要 Pillow（`apt install python3-pil`），其余只用标准库 |
 | 磁盘 | ≥ 10 GB 可用（图片 6.8 GB + 中图约 290 MB；硬链接不额外占盘） |
@@ -54,10 +54,10 @@ python3 tools/release.py
 发布 · 5 个站点 → /srv/ai-image-gallery/dist
   图片校验通过
   [portrait] 74 个站点文件  图片 4497 链接  → 4.8 GB
-  [costume] 106 个站点文件  图片 4221 链接  → 1.4 GB
-  [pose] 23 个站点文件  图片 4317 链接  → 710.3 MB
-  [pose-depth] 23 个站点文件  图片 4317 链接  → 162.5 MB
-  [shisei] 23 个站点文件  图片 3399 链接  → 59.1 MB
+  [costume] 98 个站点文件  图片 4221 链接  → 1.4 GB
+  [pose] 22 个站点文件  图片 4317 链接  → 710.3 MB
+  [pose-depth] 22 个站点文件  图片 4317 链接  → 162.5 MB
+  [shisei] 24 个站点文件  图片 3399 链接  → 59.1 MB
   [hub] 9 个根级文件已复制（index.html, sitemap.xml, robots.txt, og-cover.jpg, llms.txt, favicon.ico, …）
 其中 20751 个图片文件为硬链接，不额外占盘
 ```
@@ -75,8 +75,9 @@ python3 tools/release.py
 https://photoai.life/            入口页
 https://photoai.life/portrait/   人像集
 https://photoai.life/costume/    服装集
-https://photoai.life/pose/       姿势集
-https://photoai.life/pose-depth/ 深度姿势集
+https://photoai.life/pose/       姿势集（默认线稿，可切换深度图）
+https://photoai.life/pose-depth/ 姿势集的深度图入口（同一模块，默认深度图）
+https://photoai.life/shisei/     CC0 姿势线稿
 ```
 
 ### 2.1 前置：DNS 与证书
@@ -133,7 +134,7 @@ find /srv/ai-image-gallery/dist -name '*.jpg' -o -name '*.webp' -o -name '*.png'
 # 期望 20751 张图片（含 4377 张生成的中图与 Shisei 的 1133 张上游中图）
 
 # HTTP
-for p in / /portrait/ /pose/ /pose-depth/ /costume/; do
+for p in / /portrait/ /costume/ /pose/ /pose-depth/ /shisei/ /404.html; do
   printf "%-14s " "$p"; curl -s -o /dev/null -w "%{http_code}\n" "https://实际域名.com$p"
 done
 
@@ -151,10 +152,10 @@ curl -s https://实际域名.com/pose/ | grep -o 'rel="canonical" href="[^"]*"'
 
 浏览器逐站确认：
 
-- [ ] 入口页四张卡封面正常显示
+- [ ] 入口页四张大图卡片正常显示（姿势卡左半线稿、右半深度图）
 - [ ] 点击进入各站，图片能加载
-- [ ] 主题切换 ☀/☾ 有效，默认浅色
-- [ ] 语言切换 中文/日本語 有效，默认中文
+- [ ] 顶部栏的深浅色、中 / 日、18+、`?` 都有效；在一个图库里切换后，其他图库也跟着变
+- [ ] 姿势集的「线稿 / 深度图」开关整页切换，大图里「对比」可以拖动竖线
 - [ ] 卡片点开灯箱：立即显示清晰缩略图，随后换成中图（开发者工具 Network 里应是 `mid/*.webp`，不是 `img/*.png`）
 - [ ] 灯箱 `←` `→` 翻页，`Esc` 关闭；连续翻页时不会闪出上一张图
 - [ ] 滚到底部能自动加载下一页
@@ -184,14 +185,15 @@ python3 tools/release.py --out dist-stage
 
 ```bash
 test ! -e dist-prev || exit 1
-for x in index.html portrait costume pose pose-depth; do
-  mv -T --exchange "dist-stage/$x" "dist/$x" || break
+for x in index.html 404.html sitemap.xml robots.txt llms.txt portrait costume pose pose-depth shisei; do
+  if [ -e "dist/$x" ]; then mv -T --exchange "dist-stage/$x" "dist/$x" || break
+  else mv -T "dist-stage/$x" "dist/$x"; fi
 done
 mv -T dist-stage dist-prev        # 对调后暂存目录里是旧版，留作回滚
 ```
 
 `mv --exchange` 需要 GNU coreutils 9.5+（Debian 13 自带 9.7），而且**必须带 `-T`**，
-否则目标会被当成父目录，命令报错退出。只更新了部分站点时，循环里只写那几个。
+否则目标会被当成父目录，命令报错退出。线上还没有的项（例如第一次发布的 `404.html`）直接 `mv -T` 放进去，这时 `dist-prev` 里没有它，回滚时手动删掉即可。只更新了部分站点时，循环里只写那几个。
 对调完成后不需要 reload nginx。
 
 `update.py` 把改动分两类：`build.py` 会重写的构建产物直接丢弃；其他文件（源码、配置）
@@ -224,8 +226,8 @@ python3 tools/release.py --site pose --out dist-stage
 
 ```bash
 cd /srv/ai-image-gallery
-for x in index.html portrait costume pose pose-depth; do
-  mv -T --exchange "dist-prev/$x" "dist/$x" || break
+for x in index.html 404.html sitemap.xml robots.txt llms.txt portrait costume pose pose-depth shisei; do
+  [ -e "dist-prev/$x" ] && { mv -T --exchange "dist-prev/$x" "dist/$x" || break; }
 done
 ```
 
@@ -282,8 +284,8 @@ python3 tools/release.py --out dist-stage
 |---|---|---|
 | 人像集 | CC0 1.0 | ✅ 可自由分发 |
 | 姿势集 | 禁止再分发 | ⚠️ 公开可访问在性质上接近再分发 |
-| 深度姿势集 | 禁止再分发 + **禁止批量下载** | ⚠️ 同上，且 `fetch.py` 属被禁止行为 |
+| 姿势集 · 深度图 | 禁止再分发 + **禁止批量下载** | ⚠️ 同上，且 `fetch.py` 属被禁止行为 |
 | 服装集 | 禁止再分发 | ⚠️ 同姿势集 |
 | Shisei 姿势线稿 | 图片 CC0 1.0；姿势目录仅注明出处 | ✅ 图片可自由分发；suggestive 姿势默认模糊（「18+」开关打开后清晰），不进落地页与 sitemap |
 
-建议：如需公开，至少加访问控制（`nginx.conf` 末尾有配置示例）。
+成人向内容（姿势的双人与性感系列、服装的内衣与性感两类）在画廊里默认隐藏，不进任何落地页与 sitemap（`sites.json` 的 `adult` 规则）。

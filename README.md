@@ -4,7 +4,7 @@
 
 **五个 AI 绘画参考图库，一个仓库构建，一个目录部署**
 
-人像 · 姿势 · 深度姿势 · 服装 · CC0 姿势线稿 · 15,241 张参考图 · 中日双语 · 浅色 / 深色
+人像 · 姿势（线稿与深度图） · 服装 · CC0 姿势线稿 · 15,241 张参考图 · 中日双语 · 浅色 / 深色
 
 [![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
@@ -34,7 +34,7 @@
 
 ![姿势集 · 灯箱](docs/screenshots/pose-lightbox.jpg)
 
-![深度姿势集](docs/screenshots/pose-depth-grid.jpg)
+![姿势集 · 深度图](docs/screenshots/pose-depth-grid.jpg)
 
 ![服装集 · 分面筛选](docs/screenshots/costume-filter.jpg)
 
@@ -50,12 +50,12 @@
 | --- | --- | --- | :---: |
 | [人像集](https://photoai.life/portrait/) | 保持角色脸部一致性的人脸参考，按发型筛选 | 1,499 张 | **CC0** |
 | [姿势集](https://photoai.life/pose/) | 无脸灰色人偶线稿，每个姿势 5 个视角 | 1,439 张 | 禁止再分发 |
-| [深度姿势集](https://photoai.life/pose-depth/) | 同批姿势的灰度深度图，适合 ControlNet | 1,439 张 | 禁止再分发 |
+| [姿势集 · 深度图](https://photoai.life/pose-depth/) | 同一模块的深度图入口，灰度深度图可直接用于 ControlNet | 1,439 张 | 禁止再分发 |
 | [服装集](https://photoai.life/costume/) | 不含真人的服装图，86 个标签分面筛选 | 1,407 件 / 4,221 张 | 禁止再分发 |
 | [Shisei 姿势线稿](https://photoai.life/shisei/) | 无脸人偶线稿，四个系列、每个姿势 5 个视角，偏性感的默认模糊 | 280 个姿势 / 1,133 张 | **CC0** |
 
-每个站都有：网格分页加载、筛选与搜索、灯箱（`←` `→` 翻页，`Esc` 关闭，手机可滑动）、原图下载、主题与语言切换。页首有一条共用顶部栏，可在五个图库之间切换，`?` 查看快捷键、`/` 跳到搜索框；姿势与深度姿势的大图里可以直接跳到另一站的同一张图。
-姿势、深度姿势和服装集的成人向内容默认隐藏，Shisei 的默认模糊；工具栏的「18+」开关确认一次年龄后打开，五个站通用。成人向内容不进任何静态落地页和 sitemap。页面是单个 `index.html`，数据内嵌，没有框架、CDN 和外部字体。
+每个站都有：网格分页加载、筛选与搜索、灯箱（`←` `→` 翻页，`Esc` 关闭，手机可滑动）、原图下载、主题与语言切换。页首是全站共用的顶部栏：图库切换、18+、深浅色、中 / 日都在上面，偏好全站通用；`?` 查看快捷键、`/` 跳到搜索框。姿势集用一个开关在线稿和深度图之间切换，大图里可以拖动竖线左右对比。
+姿势、深度姿势和服装集的成人向内容默认隐藏，Shisei 的默认模糊；顶部栏的「18+」确认一次年龄后打开，各图库通用。成人向内容不进任何静态落地页和 sitemap。页面是单个 `index.html`，数据内嵌，没有框架、CDN 和外部字体。
 
 > **人像集和 Shisei 是 CC0**，其余三个站的素材禁止再分发。Shisei 的姿势目录沿用 ai-pose-gallery，只注明出处。详见各站的 `sites/<id>/NOTICE.md`。
 

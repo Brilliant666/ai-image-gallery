@@ -49,9 +49,11 @@ sites/<新站id>/
 | `id` | 唯一标识，同时是目录名和 URL 路径 |
 | `source` | 原站地址，下载时作为 Referer |
 | `imageBase` | 可选。图片不在原站域名下时填写（如 Shisei 的图片在上游 GitHub 固定标签里），测试据此核对 manifest 的 URL |
-| `code` | 入口页封面左下角的编号 |
+| `code` | 站点编号，写在画廊页头的小标题里 |
+| `mergedInto` | 可选。并入另一个站点的模块时填对方 id（如 `pose-depth` → `pose`）：入口页与顶部栏不单独列出，下载、校验、发布照常 |
+| `updated` | 站点数据最近更新的日期，写进 sitemap 的 lastmod |
 | `cover` | 相对站点目录的封面路径 |
-| `coverPos` | 封面框是 16:10，竖图必然裁切：脸部特写用 `25%`–`35%`，全身图用 `0%`–`10%`，主体居中用 `50%` |
+| `coverPos` | 入口页封面框是 4:5，横图必然裁切：脸部特写用 `25%`–`35%`，全身图用 `0%`–`10%`，主体居中用 `50%` |
 | `tiers` | 下载与校验的档位，对应 manifest 里的 `<tier>_url` / `<tier>_path` |
 | `imageDirs` | `release.py` 硬链接的目录；含 `mid` 时 `mid.py` 会为该站生成中图（`tiers` 里已有 `mid` 的站点由上游提供，不生成） |
 | `license` | `cc0` / `conditional` / `restricted`，决定入口页卡片上的授权徽章 |
@@ -80,10 +82,9 @@ python tests/run.py                      # 提交前跑一遍；CI 也会跑
 
 新站点请保持一致：
 
-- 页首放共用顶部栏（`shared/sitenav.py` 的 `parts()`），栏上的短名在 `sitenav.LABELS` 里加一条
-- 主题切换 `[☀ Light][☾ Dark]`，默认浅色
-- 语言切换 `[中文][日本語]`，默认中文，中文在左
-- `<head>` 内用同步脚本应用已存偏好，避免刷新闪白
+- 页面骨架用 `shared/ui.py`：`<head>` 放 `head_script()` 和 `head_css()`，`<body>` 开头放 `bar(<站点id>)`，末尾放 `dialogs()` 和 `body_script()`。顶部栏里的短名在 `ui.LABELS` 里加一条
+- 深浅色、语言、18+ 都在顶部栏，偏好全站共用（`pl.theme` / `pl.lang` / `hub.adult`），页面监听 `pl:lang`、`pl:adult` 事件更新自己
+- 静态中日文写成 `<span class="zh">…</span><span class="ja">…</span>`，动态文案放进站点的 UI 表
 - 单文件 `index.html`，数据内嵌，零外部依赖
 - 分页加 `IntersectionObserver` 预取，不一次渲染全部卡片
 - 灯箱底图用清晰缩略图，不加模糊；中图到达后淡入
