@@ -3,6 +3,7 @@
 
 两站数据结构相同，文案差异取自各站 config.py 的 SEO_PAGES。
 由 shared/pose_gallery.build() 调用 build(root, site_url, cfg, data, series_list, cats)。
+Shisei 也用这一套：中文名表取 cfg 的 seriesZh / catZh / angZh，onlyRatings 控制哪些姿势可以出现在落地页里。
 """
 from collections import Counter
 
@@ -10,20 +11,23 @@ import landing
 from pose_i18n import SERIES_ZH, CAT_ZH, ANG_ZH
 
 
-def _zh_s(s): return SERIES_ZH.get(s, s)
-def _zh_c(c): return CAT_ZH.get(c, c)
-
-
 def build(root, site_url, cfg, data, series_list, cats):
     sp = cfg["seoPages"]                       # 各站文案
     kind = sp["kind"]                          # 例如「姿势参考图」「姿势深度图」
+    S_ZH, C_ZH, A_ZH = cfg.get("seriesZh", SERIES_ZH), cfg.get("catZh", CAT_ZH), cfg.get("angZh", ANG_ZH)
+    _zh_s = lambda x: S_ZH.get(x, x)
+    _zh_c = lambda x: C_ZH.get(x, x)
+    author, author_url = sp.get("author", "ギア"), sp.get("authorUrl", "https://x.com/giaaibusi")
+    # onlyRatings：只有这些 rating 的姿势进落地页（Shisei 的 suggestive 姿势不生成可被收录的页面）
+    only = set(sp.get("onlyRatings", []))
+    indexable = [p for p in data if not only or (p.get("r", 0) == 0)]
     n_poses = len(data)
     n_imgs = sum(len(p["v"]) for p in data)
     FAQ = sp["faq"]
     site = landing.Site(
         id=sp["id"], root=root, site_url=site_url, name=sp["name"],
         tagline=f"{sp['tagline']}，{n_poses} 个姿势、{n_imgs} 张图，每个姿势 5 个视角。",
-        license_note=sp["licenseNote"], author="ギア", author_url="https://x.com/giaaibusi", source=cfg["source"],
+        license_note=sp["licenseNote"], author=author, author_url=author_url, source=cfg["source"],
         faq=FAQ, accent=sp.get("accent", "#4f7ee8"),
         index_title=f"{sp['name']}：全部系列与分类",
         index_intro=(f"{sp['name']}收录 {n_poses} 个姿势、{n_imgs} 张{kind}，分 {len(series_list)} 个系列、"
@@ -37,7 +41,7 @@ def build(root, site_url, cfg, data, series_list, cats):
             v = next((x for x in p["v"] if x["a"] == "正面"), p["v"][0])
             out.append(landing.Item(
                 thumb=v["t"], w=300, h=400, caption=f"{p['p']} {p['z']}",
-                alt=f"{kind} {p['p']}：{p['z']}（{_zh_s(p['s'])} · {_zh_c(p['c'])} · {ANG_ZH.get(v['a'], v['a'])}）"))
+                alt=f"{kind} {p['p']}：{p['z']}（{_zh_s(p['s'])} · {_zh_c(p['c'])} · {A_ZH.get(v['a'], v['a'])}）"))
         return out
 
     def page(slug, group, name, ps, gallery_hash, related, extra_intro=""):
@@ -51,7 +55,7 @@ def build(root, site_url, cfg, data, series_list, cats):
             description=(f"{len(ps)} 个「{name}」{kind}，共 {n_i} 张，每个姿势含正面、侧面、斜角、俯视、仰视视角。"
                          f"例如：{sample}。{sp['descTail']}"),
             intro=[f"{sp['name']}中「{name}」共有 {len(ps)} 个姿势、{n_i} 张{kind}。{extra_intro}",
-                   f"部分姿势：{sample}。点击下方按钮进入画廊，可切换视角、放大和下载 PNG。"],
+                   f"部分姿势：{sample}。点击下方按钮进入画廊，可切换视角、放大和下载 {sp.get('dlFormat', 'PNG')}。"],
             facts=[("姿势", f"{len(ps)} 个"), ("图片", f"{n_i} 张"), ("视角", "正面 / 侧面 / 斜角 / 俯视 / 仰视")],
             items=items_of(ps), gallery_hash=gallery_hash, related=related)
 
@@ -61,15 +65,15 @@ def build(root, site_url, cfg, data, series_list, cats):
     # 哪些系列按分类展开，由各站 config.py 的 SEO_PAGES["expandSeries"] 决定。
     expand = set(sp.get("expandSeries", []))
     skip = set(sp.get("skipSeries", []))         # 不生成任何落地页的系列（只在画廊里浏览）
-    listed = [s for s in series_list if s not in skip]
+    listed = [s for s in series_list if s not in skip and any(p["s"] == s for p in indexable)]
     for s in listed:
-        ps = [p for p in data if p["s"] == s]
+        ps = [p for p in indexable if p["s"] == s]
         cs = Counter(p["c"] for p in ps).most_common()
         sub = s in expand
         facets.append(page(
             f"series/{s}", "系列", _zh_s(s), ps, f"series={s}",
             ([(f"series/{s}/{c}", _zh_c(c), n) for c, n in cs] if sub else [])
-            + [(f"series/{o}", _zh_s(o), sum(1 for p in data if p["s"] == o)) for o in listed if o != s],
+            + [(f"series/{o}", _zh_s(o), sum(1 for p in indexable if p["s"] == o)) for o in listed if o != s],
             ("包含分类：" + "、".join(f"{_zh_c(c)} {n} 个" for c, n in cs) + "。") if sub else ""))
         if not sub:
             continue
@@ -83,7 +87,7 @@ def build(root, site_url, cfg, data, series_list, cats):
     intro = landing.static_intro(
         sp["introParas"](n_poses, n_imgs),
         [("姿势", f"{n_poses} 个"), ("图片", f"{n_imgs} 张"), ("视角", "5 个"), ("系列", f"{len(series_list)} 个"),
-         ("分类", f"{len(cats)} 个"), ("语言", "中文 / 日本語"), ("素材", "AI 生成，作者ギア")],
+         ("分类", f"{len(cats)} 个"), ("语言", "中文 / 日本語"), ("素材", sp.get("factSource", "AI 生成，作者ギア"))],
         [(f"series/{s}/", _zh_s(s)) for s in listed],
         FAQ)
     return urls, intro, FAQ

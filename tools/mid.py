@@ -57,7 +57,9 @@ def main():
         sys.exit("需要 Pillow：pip install pillow（或 apt install python3-pil）")
 
     cfg = load_cfg()
-    sites = [s for s in select(cfg, args.get("site")) if "mid" in s.get("imageDirs", [])]
+    # tiers 里已有 mid 的站点（如 Shisei）中图由上游直接提供、fetch.py 下载，这里不再生成，否则会覆盖上游文件
+    sites = [s for s in select(cfg, args.get("site"))
+             if "mid" in s.get("imageDirs", []) and "mid" not in s.get("tiers", [])]
     workers = int(args["workers"]) if "workers" in args else None
 
     print(f"中图生成 · {len(sites)} 个站点 · 最长边 {MAX_EDGE}px · WebP q{QUALITY}\n")

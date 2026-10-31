@@ -18,22 +18,41 @@ from pose_i18n import SERIES_ZH, CAT_ZH, ANG_ZH, NAME_ZH
 
 
 def build(root, cfg):
-    """root = 站点目录（含 manifest.json / data/），cfg = 站点配置"""
+    """root = 站点目录（含 manifest.json / data/），cfg = 站点配置
+
+    可选键（缺省为姿势 / 深度姿势两站原来的值）：
+      seriesOrder / angOrder   系列与视角的顺序（manifest 里的原文）
+      seriesZh / catZh / angZh 中文名表；nameZh 为 None 时直接用 manifest 的「姿势名_zh」
+      author / authorUrl       原作者
+      storageKey               localStorage 前缀，两站共用 pg
+      imgExt                   下载文件的扩展名
+      favicon                  页面内嵌图标的字母
+      blurRatings              这些 rating 的姿势在网格里默认模糊，点开或打开开关才清晰
+    """
     UI = cfg["ui"]
     rows = json.load(open(os.path.join(root, "manifest.json"), encoding="utf-8"))
 
     # 站点地址：部署前用环境变量覆盖，否则 canonical / sitemap 会指向占位域名
     SITE_URL = os.environ.get("SITE_URL", "https://example.com").rstrip("/")
 
-    ANG_ORDER = ["正面", "横", "斜め", "上から", "下から"]
-    SERIES_ORDER = ["全身1人・セクシー系", "全身1人・標準系", "上半身1人", "2人絡み"]
+    ANG_ORDER = cfg.get("angOrder", ["正面", "横", "斜め", "上から", "下から"])
+    SERIES_ORDER = cfg.get("seriesOrder", ["全身1人・セクシー系", "全身1人・標準系", "上半身1人", "2人絡み"])
+    S_ZH, C_ZH, A_ZH = cfg.get("seriesZh", SERIES_ZH), cfg.get("catZh", CAT_ZH), cfg.get("angZh", ANG_ZH)
+    N_ZH = cfg.get("nameZh", NAME_ZH)
+    AUTHOR, AUTHOR_URL = cfg.get("author", "ギア"), cfg.get("authorUrl", "https://x.com/giaaibusi")
+    KEY = cfg.get("storageKey", "pg")
+    EXT = cfg.get("imgExt", ".png")
+    BLUR = list(cfg.get("blurRatings", []))
 
     poses = {}
     for r in rows:
         key = (r["系列"], r["分類"], r["编号"])
         if key not in poses:
+            zh = r.get("姿势名_zh") if N_ZH is None else N_ZH.get(r["姿势名"], r["姿势名"])
             poses[key] = {"s": r["系列"], "c": r["分類"], "p": r["编号"], "n": r["姿势名"],
-                          "z": NAME_ZH.get(r["姿势名"], r["姿势名"]), "v": []}
+                          "z": zh or r["姿势名"], "v": []}
+            if BLUR:
+                poses[key]["r"] = 1 if r.get("rating") in BLUR else 0
         poses[key]["v"].append({
             "a": r["视角"],
             "t": r["thumb_path"].replace("\\", "/"),
@@ -53,7 +72,7 @@ def build(root, cfg):
 
     payload = json.dumps({
         "poses": data, "series": series_list, "cats": cats, "angs": ANG_ORDER,
-        "seriesZh": SERIES_ZH, "catZh": CAT_ZH, "angZh": ANG_ZH,
+        "seriesZh": S_ZH, "catZh": C_ZH, "angZh": A_ZH,
         "ui": UI,
     }, ensure_ascii=False, separators=(",", ":"))
 
@@ -82,16 +101,16 @@ def build(root, cfg):
 <meta name="twitter:title" content="__TW_TITLE__">
 <meta name="twitter:description" content="__TW_DESC__">
 <meta name="twitter:image" content="__SITE__/og-cover.jpg">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%238fb4ff'/%3E%3Ctext x='16' y='23' font-size='19' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='%230d0f12'%3EP%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%238fb4ff'/%3E%3Ctext x='16' y='23' font-size='19' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='%230d0f12'%3E__ICON__%3C/text%3E%3C/svg%3E">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"ImageGallery","name":"__SCHEMA_NAME__","alternateName":"__SCHEMA_ALT__","url":"__SITE__/","inLanguage":["zh-CN","ja"],"numberOfItems":1439,"about":"__SCHEMA_ABOUT__","isAccessibleForFree":true,"creator":{"@type":"Person","name":"ギア","url":"https://x.com/giaaibusi"}}
+{"@context":"https://schema.org","@type":"ImageGallery","name":"__SCHEMA_NAME__","alternateName":"__SCHEMA_ALT__","url":"__SITE__/","inLanguage":["zh-CN","ja"],"numberOfItems":__N_IMAGES__,"about":"__SCHEMA_ABOUT__","isAccessibleForFree":true,"creator":{"@type":"Person","name":"__AUTHOR__","url":"__AUTHOR_URL__"}}
 </script>
 <script>
 /* 首帧前套用已存偏好，避免闪白/闪日文 */
 (function(){
   try{
-    var t=localStorage.getItem('pg.theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme=t;
-    var l=localStorage.getItem('pg.lang');  if(l==='ja'||l==='zh')      document.documentElement.dataset.lang=l;
+    var t=localStorage.getItem('__KEY__.theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme=t;
+    var l=localStorage.getItem('__KEY__.lang');  if(l==='ja'||l==='zh')      document.documentElement.dataset.lang=l;
   }catch(e){}
 })();
 </script>
@@ -237,6 +256,12 @@ main{max-width:1600px;margin:0 auto;padding:22px clamp(16px,4vw,48px) 90px}
 .badge span{background:var(--badge-bg);color:#fff;font-size:11px;padding:3px 8px;border-radius:99px;
   backdrop-filter:blur(4px);font-variant-numeric:tabular-nums}
 .badge span.alt{background:var(--ac);color:var(--on-ac);font-weight:700}
+/* suggestive 姿势默认模糊（只在配置了 blurRatings 的站点生效），点开或打开开关后清晰 */
+html.blur-on .card[data-r="1"]:not(.unblur) .ph>img,html.blur-on .card[data-r="1"]:not(.unblur) .strip img{filter:blur(14px)}
+html.blur-on .card[data-r="1"]:not(.unblur) .ph::after{content:attr(data-blur);position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);padding:6px 12px;border-radius:99px;background:rgba(13,15,18,.66);color:#fff;
+  font-size:12px;white-space:nowrap;pointer-events:none}
+.switch.blursw button{width:auto;padding:0 10px;font-size:12px}
 .meta{padding:12px 14px 13px}
 .meta h3{margin:0;font-size:14.5px;font-weight:600;line-height:1.4;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.8em}
@@ -376,7 +401,7 @@ __FAQ_LD__
         </div>
       </div>
       <span class="count" id="count"></span>
-      <div class="switches">
+      <div class="switches">__BLUR_SW__
         <div class="switch" id="themeSw" role="group" data-i18n-aria="themeAria">
           <button data-t="light" title="Light" aria-label="Light">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
@@ -430,6 +455,11 @@ __SEO_INTRO__
 <script>
 const DB = __PAYLOAD__;
 const POSES = DB.poses, SERIES = DB.series, CATS = DB.cats, ANGS = DB.angs;
+const BLUR = __BLUR_ON__;   // 是否启用 suggestive 默认模糊
+let SHOW_ALL = false;       // 模糊开关：true 时全部清晰
+try{ SHOW_ALL = BLUR && localStorage.getItem('__KEY__.unblur') === '1'; }catch(_){}
+const unblurred = new Set();   // 单独点开过的姿势
+const BLUR_SW = BLUR ? document.querySelector('.blursw') : null;   // 只在开启模糊的站点渲染
 const SZ = DB.seriesZh, CZ = DB.catZh, AZ = DB.angZh, UI = DB.ui;
 
 const $ = s => document.querySelector(s);
@@ -467,6 +497,10 @@ function applyStatic(){
   // 开关状态
   document.querySelectorAll('#themeSw button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.t===THEME?'true':'false'));
   document.querySelectorAll('#langSw button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.l===LANG?'true':'false'));
+  if (BLUR) {
+    document.documentElement.classList.toggle('blur-on', !SHOW_ALL);
+    const sw = BLUR_SW && BLUR_SW.querySelector('button'); if (sw) { sw.textContent = t(SHOW_ALL ? 'blurOn' : 'blurOff'); sw.setAttribute('aria-pressed', SHOW_ALL ? 'true' : 'false'); }
+  }
 }
 
 /* ══ 主题 / 语言切换 ══ */
@@ -474,16 +508,22 @@ $('#themeSw').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   THEME = b.dataset.t;
   document.documentElement.dataset.theme = THEME;
-  try{ localStorage.setItem('pg.theme', THEME); }catch(_){}
+  try{ localStorage.setItem('__KEY__.theme', THEME); }catch(_){}
   applyStatic();
 });
 $('#langSw').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   LANG = b.dataset.l;
   document.documentElement.dataset.lang = LANG;
-  try{ localStorage.setItem('pg.lang', LANG); }catch(_){}
+  try{ localStorage.setItem('__KEY__.lang', LANG); }catch(_){}
   applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
   if($('#modal').classList.contains('open')) showM();
+});
+
+if (BLUR_SW) BLUR_SW.addEventListener('click', ()=>{
+  SHOW_ALL = !SHOW_ALL;
+  try{ localStorage.setItem('__KEY__.unblur', SHOW_ALL ? '1' : '0'); }catch(_){}
+  applyStatic();
 });
 
 /* ══ 排序 ══ */
@@ -638,10 +678,10 @@ function cardPose(p, d, i){
     '<button data-a="'+esc(v.a)+'" class="'+(v.a===d.a?'on':'')+'" title="'+esc(nA(v.a))+'">'+
       '<img loading="lazy" decoding="async" src="'+esc(v.t)+'" alt="'+esc(nA(v.a))+'"><span>'+esc(nA(v.a))+'</span>'+
     '</button>').join('');
-  return '<article class="card" tabindex="0" data-i="'+i+'">'+
-    '<div class="ph"><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(d.t)+'" alt="'+esc(nN(p))+'">'+
+  return '<article class="card'+(unblurred.has(p.p)?' unblur':'')+'" tabindex="0" data-i="'+i+'"'+(p.r?' data-r="1"':'')+'>'+
+    '<div class="ph"'+(p.r?' data-blur="'+esc(t('blurTap'))+'"':'')+'><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(d.t)+'" alt="'+esc(nN(p))+'">'+
       '<div class="badge"><span>'+esc(p.p)+'</span></div>'+
-      '<a class="dl" href="'+esc(d.f)+'" download="'+esc(p.p + '-' + d.a + '.png')+'" title="下载原图" aria-label="下载原图">'+
+      '<a class="dl" href="'+esc(d.f)+'" download="'+esc(p.p + '-' + d.a + '__EXT__')+'" title="下载原图" aria-label="下载原图">'+
         '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg></a></div>'+
     '<div class="meta"><h3>'+esc(nN(p))+'</h3>'+
       '<div class="id">'+esc(nS(p.s))+' · '+esc(p.p)+'</div>'+
@@ -650,10 +690,10 @@ function cardPose(p, d, i){
 }
 
 function cardImg(p, v, i){
-  return '<article class="card" tabindex="0" data-i="'+i+'">'+
-    '<div class="ph"><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(v.t)+'" alt="'+esc(nN(p))+'">'+
+  return '<article class="card'+(unblurred.has(p.p)?' unblur':'')+'" tabindex="0" data-i="'+i+'"'+(p.r?' data-r="1"':'')+'>'+
+    '<div class="ph"'+(p.r?' data-blur="'+esc(t('blurTap'))+'"':'')+'><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(v.t)+'" alt="'+esc(nN(p))+'">'+
       '<div class="badge"><span class="alt">'+esc(nA(v.a))+'</span></div>'+
-      '<a class="dl" href="'+esc(v.f)+'" download="'+esc(p.p + '-' + v.a + '.png')+'" title="下载原图" aria-label="下载原图">'+
+      '<a class="dl" href="'+esc(v.f)+'" download="'+esc(p.p + '-' + v.a + '__EXT__')+'" title="下载原图" aria-label="下载原图">'+
         '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg></a></div>'+
     '<div class="meta"><h3>'+esc(nN(p))+'</h3>'+
       '<div class="id">'+esc(p.p)+' · '+esc(nA(v.a))+'</div>'+
@@ -732,6 +772,10 @@ addEventListener('resize', ()=>{ if(modal.classList.contains('open')) fitStage()
 
 function openM(i, v){
   M={i, d:v};
+  if (BLUR && VIEWLIST[i] && VIEWLIST[i].p.r) {
+    unblurred.add(VIEWLIST[i].p.p);
+    document.querySelectorAll('.card[data-i="'+i+'"]').forEach(c=>c.classList.add('unblur'));
+  }
   modal.classList.add('open');
   document.body.style.overflow='hidden';
   showM();
@@ -779,7 +823,7 @@ function showM(){
   $('#mid').textContent = p.p + ' · ' + nA(v.a);
   $('#mfull').href = v.f;
   $('#mdl').href = v.f;
-  $('#mdl').setAttribute('download', p.p + '-' + v.a + '.png');
+  $('#mdl').setAttribute('download', p.p + '-' + v.a + '__EXT__');
 
   $('#mkv').innerHTML = [
     [t('kSeries'), nS(p.s)],
@@ -871,6 +915,14 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
     html = (html.replace("__PAYLOAD__", payload)
                 .replace("__SITE__", SITE_URL)
                 .replace("__CODE__", cfg["code"])
+                .replace("__KEY__", KEY)
+                .replace("__EXT__", EXT)
+                .replace("__N_IMAGES__", str(cfg.get("schemaImages", 1439)))
+                .replace("__AUTHOR_URL__", AUTHOR_URL)
+                .replace("__AUTHOR__", AUTHOR)
+                .replace("__ICON__", cfg.get("favicon", "P"))
+                .replace("__BLUR_ON__", "true" if BLUR else "false")
+                .replace("__BLUR_SW__", '\n        <div class="switch blursw" role="group"><button type="button"></button></div>' if BLUR else "")
                 .replace("__TITLE__", cfg["title"])
                 .replace("__DESC__", cfg["desc"])
                 .replace("__OG_SITE__", cfg["ogSite"])
@@ -896,11 +948,11 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
         for v in p["v"]:
             zh.append({
                 "id": p["p"] + "_" + v["a"],
-                "系列": p["s"], "系列_zh": SERIES_ZH.get(p["s"], p["s"]),
-                "分类": p["c"], "分类_zh": CAT_ZH.get(p["c"], p["c"]),
+                "系列": p["s"], "系列_zh": S_ZH.get(p["s"], p["s"]),
+                "分类": p["c"], "分类_zh": C_ZH.get(p["c"], p["c"]),
                 "姿势编号": p["p"],
                 "姿势名": p["n"], "姿势名_zh": p["z"],
-                "视角": v["a"], "视角_zh": ANG_ZH.get(v["a"], v["a"]),
+                "视角": v["a"], "视角_zh": A_ZH.get(v["a"], v["a"]),
                 "缩略图": v["t"], "原图": v["f"],
             })
     json.dump(zh, open(os.path.join(data_dir, "pose-zh.json"), "w", encoding="utf-8"),
@@ -910,14 +962,14 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
     meta = {
         "site": cfg["code"],
         "source": cfg["source"],
-        "author": "ギア (@giaaibusi)",
+        "author": cfg.get("authorMeta", "ギア (@giaaibusi)"),
         "poses": len(data),
         "images": n_images,
-        "系列": [{"ja": s, "zh": SERIES_ZH.get(s, s),
+        "系列": [{"ja": s, "zh": S_ZH.get(s, s),
                   "poses": sum(1 for p in data if p["s"] == s)} for s in series_list],
-        "分类": [{"ja": c, "zh": CAT_ZH.get(c, c),
+        "分类": [{"ja": c, "zh": C_ZH.get(c, c),
                   "poses": sum(1 for p in data if p["c"] == c)} for c in cats],
-        "视角": [{"ja": a, "zh": ANG_ZH.get(a, a)} for a in ANG_ORDER],
+        "视角": [{"ja": a, "zh": A_ZH.get(a, a)} for a in ANG_ORDER],
     }
     json.dump(meta, open(os.path.join(data_dir, "meta.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
@@ -926,13 +978,14 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
     with open(os.path.join(data_dir, "translations.csv"), "w", encoding="utf-8-sig", newline="") as f:
         w = csv.writer(f)
         w.writerow(["字段", "日文原文", "中文译文"])
-        for k, v in SERIES_ZH.items():
+        for k, v in S_ZH.items():
             w.writerow(["系統", k, v])
-        for k, v in CAT_ZH.items():
+        for k, v in C_ZH.items():
             w.writerow(["分類", k, v])
-        for k, v in ANG_ZH.items():
+        for k, v in A_ZH.items():
             w.writerow(["アングル", k, v])
-        for k, v in NAME_ZH.items():
+        names = N_ZH if N_ZH is not None else {p["n"]: p["z"] for p in data}
+        for k, v in names.items():
             w.writerow(["ポーズ名", k, v])
     print("wrote data/pose-zh.json, data/meta.json, data/translations.csv")
 
