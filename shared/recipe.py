@@ -222,6 +222,7 @@ def html(up):
         <div class="rc-node rc-gn" id="rcGn">
           <div class="rc-nh"><i>▲</i><span id="rcGnT"></span><button type="button" id="rcSetB">{GEAR}</button></div>
           <div class="kv">
+            <span id="rcServiceL"></span><select class="sel" id="rcService"></select>
             <span id="rcModelL"></span><select class="sel" id="rcModel"></select>
             <span id="rcRatioL"></span><select class="sel" id="rcRatio"></select>
             <span id="rcNL"></span><select class="sel" id="rcN"><option>1</option><option>2</option><option>3</option><option>4</option></select>
@@ -237,12 +238,14 @@ def html(up):
       <div class="g">
         <span id="rcProvL"></span><select class="sel" id="rcProv"></select>
         <span id="rcKeyL"></span><input type="password" id="rcKey" autocomplete="off" spellcheck="false">
-        <span id="rcBaseL" hidden></span><input type="url" id="rcBase" placeholder="https://…/v1" hidden>
+        <span id="rcBaseL"></span><input type="url" id="rcBase" placeholder="https://…/v1">
         <span id="rcMidL"></span><input type="text" id="rcMid" list="rcModels" spellcheck="false"><datalist id="rcModels"></datalist>
+        <span id="rcProtoL" hidden></span><select class="sel" id="rcProto" hidden><option value="edits">images/edits · multipart</option><option value="json">images/generations · JSON</option></select>
+        <span id="rcFieldL" hidden></span><select class="sel" id="rcField" hidden><option>image[]</option><option>image</option></select>
       </div>
       <div class="row"><label class="ck"><input type="checkbox" id="rcRem"><span id="rcRemL"></span></label>
-        <button type="button" class="btn pri" id="rcSave"></button><button type="button" class="btn ghost" id="rcForget"></button></div>
-      <p id="rcSetNote"></p>
+        <button type="button" class="btn pri" id="rcSave"></button><button type="button" class="btn ghost" id="rcTest"></button><button type="button" class="btn ghost" id="rcForget"></button></div>
+      <p id="rcSetHelp"></p><p id="rcTestMsg" role="status"></p><p id="rcSetNote"></p>
     </div>
     <div class="rc-res" id="rcRes" hidden><h4><span id="rcResT"></span><button type="button" id="rcResClr"></button></h4><div class="rc-gal" id="rcGal"></div></div>
   </div>
@@ -269,7 +272,7 @@ const T = {
      empty:'先在各图库的大图里点「加入配方」，人像、服装、姿势各选一项。',
      add:'加入配方', inRec:'已在配方中', adult:'不可加入配方', adultWhy:'成人向内容不能加入配方', prompt:'复制提示词',
      sub0:'在大图里点「加入配方」', subN:'{n}/3 · 点开编辑', gen:'生成', running:'生成中 {s}s', pn:'画面与融合描述', gn:'图像生成',
-     model:'模型', ratio:'比例', count:'张数', setT:'生图服务', prov:'服务商', key:'API Key', base:'Base URL', mid:'模型 ID',
+     model:'模型', ratio:'比例', count:'张数', setT:'生图服务', prov:'服务商', key:'API Key', base:'Base URL', mid:'模型 ID', proto:'接口协议', field:'图片字段名', test:'测试连接', testing:'连接中…', connected:'模型列表读取成功，共 {n} 项；生图仍需实际测试。', noModels:'此接口未提供模型列表，无法用此方式验证；可保存后直接尝试生图。', testTimeout:'连接测试超过 15 秒，请检查地址或稍后重试。', relayHelp:'填写中转商的 Base URL、Key 和模型 ID；接口与图片字段按中转文档选择。支持多张参考图的模型才能合成配方。', directHelp:'可修改 Base URL；留空使用官方地址。',
      remember:'在这台设备上记住 Key', save:'保存', forget:'清除 Key', getKey:'获取 Key',
      setNote:'Key 只保存在你的浏览器里，生成时由浏览器直接发给服务商，不经过本站服务器。默认只在当前标签页有效，勾选「记住」后才长期保存。生成会按服务商的价格计费。',
      res:'生成结果', resClr:'清空记录', dl:'下载', delOne:'删除', cancel:'取消', retry:'重试', line:'线稿', depth:'深度图',
@@ -286,7 +289,7 @@ const T = {
      empty:'各ギャラリーの拡大表示で「レシピに追加」を押し、ポートレート・衣装・ポーズを 1 つずつ選びます。',
      add:'レシピに追加', inRec:'レシピに追加済み', adult:'レシピに追加できません', adultWhy:'成人向けの内容はレシピに追加できません', prompt:'プロンプトをコピー',
      sub0:'拡大表示で「レシピに追加」', subN:'{n}/3 · 開いて編集', gen:'生成', running:'生成中 {s}秒', pn:'画面と合成の説明', gn:'画像生成',
-     model:'モデル', ratio:'比率', count:'枚数', setT:'画像生成サービス', prov:'サービス', key:'API Key', base:'Base URL', mid:'モデル ID',
+     model:'モデル', ratio:'比率', count:'枚数', setT:'画像生成サービス', prov:'サービス', key:'API Key', base:'Base URL', mid:'モデル ID', proto:'API 形式', field:'画像フィールド', test:'接続テスト', testing:'接続中…', connected:'モデル一覧を取得しました（{n} 件）。画像生成は別途テストしてください。', noModels:'モデル一覧 API がないため確認できません。保存後に画像生成をお試しください。', testTimeout:'接続テストが 15 秒を超えました。URL を確認するか、後でもう一度お試しください。', relayHelp:'中継の Base URL・Key・モデル ID を入力し、API 形式と画像フィールドを選びます。複数の参考画像に対応するモデルを選んでください。', directHelp:'Base URL は変更できます。空欄なら公式 URL を使います。',
      remember:'この端末に Key を記憶する', save:'保存', forget:'Key を消去', getKey:'Key を取得',
      setNote:'Key はブラウザ内にのみ保存され、生成時にブラウザから直接サービスへ送られます。本サイトのサーバーは経由しません。初期状態ではこのタブの間だけ有効で、「記憶する」をオンにすると保存されます。料金は各サービスの規定に従います。',
      res:'生成結果', resClr:'履歴を消去', dl:'保存', delOne:'削除', cancel:'キャンセル', retry:'再試行', line:'線画', depth:'デプス',
@@ -393,6 +396,8 @@ function drawPrompt(force){
 function drawGen(){
   const G = PL.gen, c = G.cfg(), P = G.PROV[c.p] || G.PROV.openai;
   $('#rcPnT').textContent = t('pn'); $('#rcGnT').textContent = t('gn'); $('#rcCopy').textContent = t('copy');
+  $('#rcServiceL').textContent = t('prov');
+  $('#rcService').innerHTML = Object.entries(G.PROV).map(([k, v]) => '<option value="'+k+'">'+esc(v.name)+'</option>').join(''); $('#rcService').value = c.p;
   $('#rcModelL').textContent = t('model'); $('#rcRatioL').textContent = t('ratio'); $('#rcNL').textContent = t('count');
   const ms = [...new Set([G.modelOf(c, c.p), ...P.models])];
   $('#rcModel').innerHTML = ms.map(m => '<option>'+esc(m)+'</option>').join(''); $('#rcModel').value = G.modelOf(c, c.p);
@@ -405,11 +410,16 @@ function drawGen(){
 function drawSet(){
   const G = PL.gen, c = G.cfg();
   $('#rcSetT').textContent = t('setT');
-  ['prov', 'key', 'base', 'mid'].forEach(k => { $('#rc' + k[0].toUpperCase() + k.slice(1) + 'L').textContent = t(k); });
+  ['prov', 'key', 'base', 'mid', 'proto', 'field'].forEach(k => { $('#rc' + k[0].toUpperCase() + k.slice(1) + 'L').textContent = t(k); });
   $('#rcProv').innerHTML = Object.entries(G.PROV).map(([k, v]) => '<option value="'+k+'">'+esc(v.name)+'</option>').join('');
   $('#rcProv').value = c.p;
   $('#rcKey').value = G.key(c.p); $('#rcKey').placeholder = c.p === 'gemini' ? 'AIza…' : 'sk-…';
-  const relay = c.p === 'relay'; $('#rcBase').hidden = $('#rcBaseL').hidden = !relay; $('#rcBase').value = relay ? (c.base && c.base.relay) || '' : '';
+  const relay = c.p === 'relay'; $('#rcBase').value = (c.base && c.base[c.p]) || '';
+  $('#rcBase').placeholder = G.PROV[c.p].base || 'https://…/v1';
+  $('#rcProto').value = c.proto || 'edits'; $('#rcField').value = c.field || 'image[]';
+  $('#rcProto').hidden = $('#rcProtoL').hidden = !relay; drawField();
+  $('#rcSetHelp').textContent = t(relay ? 'relayHelp' : 'directHelp');
+  $('#rcTest').textContent = t('test'); $('#rcTestMsg').textContent = '';
   $('#rcMid').value = G.modelOf(c, c.p);
   $('#rcModels').innerHTML = G.PROV[c.p].models.map(m => '<option value="'+esc(m)+'">').join('');
   $('#rcRem').checked = !!c.remember; $('#rcRemL').textContent = t('remember');
@@ -417,6 +427,10 @@ function drawSet(){
   const get = G.PROV[c.p].get;
   $('#rcSetNote').innerHTML = esc(t('setNote')) + (get ? ' <a href="'+esc(get)+'" target="_blank" rel="noopener noreferrer">'+esc(t('getKey'))+' ↗</a>' : '');
 }
+function drawField(){
+  $('#rcField').hidden = $('#rcFieldL').hidden = PL.gen.cfg().p !== 'relay' || $('#rcProto').value !== 'edits';
+}
+$('#rcProto').addEventListener('change', drawField);
 /* 连线：三个参考节点底部 → 提示词节点顶部，提示词右侧 → 生成节点左侧 */
 function wires(){
   const box = $('#rcFlow'), svg = $('#rcWires'); if (body.hidden || !box.offsetWidth) return;
@@ -448,14 +462,34 @@ $('#rcModel').addEventListener('change', e => { const c = PL.gen.cfg(); PL.gen.s
 $('#rcRatio').addEventListener('change', e => PL.gen.setCfg({ratio: e.target.value}));
 $('#rcN').addEventListener('change', e => PL.gen.setCfg({n: +e.target.value}));
 $('#rcSetB').addEventListener('click', () => { const s = $('#rcSet'); s.hidden = !s.hidden; if (!s.hidden){ drawSet(); $('#rcKey').focus(); } });
-$('#rcProv').addEventListener('change', e => { PL.gen.setCfg({p: e.target.value}); drawSet(); });
+['#rcProv', '#rcService'].forEach(s => $(s).addEventListener('change', e => { PL.gen.setCfg({p: e.target.value}); drawSet(); }));
 $('#rcSave').addEventListener('click', () => {
   const G = PL.gen, c = G.cfg(), base = $('#rcBase').value.trim();
-  if (c.p === 'relay' && base && !G.httpsOk(base)){ PL.toast(t('badBase')); return; }
+  if ((base && !G.httpsOk(base)) || (c.p === 'relay' && !base)){ PL.toast(t('badBase')); return; }
   G.setCfg({remember: $('#rcRem').checked, model: Object.assign({}, c.model, {[c.p]: $('#rcMid').value.trim() || G.PROV[c.p].models[0]}),
-    base: Object.assign({}, c.base, c.p === 'relay' ? {relay: base} : {})});
+    base: Object.assign({}, c.base, {[c.p]: base}), proto: $('#rcProto').value, field: $('#rcField').value});
   G.setKey(c.p, $('#rcKey').value.trim(), $('#rcRem').checked);
   $('#rcSet').hidden = true; PL.toast(t('saved'));
+});
+$('#rcTest').addEventListener('click', async () => {
+  const G = PL.gen, c = G.cfg(), p = c.p, b = $('#rcBase').value.trim(), k = $('#rcKey').value.trim(), el = $('#rcTestMsg'), btn = $('#rcTest');
+  const base = G.baseOf({base:{[p]:b}}, p);
+  if (!G.httpsOk(base)){ el.textContent = t('badBase'); return; }
+  if (!k){ el.textContent = t('needKey'); return; }
+  btn.disabled = true; el.textContent = t('testing');
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 15000);
+  try{
+    const headers = p === 'gemini' ? {'x-goog-api-key':k} : {authorization:'Bearer ' + k};
+    const res = await fetch(base + '/models', {headers, signal:ctl.signal, credentials:'omit'});
+    const text = await res.text(); let j; try{ j = JSON.parse(text); }catch(_){}
+    const models = j && (j.data || j.models);
+    if (res.status === 404 || res.ok && !Array.isArray(models)) el.textContent = t('noModels');
+    else if (!res.ok){
+      const err = G.parse([{status:res.status, text}]).err;
+      el.textContent = t('e_' + err.k) + ' · HTTP ' + res.status;
+    } else el.textContent = t('connected').replace('{n}', models.length);
+  }catch(e){ el.textContent = t(ctl.signal.aborted ? 'testTimeout' : 'e_network'); }
+  finally{ clearTimeout(timer); btn.disabled = false; }
 });
 $('#rcForget').addEventListener('click', () => { const c = PL.gen.cfg(); PL.gen.setKey(c.p, '', false); drawSet(); });
 

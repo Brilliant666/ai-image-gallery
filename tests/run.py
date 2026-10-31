@@ -338,6 +338,19 @@ class Landing(unittest.TestCase):
         import translations as ptr
         self.assertEqual(sorted(set(ptr.STYLE_ZH) - set(ptr.STYLE_EN)), [])
 
+    def test_gen_providers(self):
+        # 实际运行请求构造与响应解析，验证中转的 JSON/multipart、多图、地址归一化和 Key 存储。
+        import gen
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("node not installed")
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "gen.js")
+            with open(p, "w", encoding="utf-8") as f:
+                f.write(gen.JS.replace("<script>", "").replace("</script>", ""))
+            r = subprocess.run([node, os.path.join(ROOT, "tests", "gen_providers.js"), p], capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
     def test_gen_service_worker(self):
         # 生图中继：根目录有 gen-sw.js 并随发布复制；它不拦截任何请求（没有 fetch 处理），只接受 https 地址；
         # 页面不把 API Key 写进任务记录

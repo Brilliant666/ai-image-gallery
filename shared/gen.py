@@ -20,7 +20,7 @@ const PROV = {
   gemini:  {name:'Google Gemini · Nano Banana', base:'https://generativelanguage.googleapis.com/v1beta', models:['gemini-nano-banana-2.1','gemini-3-pro-image','gemini-3.1-flash-image','gemini-3.1-flash-lite-image'], get:'https://aistudio.google.com/apikey'},
   seedream:{name:'豆包 Seedream · 火山方舟', base:'https://ark.cn-beijing.volces.com/api/v3', models:['doubao-seedream-5-0-pro-260628','doubao-seedream-4-5-251128','doubao-seedream-4-0-250828'], get:'https://console.volcengine.com/ark'},
   qwen:    {name:'通义 Qwen-Image · 阿里云百炼', base:'https://dashscope.aliyuncs.com/api/v1', models:['qwen-image-2.0-pro','qwen-image-2.0'], get:'https://bailian.console.aliyun.com/'},
-  relay:   {name:'OpenAI 兼容中转', base:'', models:['gpt-image-2.5-flare'], get:''},
+  relay:   {name:'自定义中转', base:'', models:['gpt-image-2','gpt-image-2.5-sunburst','gpt-image-2.5-flare','gpt-image-1','gemini-2.5-flash-image','flux-kontext-pro','qwen-image-edit','doubao-seedream-4-0-250828'], get:''},
 };
 const RATIOS = ['3:4','2:3','1:1','4:3','9:16','16:9'];
 const SIZE = {
@@ -35,10 +35,15 @@ const jget = (s, k, d) => { try{ const v = JSON.parse(s.getItem(k) || 'null'); r
 const jset = (s, k, v) => { try{ s.setItem(k, JSON.stringify(v)); }catch(_){} };
 
 /* ── 设置与 Key ── */
-const cfg = () => Object.assign({p:'openai', model:{}, base:{}, ratio:'3:4', n:1, remember:false}, jget(L, 'pl.gen', {}));
+const cfg = () => Object.assign({p:'relay', model:{}, base:{}, proto:'edits', field:'image[]', ratio:'3:4', n:1, remember:false}, jget(L, 'pl.gen', {}));
 const setCfg = o => { jset(L, 'pl.gen', Object.assign(cfg(), o)); fire(); };
 const modelOf = (c, p) => (c.model && c.model[p]) || PROV[p].models[0] || '';
-const baseOf = (c, p) => ((c.base && c.base[p]) || PROV[p].base).replace(/\/+$/, '');
+const baseOf = (c, p) => {
+  let b = ((c.base && c.base[p]) || PROV[p].base).trim().replace(/\/+$/, '');
+  if (!b) return b;
+  if (p === 'openai' || p === 'relay') return /\/v\d+(?:beta|alpha)?$/.test(b) ? b : b + '/v1';
+  return b;
+};
 const key = p => (jget(S, 'pl.genkey', {})[p] || jget(L, 'pl.genkey', {})[p] || '');
 function setKey(p, k, remember){
   const s = jget(S, 'pl.genkey', {}), l = jget(L, 'pl.genkey', {});
@@ -79,9 +84,12 @@ function build(p, c, k, prompt, imgs){
   const json = (url, headers, body) => ({url, headers: Object.assign({'content-type':'application/json'}, headers), body: JSON.stringify(body)});
   const rep = f => Array.from({length:n}, f);
   if (p === 'openai' || p === 'relay'){
-    const size = (p === 'openai' && /^gpt-image-2/.test(m) ? SIZE.gpt2 : SIZE.std)[r];
+    const size = (/^gpt-image-2/.test(m) ? SIZE.gpt2 : SIZE.std)[r];
+    if (p === 'relay' && c.proto === 'json') return [json(base + '/images/generations', {authorization:'Bearer ' + k},
+      {model:m, prompt, n, size, image:imgs.map(x => x.url)})];
+    const field = p === 'relay' && c.field === 'image' ? 'image' : 'image[]';
     return [{url: base + '/images/edits', headers:{authorization:'Bearer ' + k},
-      form: [['model', m], ['prompt', prompt], ['n', String(n)], ['size', size], ...imgs.map((x, i) => ['image[]', x.blob, 'ref' + (i + 1) + '.jpg'])]}];
+      form: [['model', m], ['prompt', prompt], ['n', String(n)], ['size', size], ...imgs.map((x, i) => [field, x.blob, 'ref' + (i + 1) + '.jpg'])]}];
   }
   if (p === 'gemini') return rep(() => json(base + '/interactions', {'x-goog-api-key': k}, {model: m,
     input: [{type:'text', text: prompt}, ...imgs.map(x => ({type:'image', mime_type: x.mime, data: x.b64}))],
