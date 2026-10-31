@@ -84,28 +84,19 @@ STYLE_ZH = {
 UI = {
     "zh": {
         "title": "AI 绘画角色脸部一致性参考图库：1499 张 AI 人像，CC0 免费商用 · 人像集",
-        "brand": "FACE REFERENCE",
-        "eyebrow": "免费人脸参考图库",
-        "h1a": "AI 模特",
-        "h1b": "脸库",
-        "lead": "让 AI 生成图像与视频中的角色保持同一张脸的参考图集。"
-                "「面部」提供正面、纯色背景的脸部参考，「造型」提供能看清服装与氛围的完整原图，"
-                "全部以 CC0 协议免费提供。",
-        "statFace": "面部",
-        "statStyling": "造型",
-        "statLicense": "许可",
-        "cta": "查看图库",
-        "galleryTitle": "图库",
-        "gallerySub": "按发型筛选",
+        "eyebrow": "PORTRAIT-DB-01 · 人像参考 · CC0",
+        "h1": "人像集 · AI 模特脸库",
+        "lead": "让 AI 生成图像与视频中的角色保持同一张脸。「面部」是正面、纯色背景的脸部参考，「造型」是能看清服装与氛围的完整原图，全部 CC0 免费商用。",
         "all": "全部",
-        "more": "加载更多",
+        "more": "加载更多（还有 {n} 张）",
         "empty": "没有符合条件的图片。",
-        "tipsTitle": "使用建议",
-        "rulesTitle": "使用规则",
-        "rankTitle": "下载排行",
-        "rankSub": "Top 10",
+        "secFace": "面部",
+        "secStyling": "造型",
+        "secLabel": "分区",
+        "hairLabel": "按发型筛选",
         "download": "下载原图",
-        "openFull": "打开原寸 PNG",
+        "dlOne": "下载原图 PNG",
+        "openFull": "打开原图 PNG",
         "copyLink": "复制图片链接",
         "copied": "已复制",
         "copyFail": "复制失败",
@@ -113,31 +104,24 @@ UI = {
         "prev": "上一张",
         "next": "下一张",
         "countUnit": "张",
-        "secFace": "Face",
-        "secStyling": "Styling",
+        "noFull": "（原图未下载）",
+        "hint": "<kbd>←</kbd><kbd>→</kbd> 前后切换　<kbd>Esc</kbd> 关闭",
+        "footer": "原站：<a href=\"https://ai-portrait-gallery.pages.dev/\" target=\"_blank\" rel=\"noopener\">AIモデル顔データベース</a> ／ 作者：<a href=\"https://x.com/agi_aibusi\" target=\"_blank\" rel=\"noopener\">あぎ</a> ／ CC0 1.0。均为 AI 生成的虚构人物，请勿用于冒充真人；原作者希望不要原样批量转载图片。",
     },
     "ja": {
-        "title": "AI イラスト向け顔参考画像集：1499 枚の AI 人物、CC0 で商用可 · AIモデル顔データベース",
-        "brand": "FACE REFERENCE",
-        "eyebrow": "Free Face Reference Library",
-        "h1a": "AIモデル",
-        "h1b": "顔データベース",
-        "lead": "AI画像・動画制作でキャラクターの顔を一貫させるためのリファレンス画像集。"
-                "正面向きの「フェイス」と、服装や雰囲気まで分かる「スタイリング」を、CC0で自由に配布。",
-        "statFace": "フェイス",
-        "statStyling": "スタイリング",
-        "statLicense": "ライセンス",
-        "cta": "ギャラリーを見る",
-        "galleryTitle": "Gallery",
-        "gallerySub": "髪型で絞り込み",
+        "title": "AI イラスト向け顔参考画像集：1499 枚の AI 人物、CC0 で商用可 · ポートレート集",
+        "eyebrow": "PORTRAIT-DB-01 · 顔リファレンス · CC0",
+        "h1": "ポートレート集 · AIモデル顔データベース",
+        "lead": "AI 画像・動画でキャラクターの顔を揃えるためのリファレンス。正面・無地背景の「フェイス」と、服装や雰囲気まで分かる「スタイリング」を CC0 で配布。",
         "all": "すべて",
-        "more": "もっと見る",
+        "more": "さらに表示（残り {n} 枚）",
         "empty": "該当する画像がありません。",
-        "tipsTitle": "使い方のヒント",
-        "rulesTitle": "利用ルール",
-        "rankTitle": "Ranking",
-        "rankSub": "ダウンロード Top10",
+        "secFace": "フェイス",
+        "secStyling": "スタイリング",
+        "secLabel": "セクション",
+        "hairLabel": "髪型で絞り込み",
         "download": "ダウンロード",
+        "dlOne": "原寸 PNG をダウンロード",
         "openFull": "原寸 PNG を開く",
         "copyLink": "画像リンクをコピー",
         "copied": "コピー済み",
@@ -146,45 +130,10 @@ UI = {
         "prev": "前へ",
         "next": "次へ",
         "countUnit": "枚",
-        "secFace": "Face",
-        "secStyling": "Styling",
+        "noFull": "（原寸未取得）",
+        "hint": "<kbd>←</kbd><kbd>→</kbd> 前後　<kbd>Esc</kbd> 閉じる",
+        "footer": "元サイト：<a href=\"https://ai-portrait-gallery.pages.dev/\" target=\"_blank\" rel=\"noopener\">AIモデル顔データベース</a> ／ 作者：<a href=\"https://x.com/agi_aibusi\" target=\"_blank\" rel=\"noopener\">あぎ</a> ／ CC0 1.0。すべて AI 生成の架空の人物です。実在人物のなりすましには使わないでください。画像そのものの一括転載はご遠慮ください。",
     },
-}
-
-# ── 说明文案（按语言）──────────────────────────────────
-TIPS = {
-    "zh": [
-        "作为参考图，载入各类 AI 工具的角色参考 / 脸部参考功能。",
-        "需要统一脸部时用「面部」；参考服装、发质与整体氛围时用「造型」。",
-        "持续使用同一张参考图，生成的图像与视频更容易保持同一张脸。",
-        "下载原尺寸 PNG 使用，可以参照到更多细节。",
-    ],
-    "ja": [
-        "参照画像として、各種AIツールのキャラクター参照・顔参照機能に読み込みます。",
-        "顔を揃えたいときは「フェイス」、服装・髪の質感・雰囲気の参考には「スタイリング」が向いています。",
-        "同じ画像を使い続けると、生成する画像・動画の顔が揃いやすくなります。",
-        "元サイズのPNGをダウンロードして使うと、細部まで参照できます。",
-    ],
-}
-
-RULES = {
-    "zh": [
-        "CC0 协议，可自由使用（商用、编辑、参考均可）",
-        "均为 AI 生成的虚构人物，不对应真实人物",
-        "禁止冒充真实人物或用于违反公序良俗的用途",
-        "请勿再分发、转载图片数据本身（此为请求，非强制）",
-    ],
-    "ja": [
-        "CC0で自由に利用可（商用利用・編集・参考利用OK）",
-        "AI生成の架空の人物で、実在しません",
-        "実在人物のなりすましや公序良俗に反する用途は不可",
-        "画像データそのものの再配布・転載はご遠慮ください（お願い）。",
-    ],
-}
-
-RULES_NOTE = {
-    "zh": "CC0 1.0 说明：无需署名（可选）。图片元数据已清除。按现状提供，不附带任何担保。",
-    "ja": "CC0 1.0 の説明：クレジット表記は不要です（任意）。画像のメタデータは削除済みです。無保証でご利用ください。",
 }
 
 
@@ -194,12 +143,3 @@ def style_zh(s):
 
 def hair_zh(h):
     return HAIR_ZH.get(h, h)
-
-
-def label(it, lang):
-    """卡片标题：发型（・风格）"""
-    hair = it["hair"] if lang == "ja" else hair_zh(it["hair"])
-    st = it.get("style") or ""
-    if st and lang == "zh":
-        st = style_zh(st)
-    return (hair + "・" + st) if st else hair

@@ -33,7 +33,7 @@ def build(root, site_url, items):
         tagline=f"AI 绘画角色脸部一致性参考图库，{n} 张 AI 生成人像，CC0 免费商用。",
         license_note="图片为 AI 生成的虚构人物，CC0 1.0 公有领域，可免费商用。",
         author="あぎ", author_url="https://x.com/agi_aibusi", source="https://ai-portrait-gallery.pages.dev/",
-        faq=FAQ, accent="#b45f3c",
+        faq=FAQ, accent="#b45f3c", license_url="https://creativecommons.org/publicdomain/zero/1.0/",
         index_title="AI 人脸参考图：按分区、发型与发型风格浏览",
         index_intro=(f"人像集收录 {n} 张 AI 生成的人像，分为面部（{n_face} 张正面脸部特写）和造型（{n - n_face} 张完整原图）两个分区，"
                      "按短发、中发、中长发、长发 4 种发型分类，面部分区还细分到具体的发型风格。全部 CC0，可免费商用。"),
@@ -55,7 +55,7 @@ def build(root, site_url, items):
         by_h = Counter(x["hj"] for x in xs)
         facets.append(landing.Facet(
             slug=f"section/{sec}", group="分区", label=szh,
-            title=f"AI 人像{szh}参考图 {len(xs)} 张 · 角色脸部一致性 · CC0 免费商用",
+            title=f"AI 人像{szh}参考图 {len(xs)} 张 · CC0 · 人像集",
             h1=f"{szh}参考图（{len(xs)} 张）",
             description=f"{len(xs)} 张 AI 生成的{what}，按短发、中发、中长发、长发分类，CC0 公有领域，可免费商用。",
             intro=[f"人像集「{szh}」分区共 {len(xs)} 张，是{what}。",
@@ -72,7 +72,7 @@ def build(root, site_url, items):
             styles = Counter(x["sj"] for x in xh if x.get("sj")).most_common(10)
             facets.append(landing.Facet(
                 slug=f"section/{sec}/{h}", group=szh, label=hz,
-                title=f"{hz} AI 人像{szh}参考图 {len(xh)} 张 · {hz}发型参考 · CC0",
+                title=f"{hz} AI 人像{szh}参考图 {len(xh)} 张 · 人像集",
                 h1=f"{hz} · {szh}参考图（{len(xh)} 张）",
                 description=f"{len(xh)} 张{hz}的 AI 生成人像（{szh}），可作为 AI 绘画角色脸部与发型参考，CC0 免费商用。",
                 intro=[f"人像集里{hz}的{szh}图共 {len(xh)} 张。"]
@@ -88,7 +88,7 @@ def build(root, site_url, items):
         h = xs[0]["hj"]
         facets.append(landing.Facet(
             slug=f"style/{st}", group=f"发型风格 · {HAIR_ZH.get(h, h)}", label=zh,
-            title=f"{zh} AI 人像参考图 {c} 张 · 发型参考 · CC0",
+            title=f"{zh} AI 人像参考图 {c} 张 · 人像集",
             h1=f"{zh}（{c} 张）",
             description=f"{c} 张「{zh}」发型的 AI 生成正面人像，可作为 AI 绘画发型与角色脸部参考，CC0 免费商用。",
             intro=[f"「{zh}」是人像集面部分区里的一种发型风格，日文原名「{st}」，共 {c} 张，属于{HAIR_ZH.get(h, h)}。",

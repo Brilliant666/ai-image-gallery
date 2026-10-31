@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""四站共用：为筛选分面（标签、分类、发型等）生成静态落地页
+"""各图库共用：为筛选分面（标签、分类、发型等）生成静态落地页
 
 主画廊是单页 JS 渲染，搜索引擎和 AI 读到的几乎是空壳。这里为每个分面输出一页
 不依赖 JS 的 HTML：标题、介绍、数据事实、缩略图网格（带 alt）、相关分面、FAQ，
@@ -14,8 +14,12 @@
     urls = write_site(site, facets)       # 写出 <root>/<slug>/index.html，返回绝对 URL 列表
 
 页面只用站点已有的缩略图档（thumbs/），不额外暴露中图或原图。
+外观、顶部栏、深浅色与语言偏好来自 shared/ui.py（与画廊同一套）；正文只有中文。
 """
-import html, json, os, shutil
+import html, json, os, shutil, sys, urllib.parse
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ui  # noqa: E402
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -62,6 +66,7 @@ class Site:
     accent: str = "#2563eb"
     index_title: str = ""   # 分面索引页 /<站点>/browse/ 的标题
     index_intro: str = ""
+    license_url: str = ""   # 图片授权地址（CC0 站点填 CC0 链接，结构化数据写 license / acquireLicensePage）
 
 
 def esc(s):
@@ -74,35 +79,29 @@ def _ld(obj):
 
 
 CSS = """
-:root{--bg:#fafaf9;--bg2:#fff;--tx:#1c1917;--tx2:#57534e;--tx3:#a8a29e;--line:#e7e5e4;--ac:%(accent)s}
-@media (prefers-color-scheme:dark){:root{--bg:#0c0a09;--bg2:#1c1917;--tx:#f5f5f4;--tx2:#a8a29e;--tx3:#78716c;--line:#292524}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.75 system-ui,-apple-system,"PingFang SC","Hiragino Sans","Microsoft YaHei",sans-serif}
-a{color:var(--ac)}
-.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
-header{border-bottom:1px solid var(--line);background:var(--bg2)}
-header .wrap{display:flex;gap:14px;align-items:center;min-height:56px;font-size:13px;flex-wrap:wrap}
-header a{color:var(--tx2);text-decoration:none}header a:hover{color:var(--ac)}
-.crumb span{color:var(--tx3);margin:0 6px}
-h1{font-size:clamp(24px,3.4vw,34px);line-height:1.3;margin:34px 0 10px}
-.lead p{margin:0 0 10px;color:var(--tx2);max-width:820px}
-.facts{display:flex;flex-wrap:wrap;gap:10px 22px;margin:18px 0 6px;padding:0;list-style:none;font-size:13px;color:var(--tx2)}
-.facts b{color:var(--tx);font-weight:600;margin-right:6px}
-.cta{display:inline-block;margin:16px 0 26px;padding:10px 18px;border-radius:999px;background:var(--ac);color:#fff;text-decoration:none;font-weight:600}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:0;padding:0;list-style:none}
-.grid li{background:var(--bg2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.grid img{display:block;width:100%%;height:auto;aspect-ratio:var(--ar,3/4);object-fit:cover;background:var(--line)}
-.grid figcaption{padding:6px 9px 8px;font-size:12px;color:var(--tx2);line-height:1.5}
-h2{font-size:19px;margin:40px 0 12px}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
-.chips a{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg2);color:var(--tx);text-decoration:none;font-size:13px}
-.chips a:hover{border-color:var(--ac);color:var(--ac)}
-.chips small{color:var(--tx3);margin-left:4px}
+.lp{max-width:1180px;margin:0 auto;padding:0 var(--gut) 20px}
+.crumb{display:flex;flex-wrap:wrap;gap:4px 8px;margin:22px 0 0;font-size:12.5px;color:var(--mu)}
+.crumb a{color:var(--tx2);text-decoration:none}.crumb a:hover{color:var(--tx);text-decoration:underline}
+.crumb span{color:var(--line2)}
+.lp h1{font-size:clamp(24px,3.4vw,34px);line-height:1.3;margin:12px 0 10px;font-weight:800}
+.lead p{margin:0 0 10px;color:var(--tx2);max-width:820px;line-height:1.8}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 6px;padding:0;list-style:none}
+.facts li{padding:4px 12px;border-radius:999px;background:var(--sf);font-size:13px;color:var(--tx2)}
+.facts b{color:var(--tx);font-weight:700;margin-right:6px}
+.cta{margin:16px 0 24px}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px 12px;margin:0;padding:0;list-style:none}
+.lgrid img{display:block;width:100%;height:auto;aspect-ratio:var(--ar,3/4);object-fit:cover;border-radius:14px;background:var(--imgbg)}
+.lgrid figcaption{padding:6px 4px 0;font-size:12px;color:var(--mu);line-height:1.5}
+.lp h2{font-size:19px;margin:40px 0 12px}
+.lchips{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.lchips a{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;background:var(--sf);
+  color:var(--tx);text-decoration:none;font-size:13px}
+.lchips a:hover{background:var(--sf2)}
+.lchips small{color:var(--mu)}
 .more{color:var(--tx2);font-size:13px;margin-top:12px}
-dl.faq dt{font-weight:600;margin-top:16px}dl.faq dd{margin:4px 0 0;color:var(--tx2)}
-.groups h3{font-size:15px;margin:22px 0 8px;color:var(--tx2)}
-footer{margin-top:56px;border-top:1px solid var(--line);padding:22px 0 40px;font-size:12px;color:var(--tx3);line-height:1.9}
-footer a{color:var(--tx3)}
+dl.faq dt{font-weight:700;margin-top:16px}dl.faq dd{margin:4px 0 0;color:var(--tx2);line-height:1.8}
+.groups h3{font-size:14px;margin:22px 0 8px;color:var(--mu)}
+@media(max-width:640px){.lgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 """
 
 
@@ -113,7 +112,7 @@ def _page(site, *, slug, title, h1, description, crumbs, body, ld, depth):
     nav = ' <span>/</span> '.join(
         f'<a href="{esc(href)}">{esc(label)}</a>' if href else esc(label) for href, label in crumbs)
     return f"""<!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light" data-lang="zh">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -130,21 +129,30 @@ def _page(site, *, slug, title, h1, description, crumbs, body, ld, depth):
 <meta property="og:description" content="{esc(description)}">
 <meta property="og:url" content="{esc(canonical)}">
 <meta property="og:image" content="{esc(site.site_url)}/og-cover.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary_large_image">
-<style>{CSS % {"accent": site.accent}}</style>
+<meta name="twitter:image" content="{esc(site.site_url)}/og-cover.jpg">
 <script type="application/ld+json">{_ld(ld)}</script>
+{ui.head_script()}
+{ui.head_css()}
+<style>{CSS}</style>
 </head>
 <body>
-<header><div class="wrap"><nav class="crumb" aria-label="位置">{nav}</nav></div></header>
-<main class="wrap">
+{ui.bar(site.id, up + "../")}
+<main class="lp">
+<nav class="crumb" aria-label="位置">{nav}</nav>
 <h1>{esc(h1)}</h1>
 {body}
 </main>
-<footer><div class="wrap">
+<footer class="foot">
 <p>{esc(site.name)} · {esc(site.tagline)}</p>
 <p>{esc(site.license_note)} 素材作者：<a href="{esc(site.author_url)}" rel="noopener">{esc(site.author)}</a> · 原站：<a href="{esc(site.source)}" rel="noopener">{esc(site.source)}</a></p>
-<p><a href="{up}">返回{esc(site.name)}画廊</a> · <a href="{up}browse/">全部分类与标签</a> · <a href="{up}../">photoai.life 四个参考图库</a></p>
-</div></footer>
+<p><a href="{up}">返回{esc(site.name)}画廊</a> · <a href="{up}browse/">全部分类与标签</a> · <a href="{up}../">photoai.life 全部 {len(ui.nav_sites())} 个参考图库</a></p>
+</footer>
+{ui.dialogs(ui.HUB_KEYS)}
+{ui.body_script()}
 </body>
 </html>
 """
@@ -160,6 +168,18 @@ def _faq_ld(faq):
         {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]}
 
 
+def _img_ld(site, it):
+    """缩略图的 ImageObject：CC0 站点写 license / acquireLicensePage；禁止再分发的站点写版权与出处"""
+    o = {"@type": "ImageObject", "contentUrl": f"{site.site_url}/{it.thumb}", "caption": it.alt,
+         "creator": {"@type": "Person", "name": site.author, "url": site.author_url},
+         "creditText": f"{site.author} / {site.source}"}
+    if site.license_url:
+        o.update(license=site.license_url, acquireLicensePage=site.source)
+    else:
+        o["copyrightNotice"] = f"© {site.author}"
+    return o
+
+
 def facet_page(site, f, all_facets):
     depth = f.slug.count("/") + 1
     up = "../" * depth
@@ -173,11 +193,11 @@ def facet_page(site, f, all_facets):
     rel = [r for r in f.related if r[0] in {x.slug for x in all_facets}]
     body = ('<div class="lead">' + "".join(f"<p>{esc(p)}</p>" for p in f.intro) + "</div>"
             + ('<ul class="facts">' + "".join(f"<li><b>{esc(k)}</b>{esc(v)}</li>" for k, v in f.facts) + "</ul>" if f.facts else "")
-            + f'<a class="cta" href="{esc(gallery_url)}">在画廊中查看全部 {len(f.items)} 张 →</a>'
-            + f'<ul class="grid">{grid}</ul>'
+            + f'<a class="btn pri cta" href="{esc(gallery_url)}">在画廊中查看全部 {len(f.items)} 张 →</a>'
+            + f'<ul class="lgrid">{grid}</ul>'
             + (f'<p class="more">本页展示前 {len(shown)} 张，其余 {len(f.items) - len(shown)} 张请在<a href="{esc(gallery_url)}">画廊</a>中查看（可筛选、放大、下载）。</p>'
                if len(f.items) > len(shown) else "")
-            + ('<h2>相关分类与标签</h2><ul class="chips">' + "".join(
+            + ('<h2>相关分类与标签</h2><ul class="lchips">' + "".join(
                 f'<li><a href="{up}{esc(s)}/">{esc(label)}<small>{n}</small></a></li>' for s, label, n in rel) + "</ul>" if rel else "")
             + _faq_html(site.faq))
     crumbs = [(f"{up}../", "photoai.life"), (up, site.name), (f"{up}browse/", "分类与标签")] + ([(None, f.group)] if f.group else []) + [(None, f.h1)]
@@ -185,8 +205,7 @@ def facet_page(site, f, all_facets):
         {"@type": "CollectionPage", "name": f.title, "description": f.description, "url": f"{site.site_url}/{f.slug}/",
          "inLanguage": "zh-CN", "isPartOf": {"@type": "WebSite", "name": f"photoai.life · {site.name}", "url": f"{site.site_url}/"},
          "mainEntity": {"@type": "ImageGallery", "name": f.h1, "numberOfItems": len(f.items),
-                        "image": [{"@type": "ImageObject", "contentUrl": f"{site.site_url}/{it.thumb}", "caption": it.alt,
-                                   "creator": {"@type": "Person", "name": site.author}} for it in shown[:12]]}},
+                        "image": [_img_ld(site, it) for it in shown[:12]]}},
         {"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "photoai.life", "item": site.site_url.rsplit("/", 1)[0] + "/"},
             {"@type": "ListItem", "position": 2, "name": site.name, "item": f"{site.site_url}/"},
@@ -201,9 +220,9 @@ def index_page(site, facets):
     for f in facets:
         groups.setdefault(f.group or "其他", []).append(f)
     body = ('<div class="lead"><p>' + esc(site.index_intro) + "</p></div>"
-            + f'<a class="cta" href="../">打开{esc(site.name)}画廊 →</a>'
+            + f'<a class="btn pri cta" href="../">打开{esc(site.name)}画廊 →</a>'
             + '<div class="groups">' + "".join(
-                f"<h3>{esc(g)}</h3><ul class=\"chips\">" + "".join(
+                f"<h3>{esc(g)}</h3><ul class=\"lchips\">" + "".join(
                     f'<li><a href="../{esc(f.slug)}/">{esc(f.label or f.h1)}<small>{len(f.items)}</small></a></li>' for f in fs) + "</ul>"
                 for g, fs in groups.items()) + "</div>"
             + _faq_html(site.faq))
@@ -241,14 +260,26 @@ def write_site(site, facets):
     return [f"{site.site_url}/browse/"] + [f"{site.site_url}/{s}/" for s in slugs]
 
 
-def sitemap(site_url, urls, path):
+def quote_url(u):
+    """站点地图里的网址做百分号编码（中日文路径）"""
+    parts = urllib.parse.urlsplit(u)
+    return urllib.parse.urlunsplit(parts._replace(path=urllib.parse.quote(parts.path, safe="/%")))
+
+
+def sitemap(site_url, urls, path, lastmod=None):
+    """lastmod 取 sites.json 里该站的 updated（固定日期，构建结果可复现）"""
+    lastmod = lastmod or updated(site_url.rstrip("/").rsplit("/", 1)[-1])
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
-        f.write(f'  <url><loc>{esc(site_url)}/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>\n')
-        for u in urls:
-            f.write(f'  <url><loc>{esc(u)}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>\n')
+        for u in [f"{site_url}/"] + list(urls):
+            f.write(f'  <url><loc>{esc(quote_url(u))}</loc>' + (f'<lastmod>{lastmod}</lastmod>' if lastmod else '') + '</url>\n')
         f.write("</urlset>\n")
+
+
+def updated(site_id):
+    s = next((x for x in ui.sites() if x["id"] == site_id), None)
+    return s.get("updated") if s else None
 
 
 def static_intro(paras, facts, links, faq, more_href="browse/", more_label="全部分类与标签"):

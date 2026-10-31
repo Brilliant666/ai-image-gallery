@@ -8,17 +8,18 @@
 新增站点：在 sites.json 的 sites 数组里追加一条，重跑本脚本即可。
 """
 import json, os, sys
+from html import escape
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "shared"))
-import landing  # noqa: E402
+import landing, ui  # noqa: E402
 
 HUB  = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HUB)
 CFG  = os.path.join(ROOT, "sites.json")
 OUT  = os.path.join(HUB, "index.html")
 
-LICENSE_LABEL = {
-    "cc0":        {"zh": "CC0", "ja": "CC0", "cls": "ok"},
+LICENSE = {
+    "cc0": {"zh": "CC0 可商用", "ja": "CC0 商用可", "cls": "ok"},
     "conditional": {"zh": "有条件", "ja": "条件付き", "cls": "warn"},
     "restricted": {"zh": "禁止再分发", "ja": "再配布禁止", "cls": "no"},
 }
@@ -53,11 +54,10 @@ TEMPLATE = r"""<!doctype html>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="description" content="__DESC__">
-<meta name="color-scheme" content="light dark">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="__BASE__/">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="参考素材库">
+<meta property="og:site_name" content="photoai.life">
 <meta property="og:title" content="__TITLE__">
 <meta property="og:description" content="__DESC__">
 <meta property="og:url" content="__BASE__/">
@@ -65,246 +65,168 @@ TEMPLATE = r"""<!doctype html>
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="__TITLE__">
 <meta name="twitter:description" content="__DESC__">
 <meta name="twitter:image" content="__BASE__/og-cover.jpg">
 <script type="application/ld+json">__LD__</script>
-<script>
-(function(){try{
-  var t=localStorage.getItem('hub.theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme=t;
-  var l=localStorage.getItem('hub.lang');  if(l==='zh'||l==='ja')      document.documentElement.dataset.lang=l;
-}catch(e){}})();
-</script>
+__UI_HEAD__
+__UI_CSS__
 <style>
-:root{
-  --r:18px;
-  --f:system-ui,-apple-system,"Segoe UI","PingFang SC","Hiragino Sans","Noto Sans SC","Microsoft YaHei",sans-serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  --bg:#f4f6f9;--panel:#ffffff;--line:#e3e7ed;--line2:#ccd4e0;
-  --tx:#16191f;--tx2:#525b6a;--tx3:#8a93a3;--ac:#2563eb;--on-ac:#fff;
-  --hover:#eef1f6;--hb:#b9c3d2;
-  --sh:0 8px 24px rgba(16,24,40,.10);--g1:#e6eefc;--g2:#f0e9fb;
-  --grad:linear-gradient(90deg,#2563eb,#7c3aed);
-  --ok-bg:#e7f6ec;--ok-tx:#186b3a;--warn-bg:#fdf2e0;--warn-tx:#8a5a12;--no-bg:#fdeaea;--no-tx:#a02020;
+.hero{padding:44px 0 26px}
+.hero h1{margin:0;font-size:clamp(30px,4.6vw,52px);line-height:1.12;font-weight:800;letter-spacing:.005em}
+.hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .lead{margin:14px 0 0;max-width:640px;color:var(--tx2);font-size:15px;line-height:1.8}
+.big{display:flex;flex-wrap:wrap;gap:10px 40px;margin:26px 0 0;padding:0;list-style:none}
+.big li{display:flex;flex-direction:column}
+.big b{font-size:clamp(26px,3.4vw,38px);font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.big li>span{margin-top:2px;font-size:13px;color:var(--mu)}
+/* 姿势、服装的数字：18+ 关闭时显示可见数量 */
+html:not([data-adult="1"]) .n-all,html[data-adult="1"] .n-pub{display:none}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:22px;margin:8px 0 0;padding:0;list-style:none}
+.hc{display:flex;flex-direction:column;text-decoration:none;color:var(--tx);min-width:0}
+.hc .cv{position:relative;aspect-ratio:4/5;overflow:hidden;border-radius:20px;background:var(--imgbg);
+  transition:transform .3s var(--ease),box-shadow .3s}
+.hc:hover .cv{transform:translateY(-4px);box-shadow:var(--sh2)}
+.hc:focus-visible{outline:none}.hc:focus-visible .cv{box-shadow:0 0 0 3px var(--ac)}
+.hc .cv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
+.hc:hover .cv img{transform:scale(1.04)}
+.hc .cv.contain img{object-fit:contain;padding:6% 8%}
+/* 姿势卡：左线稿右深度图 */
+.hc .cv.split img+img{clip-path:inset(0 0 0 50%)}
+.hc .cv.split::after{content:"";position:absolute;top:6%;bottom:6%;left:50%;width:2px;margin-left:-1px;background:var(--ac);opacity:.8}
+.hc .tag{position:absolute;z-index:1;left:12px;bottom:12px;display:flex;gap:6px}
+.hc .tag span{padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.9);color:#111;font-size:11.5px;font-weight:700}
+.hc .tag span.ok{background:#16a34a;color:#fff}
+.hc .tx{padding:14px 4px 0}
+.hc h2{display:flex;align-items:center;gap:8px;margin:0;font-size:19px;font-weight:800}
+.hc h2 svg{width:18px;height:18px;margin-left:auto;color:var(--mu);transition:transform .2s,color .2s}
+.hc:hover h2 svg{transform:translateX(3px);color:var(--tx)}
+.hc p{margin:6px 0 0;color:var(--tx2);font-size:13.5px;line-height:1.7}
+.hc .nums{margin-top:10px;display:flex;gap:16px;font-size:12.5px;color:var(--mu)}
+.hc .nums b{color:var(--tx);font-size:14px;font-variant-numeric:tabular-nums;margin-right:3px}
+.credits{margin:46px 0 0;padding:22px 0 0;border-top:1px solid var(--line)}
+.credits h2{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--mu)}
+.credits ul{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:6px 30px;margin:0;padding:0;list-style:none;font-size:13px}
+.credits li{display:flex;align-items:baseline;gap:10px;min-width:0}
+.credits li>a:first-child{font-weight:600;color:var(--tx);text-decoration:none}
+.credits li>a:first-child:hover{text-decoration:underline}
+.credits .au{color:var(--mu)}.credits .au a{color:var(--mu)}
+.credits .lic{margin-left:auto;font-size:11px;white-space:nowrap;padding:1px 8px;border-radius:999px;background:var(--sf);color:var(--tx2)}
+.credits .lic.ok{background:#dcfce7;color:#166534}
+html[data-theme="dark"] .credits .lic.ok{background:#14301d;color:#86efac}
+.credits .note{margin:12px 0 0;font-size:12px;color:var(--mu);line-height:1.8}
+.hub-seo{margin-top:34px}
+@media(max-width:640px){
+  .hero{padding:22px 0 16px}
+  .hero .lead{font-size:14px}
+  .big{gap:8px 22px;margin-top:18px}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 10px}
+  .hc .cv{border-radius:16px}
+  .hc h2{font-size:15.5px}
+  .hc p{font-size:12.5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .hc .nums{display:none}
+  .hc .tag{left:8px;bottom:8px}.hc .tag span{font-size:10.5px;padding:2px 8px}
 }
-html[data-theme="dark"]{
-  --bg:#0d0f12;--panel:#1a1e24;--line:#272c34;--line2:#343a44;
-  --tx:#e9ecf1;--tx2:#a3abb8;--tx3:#6c7482;--ac:#8fb4ff;--on-ac:#0b1220;
-  --hover:#232831;--hb:#3b4350;
-  --sh:0 10px 30px rgba(0,0,0,.45);--g1:#1b2433;--g2:#211a2b;
-  --grad:linear-gradient(90deg,#c3d5ff,#e3c8ff);
-  --ok-bg:#12291c;--ok-tx:#7ee2a8;--warn-bg:#2b2213;--warn-tx:#f0c274;--no-bg:#2b1616;--no-tx:#f19a9a;
-}
-*{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--tx);font-family:var(--f);min-height:100vh;
-  -webkit-font-smoothing:antialiased;transition:background-color .22s,color .22s;
-  background-image:radial-gradient(1200px 500px at 15% -10%,var(--g1) 0,transparent 60%),
-                   radial-gradient(900px 400px at 100% 0,var(--g2) 0,transparent 55%)}
-a{color:inherit}
-button{font:inherit;color:inherit}
-
-.wrap{max-width:1180px;margin:0 auto;padding:52px clamp(18px,5vw,40px) 72px}
-
-/* 顶栏 */
-.top{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:10px}
-.eyebrow{font-size:11.5px;letter-spacing:.24em;color:var(--tx3);text-transform:uppercase;padding-top:6px}
-.switches{display:flex;gap:8px;margin-left:auto}
-.switch{display:flex;border:1px solid var(--line2);border-radius:10px;overflow:hidden;background:var(--panel)}
-.switch button{height:34px;min-width:34px;padding:0 9px;border:0;background:transparent;color:var(--tx2);
-  font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.13s;white-space:nowrap}
-.switch button+button{border-left:1px solid var(--line2)}
-.switch button:hover{background:var(--hover);color:var(--tx)}
-.switch button[aria-pressed="true"]{background:var(--ac);color:var(--on-ac);font-weight:700}
-.switch svg{width:14px;height:14px;display:block}
-
-h1{margin:10px 0 10px;font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:.02em;line-height:1.25}
-h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lead{color:var(--tx2);font-size:14px;line-height:1.8;margin:0 0 12px;max-width:680px}
-.count-line{display:flex;align-items:center;gap:10px;color:var(--tx3);font-size:12.5px;
-  letter-spacing:.06em;margin:0 0 34px}
-.count-line b{font-family:var(--mono);color:var(--tx2);font-weight:600}
-
-/* 卡片：左图右文。图片框 3:4 贴合素材比例，竖构图基本不裁切 */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:18px}
-.card{display:grid;grid-template-columns:156px 1fr;background:var(--panel);
-  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;text-decoration:none;
-  transition:transform .18s ease,box-shadow .18s ease,border-color .18s}
-.card:hover{transform:translateY(-3px);box-shadow:var(--sh);border-color:var(--hb)}
-.thumb{position:relative;aspect-ratio:3/4;background:var(--line);overflow:hidden}
-.thumb img{width:100%;height:100%;object-fit:cover;display:block;
-  transition:transform .5s cubic-bezier(.2,.7,.2,1)}
-.card:hover .thumb img{transform:scale(1.05)}
-.info{padding:17px 19px 16px;display:flex;flex-direction:column;gap:7px;min-width:0}
-.head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
-.head h2{margin:0;font-size:17px;font-weight:700;letter-spacing:.01em}
-.code{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--tx3)}
-.desc{margin:0;font-size:12.5px;color:var(--tx2);line-height:1.65;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.nums{display:flex;gap:16px;margin-top:auto;padding-top:11px;border-top:1px solid var(--line)}
-.nums div{display:flex;flex-direction:column;gap:0}
-.nums b{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.35}
-.nums span{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3)}
-.foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
-.go{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ac);font-weight:600}
-.go svg{width:15px;height:15px;transition:transform .18s}
-.card:hover .go svg{transform:translateX(3px)}
-.lic{font-size:10.5px;letter-spacing:.1em;padding:3px 9px;border-radius:999px;font-weight:600;white-space:nowrap}
-.lic.ok{background:var(--ok-bg);color:var(--ok-tx)}
-.lic.warn{background:var(--warn-bg);color:var(--warn-tx)}
-.lic.no{background:var(--no-bg);color:var(--no-tx)}
-
-footer{margin-top:38px;padding-top:16px;border-top:1px solid var(--line);
-  color:var(--tx3);font-size:11.5px;line-height:1.8}
-.ft{margin:0 0 6px;font-size:10.5px;font-weight:600;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--tx3);opacity:.8}
-.credits{list-style:none;margin:0 0 6px;padding:0;max-width:940px;
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 34px}
-.credits li{display:flex;align-items:baseline;gap:9px;padding:2px 0}
-.c-site{min-width:78px;font-size:12px;font-weight:600;color:var(--tx2);
-  text-decoration:none;border-bottom:1px solid transparent}
-.c-site:hover{color:var(--ac);border-color:var(--ac)}
-.c-author{color:var(--tx3);white-space:nowrap}
-.c-author a{color:var(--tx3);text-decoration:none;border-bottom:1px solid transparent}
-.c-author a:hover{color:var(--ac);border-color:var(--ac)}
-.credits .lic{margin-left:auto;font-size:9.5px;padding:1px 7px}
-footer .note{margin:0;color:var(--tx3);opacity:.85}
-
-@media(max-width:820px){ .cards{grid-template-columns:1fr} }
-@media(max-width:720px){ .credits{grid-template-columns:1fr} }
-@media(max-width:520px){
-  .card{grid-template-columns:112px 1fr}
-  .info{padding:14px 15px 13px;gap:6px}
-  .head h2{font-size:15.5px}
-  .desc{-webkit-line-clamp:2}
-  .nums{gap:12px}
-  .nums b{font-size:14px}
-}
-@media(max-width:600px){ .wrap{padding-top:32px} .switches{width:100%;margin-left:0} }
 </style>
+__SEO_CSS__
+__FAQ_LD__
 </head>
 <body>
-<div class="wrap">
-
-  <div class="top">
-    <div class="eyebrow" id="eyebrow"></div>
-    <div class="switches">
-      <div class="switch" id="themeSw" role="group" aria-label="Theme">
-        <button type="button" data-t="light" title="Light" aria-label="Light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg></button>
-        <button type="button" data-t="dark" title="Dark" aria-label="Dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
-      </div>
-      <div class="switch" id="langSw" role="group" aria-label="Language">
-        <button type="button" data-l="zh">中文</button>
-        <button type="button" data-l="ja">日本語</button>
-      </div>
-    </div>
-  </div>
-
-  <h1><span id="h1"></span></h1>
-  <p class="lead" id="lead"></p>
-  <p class="count-line"><b id="cnt"></b><span id="cntLbl"></span></p>
-
-  <div class="cards" id="cards"></div>
-
-  <footer>
-    <h2 class="ft" id="ftitle"></h2>
-    <ul class="credits" id="credits"></ul>
-    <p class="note" id="fnote"></p>
-  </footer>
-  __SEO_INTRO__
-</div>
-
-<script>
-const DATA = __DATA__;
-const LIC = __LIC__;
-const LIC_NAME = {
-  zh: { ok: 'CC0', warn: '有条件', no: '禁止再分发' },
-  ja: { ok: 'CC0', warn: '条件付き', no: '再配布禁止' }
-};
-
-let LANG  = document.documentElement.dataset.lang  || 'zh';
-let THEME = document.documentElement.dataset.theme || 'light';
-
-const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const tx = o => (o && typeof o === 'object') ? (o[LANG] || o.zh || '') : (o || '');
-
-function render(){
-  const M = DATA.meta;
-
-  $('#eyebrow').textContent = M.eyebrow;
-  $('#h1').textContent = tx(M.title);
-  $('#lead').textContent = tx(M.lead);
-  $('#cnt').textContent = String(DATA.sites.length).padStart(2, '0');
-  $('#cntLbl').textContent = LANG === 'zh' ? '个站点' : 'サイト';
-  document.title = LANG === 'zh' ? __TITLE_JS__ : tx(M.title) + ' · ' + DATA.sites.length + ' サイト';
-
-  $('#cards').innerHTML = DATA.sites.map(s => {
-    const lic = LIC[s.license] || LIC.restricted;
-    return '<a class="card" href="./' + esc(s.id) + '/">' +
-      '<div class="thumb">' +
-        '<img src="' + esc('./' + s.id + '/' + s.cover) + '" alt="' + esc(s.code) + '" loading="lazy"' +
-          (s.coverPos ? ' style="object-position:' + esc(s.coverPos) + '"' : '') + '>' +
-      '</div>' +
-      '<div class="info">' +
-        '<div class="head"><h2>' + esc(tx(s.name)) + '</h2>' +
-          '<span class="code">' + esc(s.code) + '</span></div>' +
-        '<p class="desc">' + esc(tx(s.desc)) + '</p>' +
-        '<div class="nums">' + s.stats.map(st =>
-          '<div><b>' + esc(st.v) + '</b><span>' + esc(tx(st.l)) + '</span></div>').join('') + '</div>' +
-        '<div class="foot">' +
-          '<span class="go">' + (LANG === 'zh' ? '进入' : '開く') +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>' +
-          '<span class="lic ' + esc(lic.cls) + '">' + esc(LIC_NAME[LANG][lic.cls]) + '</span>' +
-        '</div>' +
-      '</div></a>';
-  }).join('');
-
-  $('#ftitle').textContent = tx(M.creditTitle);
-  $('#fnote').textContent = tx(M.licenseNote);
-
-  // 素材来源与版权：链接原站、标注原作者、标出各站授权
-  $('#credits').innerHTML = DATA.sites.map(s => {
-    const lic = LIC[s.license] || LIC.restricted;
-    const host = String(s.source || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-    const handle = String(s.author.url || '').split('/').pop();
-    return '<li>' +
-      '<a class="c-site" href="' + esc(s.source) + '" target="_blank" rel="noopener noreferrer"' +
-        ' title="' + esc(host) + '">' + esc(tx(s.name)) + '</a>' +
-      '<span class="c-author">' + esc(s.author.name) + ' <a href="' + esc(s.author.url) +
-        '" target="_blank" rel="noopener noreferrer">@' + esc(handle) + '</a></span>' +
-      '<span class="lic ' + esc(lic.cls) + '">' + esc(LIC_NAME[LANG][lic.cls]) + '</span>' +
-    '</li>';
-  }).join('');
-
-  document.querySelectorAll('#themeSw button').forEach(b =>
-    b.setAttribute('aria-pressed', b.dataset.t === THEME ? 'true' : 'false'));
-  document.querySelectorAll('#langSw button').forEach(b =>
-    b.setAttribute('aria-pressed', b.dataset.l === LANG ? 'true' : 'false'));
-  document.documentElement.lang = LANG === 'zh' ? 'zh-CN' : 'ja';
-}
-
-$('#themeSw').addEventListener('click', e => {
-  const b = e.target.closest('[data-t]'); if (!b || b.dataset.t === THEME) return;
-  THEME = b.dataset.t;
-  document.documentElement.dataset.theme = THEME;
-  try { localStorage.setItem('hub.theme', THEME); } catch(_){}
-  render();
-});
-$('#langSw').addEventListener('click', e => {
-  const b = e.target.closest('[data-l]'); if (!b || b.dataset.l === LANG) return;
-  LANG = b.dataset.l;
-  document.documentElement.dataset.lang = LANG;
-  try { localStorage.setItem('hub.lang', LANG); } catch(_){}
-  render();
-});
-
-render();
-</script>
+__UI_BAR__
+<main class="wrap">
+  <section class="hero">
+    <p class="eyebrow">Reference Gallery · <span class="zh">AI 绘画参考图库</span><span class="ja">AI イラスト参考画像集</span></p>
+    <h1><span class="zh">画画、出图时用的<br><em>参考图库</em></span><span class="ja">描く・生成するための<br><em>参考画像集</em></span></h1>
+    <p class="lead"><span class="zh">人像、人体姿势的线稿与深度图、服装、CC0 姿势线稿。全部为 AI 生成，可按标签筛选、放大和下载，中日双语。</span><span class="ja">ポートレート、ポーズの線画と深度マップ、衣装、CC0 ポーズ線画。すべて AI 生成で、タグ絞り込み・拡大・ダウンロードに対応。</span></p>
+    <ul class="big">__BIG__</ul>
+  </section>
+  <ul class="cards">__CARDS__</ul>
+  <section class="credits">
+    <h2><span class="zh">素材来源与授权</span><span class="ja">素材の出典とライセンス</span></h2>
+    <ul>__CREDITS__</ul>
+    <p class="note"><span class="zh">素材著作权归各原作者所有。本站是个人学习用途的中文索引镜像，代码 MIT，素材按各原站条件使用。</span><span class="ja">素材の著作権は各原作者に帰属します。本サイトは個人学習目的の中国語インデックスで、コードは MIT、素材は各原サイトの条件に従います。</span></p>
+  </section>
+  <div class="hub-seo">__SEO_INTRO__</div>
+</main>
+__UI_DIALOGS__
+__UI_JS__
 </body>
 </html>
 """
+
+ARROW = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" '
+         'stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>')
+
+
+def num(s, i=0):
+    """入口页的数字；有 public（成人向隐藏后的数量）时两套都写，CSS 按 18+ 状态显示一套"""
+    x = s["stats"][i]
+    v = f"{int(x['v']):,}"
+    if i == 0 and x.get("public"):
+        return f'<span class="n-pub">{int(x["public"]):,}</span><span class="n-all">{v}</span>'
+    return v
+
+
+def cover(s, by_id, extra=""):
+    """卡片封面：姿势卡左半线稿、右半深度图（同一张图的两个版本，逐像素对齐）。extra 放在封面框里（授权标签等）"""
+    src = f"./{s['id']}/{s['cover']}"
+    pos = f' style="object-position:{escape(s["coverPos"])}"' if s.get("coverPos") else ""
+    if s["id"] == "pose" and "pose-depth" in by_id:
+        dep = f"./pose-depth/{by_id['pose-depth']['cover']}"
+        return (f'<div class="cv contain split"><img src="{escape(src)}" alt="" loading="lazy" decoding="async">'
+                f'<img src="{escape(dep)}" alt="" loading="lazy" decoding="async">{extra}</div>')
+    contain = " contain" if s["id"] in ("shisei",) else ""
+    return f'<div class="cv{contain}"><img src="{escape(src)}" alt="" loading="lazy" decoding="async"{pos}>{extra}</div>'
+
+
+def page(cfg, shown, base, title, desc, ld, seo):
+    by_id = {s["id"]: s for s in cfg["sites"]}
+    # 一行大数字：每个图库一项，标签用图库短名（姿势、服装的数字跟随 18+）
+    unit = {"portrait": ("张人像", "枚のポートレート"), "costume": ("套服装", "着の衣装"),
+            "pose": ("个姿势 · 线稿与深度图", "ポーズ · 線画とデプス"), "shisei": ("个 CC0 线稿姿势", "の CC0 線画ポーズ")}
+    big = "".join(
+        f'<li><b>{num(s)}</b><span>{ui.bi(*unit.get(s["id"], (s["name"]["zh"], s["name"]["ja"])))}</span></li>'
+        for s in shown)
+    cards = []
+    for s in shown:
+        lic = LICENSE.get(s["license"], LICENSE["restricted"])
+        tags = f'<span class="{lic["cls"]}">{ui.bi(lic["zh"], lic["ja"])}</span>'
+        if s["id"] == "pose":
+            tags = f'<span>{ui.bi("线稿 ⟷ 深度图", "線画 ⟷ デプス")}</span>' + tags
+        nums = "".join(f'<span><b>{num(s, i)}</b>{ui.bi(x["l"]["zh"], x["l"]["ja"])}</span>'
+                       for i, x in enumerate(s["stats"]))
+        tag_box = f'<div class="tag">{tags}</div>'
+        cards.append(
+            f'<li><a class="hc" href="./{escape(s["id"])}/">{cover(s, by_id, tag_box)}'
+            f'<div class="tx"><h2>{ui.bi(s["name"]["zh"], s["name"]["ja"])}{ARROW}</h2>'
+            f'<p>{ui.bi(s["desc"]["zh"], s["desc"]["ja"])}</p><div class="nums">{nums}</div></div></a></li>')
+    credits = []
+    for s in cfg["sites"]:
+        lic = LICENSE.get(s["license"], LICENSE["restricted"])
+        handle = str(s["author"]["url"]).rstrip("/").split("/")[-1]
+        credits.append(
+            f'<li><a href="{escape(s["source"])}" target="_blank" rel="noopener noreferrer">{ui.bi(s["name"]["zh"], s["name"]["ja"])}</a>'
+            f'<span class="au">{escape(s["author"]["name"])} <a href="{escape(s["author"]["url"])}" target="_blank" '
+            f'rel="noopener noreferrer">@{escape(handle)}</a></span>'
+            f'<span class="lic {lic["cls"]}">{ui.bi(lic["zh"], lic["ja"])}</span></li>')
+    return (TEMPLATE
+            .replace("__UI_HEAD__", ui.head_script())
+            .replace("__UI_CSS__", ui.head_css())
+            .replace("__UI_BAR__", ui.bar(None, "./"))
+            .replace("__UI_DIALOGS__", ui.dialogs(ui.HUB_KEYS))
+            .replace("__UI_JS__", ui.body_script())
+            .replace("__SEO_CSS__", "<style>" + landing.SEO_INTRO_CSS + ".seo-intro{padding:0}</style>")
+            .replace("__FAQ_LD__", landing.faq_ld_script(seo["faq"]))
+            .replace("__SEO_INTRO__", seo["intro"])
+            .replace("__BIG__", big)
+            .replace("__CARDS__", "".join(cards))
+            .replace("__CREDITS__", "".join(credits))
+            .replace("__TITLE__", escape(title))
+            .replace("__DESC__", escape(desc))
+            .replace("__LD__", ld)
+            .replace("__BASE__", base))
 
 
 def total_images(cfg):
@@ -323,32 +245,33 @@ def total_images(cfg):
 def hub_seo(cfg, base):
     """入口页静态介绍、FAQ 与 llms.txt。事实只取自 sites.json 与固定的授权说明。"""
     sites = {s["id"]: s for s in cfg["sites"]}
-    stat = lambda sid, i: sites[sid]["stats"][i]["v"]
-    N = f"{total_images(cfg):,}"
-    K = len(cfg["sites"])
+    stat = lambda sid, i: f'{int(sites[sid]["stats"][i]["v"]):,}'
+    shown = [s for s in cfg["sites"] if not s.get("mergedInto")]
+    N, K = f"{total_images(cfg):,}", len(shown)
     faq = [
         ("photoai.life 是什么？",
-         "一组面向 AI 绘画的参考图库：人像集（角色脸部一致性参考）、姿势集（人体姿势线稿）、"
-         "深度姿势集（ControlNet 深度图）、服装集（服装与穿搭参考）和 Shisei（CC0 姿势线稿），"
-         f"共 {N} 张，全部为 AI 生成，中日双语。"),
+         f"一组面向 AI 绘画的参考图库：人像集（角色脸部一致性参考）、姿势集（人体姿势的线稿与 ControlNet 深度图，一键切换）、"
+         f"服装集（服装与穿搭参考）和 CC0 姿势线稿，共 {N} 个图片文件，全部为 AI 生成，中日双语。"),
         ("图片可以商用吗？",
-         "要看图库。人像集与 Shisei 姿势线稿为 CC0 1.0 公有领域，可以免费商用和再分发。姿势集、深度姿势集、服装集的原作者"
-         "允许免费用于作品制作（包括商用与参考），但禁止再分发、转载或转售图片文件本身；深度姿势集另禁止批量下载。"),
+         "要看图库。人像集与 CC0 姿势线稿为 CC0 1.0 公有领域，可以免费商用和再分发。姿势集（线稿、深度图）与服装集的原作者"
+         "允许免费用于作品制作（包括商用与参考），但禁止再分发、转载或转售图片文件本身；深度图原站另禁止批量下载。"),
         ("这些图是真人吗？",
          "不是。人像是 AI 生成的虚构人物，姿势是无脸人偶，服装图由文字生成图像制作，都不对应真实人物或商品。"),
+        ("为什么有些内容看不到？",
+         "姿势集的双人与性感系列、服装集的内衣与性感两类属于成人向参考，默认隐藏，CC0 线稿里偏性感的姿势默认模糊。"
+         "用顶部栏的「18+」确认一次年龄即可显示，各图库通用；这些内容不出现在静态落地页里。"),
         ("和原站是什么关系？",
          "这里是各原站的中文索引镜像：把日文分类、标签和姿势名译成中文，加了组合筛选、搜索和中日切换。"
          "图片著作权归原作者，每个图库页脚都有原站和作者链接。"),
     ]
-    # 入口页上方的卡片已经链到各图库首页，这里链到各图库的分类索引
     links = [(f"{s['id']}/browse/", f"{s['name']['zh']} · 分类") for s in cfg["sites"]]
     intro = landing.static_intro(
-        [f"photoai.life 收录 {K} 个 AI 绘画参考图库，共 {N} 张 AI 生成的参考图，可在线浏览、按标签筛选和下载。",
+        [f"photoai.life 收录 {K} 个 AI 绘画参考图库，共 {N} 个 AI 生成的图片文件，可在线浏览、按标签筛选和下载。",
          f"人像集 {stat('portrait', 0)} 张，用来让 AI 生成的角色保持同一张脸，CC0 可商用；"
-         f"姿势集与深度姿势集各 {stat('pose', 0)} 个姿势、{stat('pose', 1)} 张，每个姿势 5 个视角，深度图可直接用于 ControlNet；"
+         f"姿势集 {stat('pose', 0)} 个姿势，线稿与深度图各 {stat('pose', 1)} 张，每个姿势 5 个视角，一键切换、左右对比，深度图可直接用于 ControlNet；"
          f"服装集 {stat('costume', 0)} 套服装、{stat('costume', 2)} 个标签，标签保留英文关键词，可直接作提示词；"
-         f"Shisei {stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张 CC0 线稿，可商用、可再分发。"],
-        [("图库", f"{K} 个"), ("图片", f"{N} 张"), ("语言", "中文 / 日本語"), ("素材", "全部 AI 生成")],
+         f"CC0 姿势线稿 {stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张，可商用、可再分发。"],
+        [("图库", f"{K} 个"), ("图片文件", N), ("语言", "中文 / 日本語"), ("素材", "全部 AI 生成")],
         links, faq, more_href=None)
 
     lic = {"portrait": "CC0 1.0 公有领域，可商用、可再分发。",
@@ -357,15 +280,15 @@ def hub_seo(cfg, base):
            "costume": "允许免费用于作品制作（含商用与参考）；禁止再分发、转载、转售图片文件本身。",
            "shisei": "图片 CC0 1.0，可商用、可再分发；姿势目录沿用 ai-pose-gallery，仅注明出处。"}
     what = {"portrait": f"{stat('portrait', 0)} 张 AI 生成人像：面部 {stat('portrait', 1)} 张（正面、纯色背景），造型 {stat('portrait', 2)} 张。用于 AI 绘画中保持角色脸部一致，按发型分类。",
-            "pose": f"{stat('pose', 0)} 个人体姿势、{stat('pose', 1)} 张无脸灰色人偶线稿，每个姿势正面、侧面、斜角、俯视、仰视 5 个视角。",
-            "pose-depth": f"同一批 {stat('pose-depth', 0)} 个姿势的 {stat('pose-depth', 1)} 张灰度深度图，可直接作为 ControlNet depth 控制图。",
-            "costume": f"{stat('costume', 0)} 套 AI 生成服装、{stat('costume', 1)} 张图，8 个分类、{stat('costume', 2)} 个标签；标签为英文关键词，可直接用作提示词。",
+            "pose": f"{stat('pose', 0)} 个人体姿势、{stat('pose', 1)} 张无脸灰色人偶线稿，每个姿势正面、侧面、斜角、俯视、仰视 5 个视角；页面里可切换到同一姿势的深度图。双人与性感系列默认隐藏。",
+            "pose-depth": f"姿势集的深度图入口：同一批 {stat('pose-depth', 0)} 个姿势的 {stat('pose-depth', 1)} 张灰度深度图，可直接作为 ControlNet depth 控制图，可切换回线稿。",
+            "costume": f"{stat('costume', 0)} 套 AI 生成服装、{stat('costume', 1)} 个文件，8 个分类、{stat('costume', 2)} 个标签；标签为英文关键词，可直接用作提示词。内衣与性感两类默认隐藏。",
             "shisei": f"{stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张无脸人偶线稿（全身・标准、上半身、全身・性感、双人），每个姿势最多 5 个视角；偏性感的姿势默认模糊。"}
     lines = ["# photoai.life", "",
-             f"> AI 绘画参考图库合集：人像、人体姿势、ControlNet 姿势深度图、服装、CC0 姿势线稿，共 {N} 张，全部为 AI 生成。"
+             f"> AI 绘画参考图库合集：人像、人体姿势（线稿与 ControlNet 深度图）、服装、CC0 姿势线稿，共 {N} 个图片文件，全部为 AI 生成。"
              "中文索引镜像，界面支持中文与日本語。", "",
              "每个图库都是一个可筛选的画廊页，另有按分类 / 标签 / 发型生成的静态落地页（见各图库的 browse/ 目录与 sitemap）。"
-             "图片著作权归各原作者，授权各不相同，引用时请注明对应图库的授权。", "",
+             "成人向内容默认隐藏，不进落地页与 sitemap。图片著作权归各原作者，授权各不相同，引用时请注明对应图库的授权。", "",
              "## 图库", ""]
     for s in cfg["sites"]:
         lines.append(f"- [{s['name']['zh']}]({base}/{s['id']}/)：{what.get(s['id'], s['desc']['zh'])}"
@@ -400,15 +323,13 @@ def main():
         print("\n仅校验模式，未生成 index.html")
         return 1 if bad else 0
 
-    lic = {k: {"cls": v["cls"]} for k, v in LICENSE_LABEL.items()}
-    # 入口页只用得到展示字段；adult 规则只给构建脚本用，不内联进页面
-    shown = {**cfg, "sites": [{k: v for k, v in s.items() if k != "adult"} for s in cfg["sites"]]}
-    data = json.dumps(shown, ensure_ascii=False, separators=(",", ":"))
-    lic_js = json.dumps(lic, ensure_ascii=False, separators=(",", ":"))
-
-    title = f"photoai.life · AI 绘画参考图库：人像、姿势、ControlNet 深度图、服装，共 {total_images(cfg):,} 张"
-    desc = (f"{len(cfg['sites'])} 个 AI 绘画参考图库合集：1499 张 CC0 人像（角色脸部一致性参考）、288 个人体姿势线稿与深度图"
-            "（各 1439 张，五视角，适合 ControlNet）、1407 套服装（86 个标签）、280 个 CC0 姿势线稿。中日双语，全部可在线浏览。")
+    shown = [s for s in cfg["sites"] if not s.get("mergedInto")]
+    by_id = {s["id"]: s for s in cfg["sites"]}
+    st = lambda sid, i=0: int(by_id[sid]["stats"][i]["v"])
+    title = (f"photoai.life · AI 绘画参考图库：人像、姿势线稿与深度图、服装、CC0 线稿")
+    desc = (f"{len(shown)} 个 AI 绘画参考图库：{st('portrait'):,} 张 CC0 人像（角色脸部一致性）、"
+            f"{st('pose')} 个人体姿势的线稿与 ControlNet 深度图（各 {st('pose', 1):,} 张，五视角）、"
+            f"{st('costume'):,} 套服装（{st('costume', 2)} 个标签）、{st('shisei')} 个 CC0 姿势线稿。中日双语，在线浏览。")
     seo = hub_seo(cfg, base)
 
     # 结构化数据：告诉搜索引擎/AI 引擎这是一组并列的子站点
@@ -418,43 +339,35 @@ def main():
         "name": title,
         "description": desc,
         "url": base + "/",
-        "inLanguage": "zh-CN",
+        "inLanguage": ["zh-CN", "ja"],
         "hasPart": [
             {"@type": "WebSite", "name": s["name"]["zh"], "url": f"{base}/{s['id']}/"}
-            for s in cfg["sites"]
+            for s in shown
         ],
-    }, ensure_ascii=False, separators=(",", ":"))
+    }, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 
-    html = (TEMPLATE
-            .replace("__TITLE__", title)
-            .replace("__TITLE_JS__", json.dumps(title, ensure_ascii=False))
-            .replace("__SEO_INTRO__", seo["intro"])
-            .replace("</style>", "</style><style>" + landing.SEO_INTRO_CSS
-                     + ".seo-intro{padding:0;margin-top:34px}</style>" + landing.faq_ld_script(seo["faq"]), 1)
-            .replace("__DESC__", desc)
-            .replace("__LIC__", lic_js)
-            .replace("__LD__", ld)
-            .replace("__BASE__", base)
-            .replace("__DATA__", data))
-
+    html = page(cfg, shown, base, title, desc, ld, seo)
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:
         f.write(html)
+    with open(os.path.join(HUB, "404.html"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(ui.page_404("/"))
 
-    print(f"\n写出 index.html  {os.path.getsize(OUT)/1024:.1f} KB")
+    print(f"\n写出 index.html  {os.path.getsize(OUT)/1024:.1f} KB，404.html")
 
     # 根 sitemap：入口页 + 各子站首页 + 各子站落地页（读各站 data/landing.json）
-    urls = [base + "/"]
+    # lastmod 取 sites.json 各站的 updated（入口页取其中最新的），网址做百分号编码
+    hub_day = max((s.get("updated") or "") for s in cfg["sites"]) or None
+    urls = [(base + "/", hub_day)]
     for s in cfg["sites"]:
-        urls.append(f"{base}/{s['id']}/")
+        urls.append((f"{base}/{s['id']}/", s.get("updated")))
         p = os.path.join(ROOT, "sites", s["id"], "data", "landing.json")
         if os.path.exists(p):
             with open(p, encoding="utf-8") as f:
-                urls += [f"{base}/{s['id']}/{pg}/" for pg in json.load(f)["pages"]]
-    urls = [landing.esc(u) for u in urls]
+                urls += [(f"{base}/{s['id']}/{pg}/", s.get("updated")) for pg in json.load(f)["pages"]]
     sm = ['<?xml version="1.0" encoding="UTF-8"?>',
           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for u in urls:
-        sm.append(f"  <url><loc>{u}</loc><changefreq>weekly</changefreq></url>")
+    for u, day in urls:
+        sm.append(f"  <url><loc>{landing.esc(landing.quote_url(u))}</loc>" + (f"<lastmod>{day}</lastmod>" if day else "") + "</url>")
     sm.append("</urlset>")
     with open(os.path.join(HUB, "sitemap.xml"), "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(sm) + "\n")

@@ -12,8 +12,9 @@ import landing
 from pose_i18n import SERIES_ZH, CAT_ZH, ANG_ZH
 
 
-def build(root, site_url, cfg, data, series_list, cats, adult=frozenset()):
-    """adult = 成人向姿势的 (系列, 分類, 编号) 集合"""
+def build(root, site_url, cfg, data, series_list, cats, adult=frozenset(), thumb_of=None):
+    """adult = 成人向姿势的 (系列, 分類, 编号) 集合；thumb_of(p, v) = 缩略图路径（页面数据不逐张写路径时由生成器提供）"""
+    thumb_of = thumb_of or (lambda p, v: v["t"])
     sp = cfg["seoPages"]                       # 各站文案
     kind = sp["kind"]                          # 例如「姿势参考图」「姿势深度图」
     S_ZH, C_ZH, A_ZH = cfg.get("seriesZh", SERIES_ZH), cfg.get("catZh", CAT_ZH), cfg.get("angZh", ANG_ZH)
@@ -27,12 +28,12 @@ def build(root, site_url, cfg, data, series_list, cats, adult=frozenset()):
     FAQ = sp["faq"]
     site = landing.Site(
         id=sp["id"], root=root, site_url=site_url, name=sp["name"],
-        tagline=f"{sp['tagline']}，{n_poses} 个姿势、{n_imgs} 张图，每个姿势 5 个视角。",
+        tagline=f"{sp['tagline']}，{n_poses} 个姿势、{n_imgs} 张图，每个姿势{sp.get('angNote', '')} 5 个视角。",
         license_note=sp["licenseNote"], author=author, author_url=author_url, source=cfg["source"],
-        faq=FAQ, accent=sp.get("accent", "#4f7ee8"),
+        faq=FAQ, accent=sp.get("accent", "#4f7ee8"), license_url=sp.get("licenseUrl", ""),
         index_title=f"{sp['name']}：全部系列与分类",
         index_intro=(f"{sp['name']}收录 {n_poses} 个姿势、{n_imgs} 张{kind}，分 {len(series_list)} 个系列、"
-                     f"{len(cats)} 个动作分类。每个姿势都有正面、侧面、斜角、俯视、仰视 5 个视角。"
+                     f"{len(cats)} 个动作分类。每个姿势{sp.get('angNote', '都有')}正面、侧面、斜角、俯视、仰视 5 个视角。"
                      "下面按系列和分类列出落地页；成人向的系列与分类不在这里列出，只在画廊中浏览。"),
     )
 
@@ -41,7 +42,7 @@ def build(root, site_url, cfg, data, series_list, cats, adult=frozenset()):
         for p in ps:
             v = next((x for x in p["v"] if x["a"] == "正面"), p["v"][0])
             out.append(landing.Item(
-                thumb=v["t"], w=300, h=400, caption=f"{p['p']} {p['z']}",
+                thumb=thumb_of(p, v), w=300, h=400, caption=f"{p['p']} {p['z']}",
                 alt=f"{kind} {p['p']}：{p['z']}（{_zh_s(p['s'])} · {_zh_c(p['c'])} · {A_ZH.get(v['a'], v['a'])}）"))
         return out
 
@@ -49,12 +50,13 @@ def build(root, site_url, cfg, data, series_list, cats, adult=frozenset()):
         angs = Counter(v["a"] for p in ps for v in p["v"])
         n_i = sum(angs.values())
         sample = "、".join(p["z"] for p in ps[:6])
+        short = "、".join(p["z"] for p in ps[:3])          # 描述里只举 3 个，控制在 160 字以内
         return landing.Facet(
             slug=slug, group=group, label=name.split(" · ")[-1],
-            title=f"{name}{kind} {len(ps)} 个姿势 · AI 绘画{sp['short']} · {sp['name']}",
+            title=f"{name}{kind} {len(ps)} 个姿势 · {sp['name']}",
             h1=f"{name}{kind}（{len(ps)} 个姿势）",
-            description=(f"{len(ps)} 个「{name}」{kind}，共 {n_i} 张，每个姿势含正面、侧面、斜角、俯视、仰视视角。"
-                         f"例如：{sample}。{sp['descTail']}"),
+            description=(f"{len(ps)} 个「{name}」{kind}，共 {n_i} 张，每个姿势{sp.get('angNote', '')}含正面、侧面、斜角、俯视、仰视视角。"
+                         f"例如：{short}。{sp['descTail']}"),
             intro=[f"{sp['name']}中「{name}」共有 {len(ps)} 个姿势、{n_i} 张{kind}。{extra_intro}",
                    f"部分姿势：{sample}。点击下方按钮进入画廊，可切换视角、放大和下载 {sp.get('dlFormat', 'PNG')}。"],
             facts=[("姿势", f"{len(ps)} 个"), ("图片", f"{n_i} 张"), ("视角", "正面 / 侧面 / 斜角 / 俯视 / 仰视")],

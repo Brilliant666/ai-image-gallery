@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://example.com/pose-depth/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://example.com/pose-depth/browse/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/pose-depth/series/全身1人・標準系/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/pose-depth/series/全身1人・標準系/座り/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/pose-depth/series/全身1人・標準系/立ち/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/pose-depth/series/全身1人・標準系/膝立ち/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/pose-depth/series/全身1人・標準系/寝そべり/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/pose-depth/series/全身1人・標準系/横座り・女の子座り/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/pose-depth/series/全身1人・標準系/しゃがみ/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/pose-depth/series/全身1人・標準系/前かがみ/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.com/pose-depth/series/上半身1人/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://example.com/pose-depth/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/pose-depth/browse/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/pose-depth/series/%E5%85%A8%E8%BA%AB1%E4%BA%BA%E3%83%BB%E6%A8%99%E6%BA%96%E7%B3%BB/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/pose-depth/series/%E5%85%A8%E8%BA%AB1%E4%BA%BA%E3%83%BB%E6%A8%99%E6%BA%96%E7%B3%BB/%E5%BA%A7%E3%82%8A/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/pose-depth/series/%E5%85%A8%E8%BA%AB1%E4%BA%BA%E3%83%BB%E6%A8%99%E6%BA%96%E7%B3%BB/%E7%AB%8B%E3%81%A1/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/pose-depth/series/%E5%85%A8%E8%BA%AB1%E4%BA%BA%E3%83%BB%E6%A8%99%E6%BA%96%E7%B3%BB/%E8%86%9D%E7%AB%8B%E3%81%A1/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/pose-depth/series/%E5%85%A8%E8%BA%AB1%E4%BA%BA%E3%83%BB%E6%A8%99%E6%BA%96%E7%B3%BB/%E5%AF%9D%E3%81%9D%E3%81%B9%E3%82%8A/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/pose-depth/series/%E5%85%A8%E8%BA%AB1%E4%BA%BA%E3%83%BB%E6%A8%99%E6%BA%96%E7%B3%BB/%E6%A8%AA%E5%BA%A7%E3%82%8A%E3%83%BB%E5%A5%B3%E3%81%AE%E5%AD%90%E5%BA%A7%E3%82%8A/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/pose-depth/series/%E5%85%A8%E8%BA%AB1%E4%BA%BA%E3%83%BB%E6%A8%99%E6%BA%96%E7%B3%BB/%E3%81%97%E3%82%83%E3%81%8C%E3%81%BF/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/pose-depth/series/%E5%85%A8%E8%BA%AB1%E4%BA%BA%E3%83%BB%E6%A8%99%E6%BA%96%E7%B3%BB/%E5%89%8D%E3%81%8B%E3%81%8C%E3%81%BF/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/pose-depth/series/%E4%B8%8A%E5%8D%8A%E8%BA%AB1%E4%BA%BA/</loc><lastmod>2026-10-31</lastmod></url>
 </urlset>

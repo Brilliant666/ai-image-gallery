@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""构建深度姿势集（POSE-DB-02）
+"""构建姿势模块的深度图入口（/pose-depth/，POSE-DB-02）
 
-页面逻辑在 shared/pose_gallery.py —— 姿势集与深度姿势集结构完全相同，
-只有品牌文案与图源不同，那些放在 sites/pose-depth/config.py。
+页面逻辑在 shared/pose_gallery.py，两个入口共用的文案与开关在 shared/pose_module.py，
+本入口的标题、说明与落地页在 config.py。
 
 用法：
   python tools/build.py --site pose-depth --base https://your-domain.com   # 仓库根目录

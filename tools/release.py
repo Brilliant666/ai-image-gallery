@@ -12,9 +12,10 @@
   dist/
   ├── index.html          ← 入口页
   ├── portrait/
+  ├── costume/
   ├── pose/
   ├── pose-depth/
-  └── costume/
+  └── shisei/
 
 说明:
   图片使用硬链接（同文件系统），不复制、不额外占盘。若跨文件系统则退化为复制。
@@ -41,7 +42,7 @@ def landing_dirs(sd):
         return json.load(f)["dirs"]
 
 # 入口页与根级文件（sitemap / robots / 社交分享图）
-HUB_FILES = ["index.html", "sitemap.xml", "robots.txt", "og-cover.jpg", "llms.txt",
+HUB_FILES = ["index.html", "404.html", "sitemap.xml", "robots.txt", "og-cover.jpg", "llms.txt",
              "favicon.ico", "favicon.svg", "apple-touch-icon.png", "icon-512.png"]
 
 

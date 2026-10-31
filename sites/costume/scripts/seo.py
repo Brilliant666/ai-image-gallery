@@ -61,7 +61,7 @@ def build(root, site_url, items, cats, adult_ids=frozenset()):
         czh = CAT_ZH.get(c, c)
         facets.append(landing.Facet(
             slug=f"category/{c}", group="分类", label=czh,
-            title=f"{czh}服装参考图 {len(xs)} 套 · AI 绘画服装参考 · 服装集",
+            title=f"{czh}服装参考图 {len(xs)} 套 · 服装集",
             h1=f"{czh}服装参考图（{len(xs)} 套）",
             description=(f"{len(xs)} 套「{czh}」主题的 AI 生成服装参考图，常见标签："
                          + "、".join(TAG_ZH.get(t, t) for t, _ in top[:6]) + "。可按标签组合筛选，带英文提示词关键词。"),
@@ -79,7 +79,7 @@ def build(root, site_url, items, cats, adult_ids=frozenset()):
         tzh, tja, grp = TAG_ZH.get(t, t), TAG_JA.get(t, t), GROUP_OF.get(t, "其他")
         facets.append(landing.Facet(
             slug=f"tag/{t}", group=grp, label=f"{tzh} {t}",
-            title=f"{tzh}（{t}）服装参考图 {n} 套 · AI 绘画提示词 · 服装集",
+            title=f"{tzh}（{t}）服装参考图 {n} 套 · 服装集",
             h1=f"{tzh}（{t}）服装参考图",
             description=(f"{n} 套带「{tzh} / {t}」标签的 AI 生成服装参考图，分布在"
                          + "、".join(CAT_ZH.get(k, k) for k, _ in by_cat[:4])

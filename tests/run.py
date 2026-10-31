@@ -18,8 +18,8 @@ from mid import mid_rel  # noqa: E402
 
 CFG = load_cfg()
 SITES = [s["id"] for s in CFG["sites"]]
-PAGES = ["hub/index.html"] + [f"sites/{s}/{f}" for s in SITES for f in ("index.html", "404.html")]
-BUILD_OUTPUT = ["hub/index.html", "hub/robots.txt", "hub/sitemap.xml", "hub/llms.txt"] + [
+PAGES = ["hub/index.html", "hub/404.html"] + [f"sites/{s}/{f}" for s in SITES for f in ("index.html", "404.html")]
+BUILD_OUTPUT = ["hub/index.html", "hub/404.html", "hub/robots.txt", "hub/sitemap.xml", "hub/llms.txt"] + [
     f"sites/{s}/{f}" for s in SITES for f in ("index.html", "404.html", "robots.txt", "sitemap.xml")] + [
     f"sites/{s}/data/landing.json" for s in SITES]
 
@@ -79,8 +79,9 @@ class Build(unittest.TestCase):
             # 删掉复制过去的落地页，确认它们完全由构建重新生成
             for f in generated_files(dst):
                 os.remove(os.path.join(dst, f))
-            r = subprocess.run([sys.executable, os.path.join("tools", "build.py")], cwd=dst,
-                               capture_output=True, text=True, encoding="utf-8")
+            env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUTF8="1")
+            r = subprocess.run([sys.executable, os.path.join("tools", "build.py")], cwd=dst, env=env,
+                               capture_output=True, text=True, encoding="utf-8", errors="replace")
             self.assertEqual(r.returncode, 0, r.stdout[-2000:] + r.stderr[-2000:])
             committed, fresh = generated_files(ROOT), generated_files(dst)
             self.assertEqual(sorted(committed - fresh), [], "这些落地页已不再生成，请重新构建并删掉旧文件")
@@ -136,9 +137,32 @@ class Pages(unittest.TestCase):
                 self.assertRegex(js, r"DB\." + re.escape(key) + r"\b", f"{s} 的 DB.{key} 内联了但页面没用")
 
     def test_page_size_budget(self):
+        # 2026-10-31 起图片路径按规则在页面里拼，画廊页都在 220 KB 以内；预算留一点余量，防止回涨
         for s in SITES:
             size = os.path.getsize(os.path.join(ROOT, f"sites/{s}/index.html"))
-            self.assertLess(size, 450 * 1024, f"{s}/index.html {size // 1024} KB，超出 450 KB")
+            self.assertLess(size, 240 * 1024, f"{s}/index.html {size // 1024} KB，超出 240 KB")
+        self.assertLess(os.path.getsize(os.path.join(ROOT, "hub/index.html")), 80 * 1024)
+
+    def test_json_ld_parses(self):
+        # 所有页面里的 JSON-LD 都能解析；CC0 图库的结构化数据带 license
+        cc0 = {s["id"] for s in CFG["sites"] if s["license"] == "cc0"}
+        for rel in PAGES + landing_pages():
+            h = read(rel)
+            for block in re.findall(r'<script type="application/ld\+json">(.*?)</script>', h, re.S):
+                obj = json.loads(block)
+                sid = rel.split("/")[1] if rel.startswith("sites/") else None
+                if sid in cc0 and rel.endswith("/index.html") and "ImageGallery" in block:
+                    self.assertIn("creativecommons.org/publicdomain/zero", json.dumps(obj), f"{rel} 缺 CC0 license")
+
+    def test_title_and_description_length(self):
+        # 标题约 32 个全角字以内（搜索结果里不被截断），描述 40～160 字
+        for rel in [f"sites/{s}/index.html" for s in SITES] + ["hub/index.html"] + landing_pages():
+            h = read(rel)
+            title = html.unescape(re.search(r"<title>(.*?)</title>", h).group(1))
+            desc = html.unescape(re.search(r'name="description" content="([^"]*)"', h).group(1))
+            width = sum(2 if ord(c) > 0x2e7f else 1 for c in title)
+            self.assertLessEqual(width, 72, f"{rel} 标题太长：{title}")
+            self.assertTrue(40 <= len(desc) <= 160, f"{rel} 描述 {len(desc)} 字：{desc[:40]}…")
 
     def test_inline_js_syntax(self):
         node = shutil.which("node")
@@ -258,38 +282,100 @@ class Landing(unittest.TestCase):
                     self.assertFalse([p for p in self.site_pages(s) if f"/{v}/" in p], f"{s} 不应有「{v}」的落地页")
 
     def test_hub_does_not_inline_adult_rules(self):
-        self.assertNotIn('"adult"', read("hub/index.html"))
+        self.assertNotIn('"adult":', read("hub/index.html"))
 
-    def test_site_nav(self):
-        # 子站共用顶部栏（shared/sitenav.py）：链到首页和全部子站、当前站高亮且只有一个，快捷键面板存在；入口页不放
-        for s in SITES:
-            h = read(f"sites/{s}/index.html")
-            nav = re.search(r'<nav class="sn".*?</nav>', h, re.S)
-            self.assertIsNotNone(nav, f"{s} 缺顶部栏")
-            nav = nav.group(0)
-            self.assertIn('class="sn-home" href="../"', nav, s)
-            for o in SITES:
-                self.assertIn(f'href="../{o}/"', nav, f"{s} 的顶部栏缺 {o}")
-            self.assertEqual(re.findall(r'href="\.\./([^"/]+)/" aria-current="page"', nav), [s], s)
-            self.assertIn('id="snHelp"', h, s)
-            self.assertLess(h.index('<nav class="sn"'), h.index("<header"), f"{s} 顶部栏应在页头之前")
-        self.assertNotIn('class="sn"', read("hub/index.html"))
+    def test_site_bar(self):
+        # 全站顶部栏（shared/ui.py）：入口页与各图库都有；链到首页和顶部栏里的图库（pose-depth 并进姿势，不单列），
+        # 当前站高亮且只有一个（pose-depth 高亮「姿势」）；18+、深浅色、语言、快捷键都在栏上
+        sys.path.insert(0, os.path.join(ROOT, "shared"))
+        import ui
+        shown = [s["id"] for s in ui.nav_sites()]
+        self.assertNotIn("pose-depth", shown)
+        for rel, cur, up in [("hub/index.html", None, "./")] + [(f"sites/{s}/index.html", s, "../") for s in SITES]:
+            h = read(rel)
+            bar = re.search(r'<header class="pl-bar".*?</header>', h, re.S)
+            self.assertIsNotNone(bar, f"{rel} 缺顶部栏"); bar = bar.group(0)
+            self.assertIn(f'class="pl-brand" href="{up}"', bar, rel)
+            for o in shown:
+                self.assertIn(f'href="{up}{o}/"', bar, f"{rel} 的顶部栏缺 {o}")
+            want = [] if cur is None else [ui.sites()[[x["id"] for x in ui.sites()].index(cur)].get("mergedInto", cur)]
+            self.assertEqual(re.findall(r'href="[^"]*?([^"/]+)/" aria-current="page"', bar), want, rel)
+            for el in ('id="plAdult"', 'id="plTheme"', 'id="plLang"', 'id="plHelpBtn"'):
+                self.assertIn(el, bar, f"{rel} 顶部栏缺 {el}")
+            for el in ('id="plHelp"', 'id="plAge"'):
+                self.assertIn(el, h, rel)
+            self.assertLess(h.index('class="pl-bar"'), h.index("<h1"), f"{rel} 顶部栏应在标题之前")
 
-    def test_pose_depth_twin_links(self):
-        # 姿势 ↔ 深度：两站 id 一一对应，内联数据带 id，灯箱有对方站点的链接
-        a = {r["id"] for r in json.loads(read("sites/pose/manifest.json"))}
-        b = {r["id"] for r in json.loads(read("sites/pose-depth/manifest.json"))}
-        self.assertEqual(a, b, "姿势与深度姿势的图片 id 不再一一对应，互跳链接会断")
-        for s, other in (("pose", "pose-depth"), ("pose-depth", "pose")):
+    def test_shared_prefs(self):
+        # 主题、语言全站共用 pl.theme / pl.lang；页面不再读写各站自己的旧键（只在迁移代码里出现前缀表）
+        for rel in ["hub/index.html"] + [f"sites/{s}/index.html" for s in SITES]:
+            h = read(rel)
+            self.assertIn("localStorage.getItem('pl.theme')", h, rel)
+            for old in ("hub", "pt", "cg", "pg", "ss"):
+                for k in ("theme", "lang", "unblur"):
+                    self.assertNotIn(f"'{old}.{k}'", h, f"{rel} 还在用旧键 {old}.{k}")
+
+    def test_pose_module(self):
+        # 姿势与深度姿势合成一个模块：两站图片 id 与路径一一对应；两页内联同一份姿势数据，
+        # 各自的默认版本不同，另一版本的图片前缀指向对方目录；页面有线稿 / 深度图开关与大图对比
+        ma = json.loads(read("sites/pose/manifest.json")); mb = json.loads(read("sites/pose-depth/manifest.json"))
+        self.assertEqual({(r["id"], r["thumb_path"], r["full_path"]) for r in ma},
+                         {(r["id"], r["thumb_path"], r["full_path"]) for r in mb}, "线稿与深度图不再一一对应")
+        da, dbb = page_db(read("sites/pose/index.html")), page_db(read("sites/pose-depth/index.html"))
+        self.assertEqual(da["poses"], dbb["poses"])
+        self.assertEqual((da["variant"], dbb["variant"]), ("line", "depth"))
+        self.assertEqual(da["vars"]["depth"]["pre"], "../pose-depth/"); self.assertEqual(da["vars"]["line"]["pre"], "")
+        self.assertEqual(dbb["vars"]["line"]["pre"], "../pose/"); self.assertEqual(dbb["vars"]["depth"]["pre"], "")
+        for s in ("pose", "pose-depth"):
             h = read(f"sites/{s}/index.html")
-            db = page_db(h)
-            self.assertEqual(db["twin"]["site"], f"../{other}/")
-            # 页面按「系列前缀_编号_视角代码」算 id（imgId），算出来的必须正好是 manifest 的 id
-            ids = {db["twin"]["ids"]["s"][p["s"]] + "_" + p["p"] + "_" + db["twin"]["ids"]["a"][v["a"]]
-                   for p in db["poses"] for v in p["v"]}
-            self.assertEqual(ids, a, s)
-            self.assertIn('id="mtwin"', h, s)
-        self.assertNotIn('id="mtwin"', read("sites/shisei/index.html"))
+            for el in ('id="vsw"', 'id="mview"', 'id="cmp"', 'id="cmpR"'):
+                self.assertIn(el, h, f"{s} 缺 {el}")
+        self.assertNotIn('id="vsw"', read("sites/shisei/index.html"))
+
+    def test_path_rules_match_manifest(self):
+        # 页面里按规则拼的图片路径（/*PATHS*/ 段）必须与 manifest 逐条一致；规则不成立时生成器会改为逐张内联
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("没有 node")
+        cases = {"pose": ("thumb_path", "full_path"), "pose-depth": ("thumb_path", "full_path"), "shisei": ("thumb_path", "full_path"),
+                 "costume": ("thumb_path", "img_path", "png_path"), "portrait": ("thumb_path", "full_path")}
+        for s, cols in cases.items():
+            h = read(f"sites/{s}/index.html")
+            js = [x for x in scripts(h) if "const DB = " in x][0]
+            seg = re.search(r"/\*PATHS\*/(.*?)/\*END PATHS\*/", js, re.S)
+            self.assertIsNotNone(seg, f"{s} 缺 PATHS 段")
+            db = json.dumps(page_db(h), ensure_ascii=False)
+            if s in ("costume", "portrait"):
+                probe = "[DB.items.map(x => x.i), DB.items.map(x => pathOf(x))]"
+                key = lambda r: r["id"]
+            else:
+                probe = ("[DB.poses.flatMap(p => p.v.map(v => [p.s, p.c, p.p, v.a].join('|'))),"
+                         " DB.poses.flatMap(p => p.v.map(v => pathOf(p, v)))]")
+                key = lambda r: "|".join([r["系列"], r["分類"], r["编号"], r["视角"]])
+            code = f"const DB = {db};\nlet VAR = DB.variant || null;\nconst VARS = DB.vars || null;\n{seg.group(1)}\nconsole.log(JSON.stringify({probe}));"
+            with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
+                f.write(code)
+            try:
+                r = subprocess.run([node, f.name], capture_output=True, text=True, encoding="utf-8")
+            finally:
+                os.remove(f.name)
+            self.assertEqual(r.returncode, 0, f"{s}: {r.stderr[-600:]}")
+            keys, paths = json.loads(r.stdout)
+            rows = json.loads(read(f"sites/{s}/manifest.json"))
+            want = {key(row): [row[c] for c in cols] for row in rows}
+            got = dict(zip(keys, paths))
+            self.assertEqual(len(got), len(want), s)
+            bad = [k for k in want if got.get(k) != want[k]]
+            self.assertEqual(bad[:5], [], f"{s} 页面拼出的图片路径与 manifest 不一致")
+
+    def test_404_pages(self):
+        # 根目录与各站都有 404：不被收录、有图标、CSS 里没有字符串格式化留下的 %%
+        for rel in ["hub/404.html"] + [f"sites/{s}/404.html" for s in SITES]:
+            h = read(rel)
+            self.assertIn('name="robots" content="noindex"', h, rel)
+            self.assertIn('href="/favicon.svg"', h, rel)
+            self.assertNotIn("%%", h, rel)
+        self.assertIn('"404.html"', read("tools/release.py"))
 
     def test_shisei_suggestive(self):
         # Shisei：上游标为 suggestive 的姿势在画廊里带成人向标记（模糊模式），不出现在任何落地页
@@ -305,38 +391,47 @@ class Landing(unittest.TestCase):
             self.assertFalse(shown & sugg, f"{rel} 出现了 suggestive 姿势: {sorted(shown & sugg)[:5]}")
             self.assertFalse(re.search(r"ふたり|セクシー", rel), f"{rel} 不应为双人或性感系列生成落地页")
 
-    def test_adult_switch_in_galleries(self):
-        # 18+ 开关：有 adult 规则的站点渲染开关、年龄确认框，内联数据里的成人向标记与规则一致；
-        # 状态存 hub.adult（五个子站同源，一处打开处处生效）
+    def test_adult_markers_in_galleries(self):
+        # 18+：有 adult 规则的站点，内联数据里的成人向标记与规则一致；姿势 / 服装默认隐藏，Shisei 模糊
         sys.path.insert(0, os.path.join(ROOT, "shared"))
         import adult
-        mode = {"pose": "hide", "pose-depth": "hide", "costume": "hide", "shisei": "blur"}
+        mode = {"pose": "hide", "pose-depth": "hide", "shisei": "blur"}
         for s in SITES:
-            h = read(f"sites/{s}/index.html")
             rule = adult.rules(s)
             if not rule:
-                self.assertNotIn('id="adultSw"', h, f"{s} 没有成人向内容，不应有 18+ 开关")
                 continue
-            self.assertIn('id="adultSw"', h, s)
-            self.assertIn('id="ageBox"', h, s)
-            self.assertIn(f"const ADULT_MODE = '{mode[s]}';", h, s)
-            self.assertIn("localStorage.getItem('hub.adult')", h, s)
+            h = read(f"sites/{s}/index.html")
             db = page_db(h)
             rows = json.loads(read(f"sites/{s}/manifest.json"))
             if s == "costume":
                 want = {r["id"] for r in rows if adult.is_adult(r, rule)}
                 got = {x["i"] for x in db["items"] if x.get("x")}
+                self.assertIn("PL.adult ? ITEMS : ITEMS.filter(x => !x.x)", h)
             else:
                 want = {(r["系列"], r["编号"]) for r in rows if adult.is_adult(r, rule)}
                 got = {(p["s"], p["p"]) for p in db["poses"] if p.get("x")}
+                self.assertIn(f"const ADULT_MODE = '{mode[s]}';", h, s)
             self.assertEqual(got, want, f"{s} 的成人向标记与 sites.json 规则不一致")
             for lang in ("zh", "ja"):
-                self.assertTrue(db["ui"][lang].get("ageWhat"), f"{s} 缺 {lang} 的 ageWhat 说明")
+                self.assertTrue(db["ui"][lang].get("adultEmptyTitle"), f"{s} 缺 {lang} 的 18+ 提示文案")
 
     def test_sitemaps_cover_landing_pages(self):
-        root_sm = read("hub/sitemap.xml")
+        # 站点地图是合法 XML、网址已百分号编码、每条都有 lastmod，并且覆盖全部落地页
+        import urllib.parse
+        import xml.etree.ElementTree as ET
+        ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+
+        def locs(rel):
+            tree = ET.fromstring(read(rel).encode("utf-8"))
+            urls = tree.findall("s:url", ns)
+            self.assertTrue(all(u.find("s:lastmod", ns) is not None for u in urls), f"{rel} 有网址缺 lastmod")
+            out = [u.find("s:loc", ns).text for u in urls]
+            self.assertFalse([u for u in out if re.search(r"[^\x21-\x7e]", u)], f"{rel} 有未编码的网址")
+            return {urllib.parse.unquote(u) for u in out}
+
+        root_sm = locs("hub/sitemap.xml")
         for s in SITES:
-            sm = read(f"sites/{s}/sitemap.xml")
+            sm = locs(f"sites/{s}/sitemap.xml")
             for rel in self.site_pages(s):
                 url = "https://example.com/" + rel[len("sites/"):-len("index.html")]
                 self.assertIn(url, sm, f"{s}/sitemap.xml 缺 {url}")

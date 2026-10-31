@@ -335,3 +335,39 @@ NAME_ZH = {
     "騎乗位風・膝を開き前に手をついて腰を落とす": "骑乘风・双膝张开双手前撑・臀部下沉",
     "髪を耳にかけるしぐさ": "将发丝别到耳后",
 }
+
+
+# 姿势生成器（shared/pose_gallery.py）的界面文案：三个站共用，站点 config 只写自己的标题、说明、页脚等
+GALLERY_UI = {
+    "zh": {
+        "all": "全部", "search": "搜索姿势名 / 编号 / 分类", "filter": "筛选", "catAll": "全部分类",
+        "sortSeries": "系列 → 编号", "sortPid": "编号顺序", "sortCat": "分类 → 编号", "sortName": "姿势名", "sortLabel": "排序",
+        "angAll": "全部视角", "viewPose": "按姿势", "viewCard": "单张",
+        "countPose": "<b>{n}</b> 姿势 · <b>{m}</b> 图", "countImg": "<b>{n}</b> 张",
+        "morePose": "加载更多（还有 {n} 组）", "moreImg": "加载更多（还有 {n} 张）",
+        "emptyTitle": "没有匹配的姿势", "emptyDesc": "换个关键词，或把筛选条件放宽一些。",
+        "kSeries": "系列", "kCat": "分类", "kPid": "编号", "kAng": "视角", "kAngN": "该姿势视角数", "angUnit": "个",
+        "copyLink": "复制图片链接", "copied": "已复制", "copyFail": "复制失败", "dlOne": "下载原图",
+        "close": "关闭", "prev": "上一个视角", "next": "下一个视角",
+        "hint": "<kbd>←</kbd><kbd>→</kbd> 切视角　<kbd>↑</kbd><kbd>↓</kbd> 换姿势　<kbd>Esc</kbd> 关闭",
+        "vLine": "线稿", "vDepth": "深度图", "compare": "对比",
+    },
+    "ja": {
+        "all": "すべて", "search": "ポーズ名・番号・分類で検索", "filter": "絞り込み", "catAll": "すべての分類",
+        "sortSeries": "シリーズ → 番号", "sortPid": "番号順", "sortCat": "分類 → 番号", "sortName": "ポーズ名", "sortLabel": "並べ替え",
+        "angAll": "全アングル", "viewPose": "ポーズごと", "viewCard": "1枚ずつ",
+        "countPose": "<b>{n}</b> ポーズ · <b>{m}</b> 枚", "countImg": "<b>{n}</b> 枚",
+        "morePose": "さらに表示（残り {n} ポーズ）", "moreImg": "さらに表示（残り {n} 枚）",
+        "emptyTitle": "条件に合う画像がありません", "emptyDesc": "キーワードを変えるか、絞り込みを緩めてください。",
+        "kSeries": "シリーズ", "kCat": "分類", "kPid": "番号", "kAng": "アングル", "kAngN": "アングル数", "angUnit": "個",
+        "copyLink": "画像リンクをコピー", "copied": "コピーしました", "copyFail": "コピー失敗", "dlOne": "原寸をダウンロード",
+        "close": "閉じる", "prev": "前のアングル", "next": "次のアングル",
+        "hint": "<kbd>←</kbd><kbd>→</kbd> アングル　<kbd>↑</kbd><kbd>↓</kbd> ポーズ　<kbd>Esc</kbd> 閉じる",
+        "vLine": "線画", "vDepth": "デプス", "compare": "比較",
+    },
+}
+
+
+def gallery_ui(site):
+    """共用文案 + 站点文案（站点的同名键优先）"""
+    return {lang: {**GALLERY_UI[lang], **site.get(lang, {})} for lang in GALLERY_UI}
