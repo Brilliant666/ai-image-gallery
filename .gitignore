@@ -27,3 +27,10 @@ desktop.ini
 # ── 临时 ──────────────────────────────────────────────
 _v/
 _preview.html
+
+# Optional generation runtime: private state stays outside the static root.
+.venv-generation/
+.env
+.env.*
+*.sqlite*
+.generation-state/

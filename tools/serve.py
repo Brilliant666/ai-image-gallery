@@ -44,7 +44,7 @@ def free_port(start=8080):
 
 
 def main():
-    args = parse_args(sys.argv[1:], {"port": "value", "root": "value"})
+    args = parse_args(sys.argv[1:], {"port": "value", "root": "value", "generation": "flag"})
     root = os.path.abspath(args.get("root", os.path.join(ROOT, "dist")))
 
     if not os.path.isdir(root):
@@ -55,6 +55,18 @@ def main():
         print(f"⚠️  {root} 下没有 index.html，可能还没构建")
 
     port = int(args["port"]) if args.get("port") else free_port()
+
+    if args.get("generation"):
+        sys.path.insert(0, ROOT)
+        try:
+            import uvicorn
+            from backend.app import create_app
+        except ImportError as e:
+            sys.exit("生图依赖未安装，请按 backend/requirements.txt 安装: " + str(e))
+        origins = [f"http://127.0.0.1:{port}", f"http://localhost:{port}"]
+        app = create_app(static_root=root, origins=origins)
+        uvicorn.run(app, host="127.0.0.1", port=port, access_log=False)
+        return
 
     handler = functools.partial(Handler, directory=root)
     httpd = ThreadingHTTPServer(("127.0.0.1", port), handler)
