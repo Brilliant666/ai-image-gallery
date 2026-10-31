@@ -260,6 +260,37 @@ class Landing(unittest.TestCase):
     def test_hub_does_not_inline_adult_rules(self):
         self.assertNotIn('"adult"', read("hub/index.html"))
 
+    def test_site_nav(self):
+        # 子站共用顶部栏（shared/sitenav.py）：链到首页和全部子站、当前站高亮且只有一个，快捷键面板存在；入口页不放
+        for s in SITES:
+            h = read(f"sites/{s}/index.html")
+            nav = re.search(r'<nav class="sn".*?</nav>', h, re.S)
+            self.assertIsNotNone(nav, f"{s} 缺顶部栏")
+            nav = nav.group(0)
+            self.assertIn('class="sn-home" href="../"', nav, s)
+            for o in SITES:
+                self.assertIn(f'href="../{o}/"', nav, f"{s} 的顶部栏缺 {o}")
+            self.assertEqual(re.findall(r'href="\.\./([^"/]+)/" aria-current="page"', nav), [s], s)
+            self.assertIn('id="snHelp"', h, s)
+            self.assertLess(h.index('<nav class="sn"'), h.index("<header"), f"{s} 顶部栏应在页头之前")
+        self.assertNotIn('class="sn"', read("hub/index.html"))
+
+    def test_pose_depth_twin_links(self):
+        # 姿势 ↔ 深度：两站 id 一一对应，内联数据带 id，灯箱有对方站点的链接
+        a = {r["id"] for r in json.loads(read("sites/pose/manifest.json"))}
+        b = {r["id"] for r in json.loads(read("sites/pose-depth/manifest.json"))}
+        self.assertEqual(a, b, "姿势与深度姿势的图片 id 不再一一对应，互跳链接会断")
+        for s, other in (("pose", "pose-depth"), ("pose-depth", "pose")):
+            h = read(f"sites/{s}/index.html")
+            db = page_db(h)
+            self.assertEqual(db["twin"]["site"], f"../{other}/")
+            # 页面按「系列前缀_编号_视角代码」算 id（imgId），算出来的必须正好是 manifest 的 id
+            ids = {db["twin"]["ids"]["s"][p["s"]] + "_" + p["p"] + "_" + db["twin"]["ids"]["a"][v["a"]]
+                   for p in db["poses"] for v in p["v"]}
+            self.assertEqual(ids, a, s)
+            self.assertIn('id="mtwin"', h, s)
+        self.assertNotIn('id="mtwin"', read("sites/shisei/index.html"))
+
     def test_shisei_suggestive(self):
         # Shisei：上游标为 suggestive 的姿势在画廊里带成人向标记（模糊模式），不出现在任何落地页
         if "shisei" not in SITES:

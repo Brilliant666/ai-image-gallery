@@ -51,7 +51,6 @@ SEO = {
 UI = {
     "ja": {
         "title": f"CC0 ポーズ線画集：{N_POSES} ポーズ・{N_IMAGES} 枚・5 アングル · Shisei",
-        "home": "参照素材集", "homeAria": "参照素材集のトップへ",
         "eyebrow": "SHISEI v0.3.0 · CC0 ポーズ線画 · ミラー",
         "brand1": "Shisei",
         "brand2": "ポーズ線画",
@@ -83,7 +82,6 @@ UI = {
     },
     "zh": {
         "title": SEO["title"],
-        "home": "参考素材库", "homeAria": "返回参考素材库首页",
         "eyebrow": "SHISEI v0.3.0 · CC0 姿势线稿 · 镜像",
         "brand1": "Shisei",
         "brand2": "姿势线稿",

@@ -14,7 +14,7 @@ cfg 需要的键：
 """
 import csv, json, os, sys
 
-import adult
+import adult, sitenav
 from pose_i18n import SERIES_ZH, CAT_ZH, ANG_ZH, NAME_ZH
 
 
@@ -49,11 +49,21 @@ def build(root, cfg):
     EXT = cfg.get("imgExt", ".png")
     ADULT_MODE = cfg.get("adultMode", "hide") if ADULT_RULE else None
     UI = adult.ui(UI, cfg.get("ageWhat", {})) if ADULT_MODE else UI
+    # twin：同一批姿势的另一个站（姿势 ↔ 深度），灯箱里放「看线稿 / 看深度图」链接，
+    # 链到对方页面的 #id=<同一 id>。两站 manifest 的 id 一一对应（tests/run.py 检查）
+    TWIN = cfg.get("twin")
 
     poses = {}
     adult_keys = set()      # 成人向姿势 (系列, 分類, 编号)，不进落地页，画廊里按 ADULT_MODE 处理
+    # 图片 id = 系列前缀_编号_视角代码（例如 full_single_P015_front），姿势 ↔ 深度互跳用；
+    # 只内联两张前缀表，页面里按规则算出 id，不给 1439 张图各存一份
+    ID_S, ID_A = {}, {}
     for r in rows:
         key = (r["系列"], r["分類"], r["编号"])
+        if TWIN:
+            pre, code = r["id"].rsplit("_", 1)
+            ID_S.setdefault(r["系列"], pre[:-(len(r["编号"]) + 1)]); ID_A.setdefault(r["视角"], code)
+            assert f'{ID_S[r["系列"]]}_{r["编号"]}_{ID_A[r["视角"]]}' == r["id"], r["id"]
         if adult.is_adult(r, ADULT_RULE):
             adult_keys.add(key)
         if key not in poses:
@@ -82,7 +92,7 @@ def build(root, cfg):
     payload = json.dumps({
         "poses": data, "series": series_list, "cats": cats, "angs": ANG_ORDER,
         "seriesZh": S_ZH, "catZh": C_ZH, "angZh": A_ZH,
-        "ui": UI,
+        "ui": UI, **({"twin": dict(TWIN, ids={"s": ID_S, "a": ID_A})} if TWIN else {}),
     }, ensure_ascii=False, separators=(",", ":"))
 
     html = r"""<!doctype html>
@@ -177,12 +187,6 @@ button,select,input{font:inherit;color:inherit}
 /* ── hero ── */
 .hero{padding:22px clamp(16px,4vw,48px) 14px;max-width:1600px;margin:0 auto}
 .hero-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.home{display:inline-flex;align-items:center;gap:4px;flex:none;
-  font-size:11px;letter-spacing:.06em;color:var(--tx3);text-decoration:none;
-  border:1px solid var(--line2);border-radius:999px;padding:2px 9px 2px 6px;
-  transition:color .15s,border-color .15s}
-.home:hover{color:var(--tx);border-color:var(--tx3)}
-.home svg{width:11px;height:11px;display:block}
 .eyebrow{font-size:11.5px;letter-spacing:.22em;color:var(--tx3);text-transform:uppercase}
 .hero h1{margin:4px 0 5px;font-size:clamp(23px,3vw,33px);font-weight:700;letter-spacing:.02em}
 .hero h1 span{background:var(--title-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -373,13 +377,13 @@ footer a:hover{color:var(--ac)}
 }
 </style>
 <style>__SEO_CSS__.seo-intro{--si-max:1600px}</style>
+__SITENAV_HEAD__
 __FAQ_LD__
 </head>
 <body>
-
+__SITENAV__
 <header class="hero">
   <div class="hero-top">
-    <a class="home" href="../" data-i18n-aria="homeAria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span data-i18n="home">参考素材库</span></a>
     <div class="eyebrow" data-i18n="eyebrow">__CODE__</div>
   </div>
   <h1><span data-i18n="brand1">姿势集</span> <em data-i18n="brand2" style="font-style:normal">数据库</em></h1>
@@ -454,7 +458,7 @@ __SEO_INTRO__
       <div class="macts">
         <a id="mdl" class="primary" href="#" download data-i18n="dlPng">下载 PNG</a>
         <a id="mfull" href="#" target="_blank" rel="noopener" data-i18n="openFull">打开原寸 PNG</a>
-        <button id="mcopy" data-i18n="copyLink">复制图片链接</button>
+        <button id="mcopy" data-i18n="copyLink">复制图片链接</button>__TWIN_LINK__
       </div>
       <div class="hint" id="mhint"></div>
     </div>
@@ -476,11 +480,14 @@ let THEME = document.documentElement.dataset.theme || 'light';
 const PAGE_POSE = 60;    // 每组卡片含 6 张图，60 组 = 360 请求
 const PAGE_IMG  = 120;   // 单图视图每卡 1 张
 const S = {series:null, cat:null, ang:null, sort:'series', view:'pose', q:'', n:PAGE_POSE};
-// 落地页「在画廊中查看」带过来的筛选：#series=…&cat=…
+// 落地页「在画廊中查看」带过来的筛选：#series=…&cat=…；
+// 单张图链接 #id=<图片 id>（姿势 ↔ 深度互跳用）：打开页面后直接打开这张图的灯箱
+let OPEN_ID = null;
 (function(){
   const h = new URLSearchParams(location.hash.slice(1));
   const s = h.get('series'); if (s && SERIES.includes(s)) S.series = s;
   const c = h.get('cat');    if (c && CATS.includes(c) && POSES.some(p => p.c === c && (!S.series || p.s === S.series))) S.cat = c;
+  if (DB.twin) OPEN_ID = h.get('id');
 })();
 
 /* ══ 语言工具 ══ */
@@ -490,6 +497,9 @@ const nS = s => isZh() ? (SZ[s]||s) : s;          // 系列名
 const nC = c => isZh() ? (CZ[c]||c) : c;          // 分类名
 const nA = a => isZh() ? (AZ[a]||a) : a;          // 视角名
 const nN = p => isZh() ? (p.z||p.n) : p.n;        // 姿势名
+// 图片 id = 系列前缀_编号_视角代码（与 manifest 的 id 相同，姿势 ↔ 深度互跳用；没有 twin 的站点不用）
+const imgId = (p, v) => DB.twin ? DB.twin.ids.s[p.s] + '_' + p.p + '_' + DB.twin.ids.a[v.a] : '';
+const TWIN_A = document.querySelector('#mtwin');   // 只有姿势 / 深度两站有这个链接
 __ADULT_JS__
 // hide 模式下 18+ 关闭时，成人向姿势不参与列表、计数和筛选项
 const visible = () => (ADULT || ADULT_MODE !== 'hide') ? POSES : POSES.filter(p => !p.x);
@@ -836,6 +846,8 @@ function showM(){
   $('#mfull').href = v.f;
   $('#mdl').href = v.f;
   $('#mdl').setAttribute('download', p.p + '-' + v.a + '__EXT__');
+  // 姿势 ↔ 深度：同一 id 在对方站点打开
+  if (TWIN_A) TWIN_A.href = DB.twin.site + '#id=' + encodeURIComponent(imgId(p, v));
 
   $('#mkv').innerHTML = [
     [t('kSeries'), nS(p.s)],
@@ -910,6 +922,24 @@ $('#mcopy').onclick = function(){
 };
 
 applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
+
+// #id=<图片 id>：在当前列表里找到这张图并打开灯箱。成人向且 18+ 关闭（hide 模式）时不打开，
+// 网格停在该姿势所在的系列，提示打开 18+；打开开关后重试一次
+function openById(id){
+  const pose = POSES.find(p => p.v.some(x => imgId(p, x) === id));
+  if (!pose) return;
+  const v = pose.v.find(x => imgId(pose, x) === id);
+  S.series = pose.s; S.cat = null; S.q = ''; $('#q').value = '';
+  drawTabs(); drawCats(); draw();
+  const i = VIEWLIST.findIndex(o => o.p === pose);
+  if (i >= 0) { openM(i, v); return; }
+  if (pose.x && !ADULT && ADULT_MODE === 'hide') {
+    grid.innerHTML = adultEmpty();
+    const retry = () => { if (ADULT) { removeEventListener('adultchange', retry); openById(id); } };
+    addEventListener('adultchange', retry);
+  }
+}
+if (OPEN_ID) openById(OPEN_ID);
 </script>
 </body>
 </html>"""
@@ -925,7 +955,14 @@ applyStatic(); drawTabs(); drawCats(); drawAng(); draw();
         html = html.replace("__SEO_INTRO__", "").replace("__SEO_CSS__", "").replace("__FAQ_LD__", "")
 
     a_css, a_sw, a_box, a_js = adult.parts(ADULT_MODE)
+    nav_head, nav_body = sitenav.parts(os.path.basename(os.path.normpath(root)), 1600, sitenav.POSE_KEYS, "#q")
+    # 灯箱里的「看线稿 / 看深度图」，链接在 showM() 里按当前图片设置
+    twin_link = (f'\n        <a id="mtwin" href="{TWIN["site"]}"><span class="snl-zh">{TWIN["label"]["zh"]}</span>'
+                 f'<span class="snl-ja">{TWIN["label"]["ja"]}</span></a>') if TWIN else ""
     html = (html.replace("__PAYLOAD__", payload)
+                .replace("__SITENAV_HEAD__", nav_head)
+                .replace("__SITENAV__", nav_body)
+                .replace("__TWIN_LINK__", twin_link)
                 .replace("__ADULT_CSS__", a_css)
                 .replace("__ADULT_SW__", a_sw)
                 .replace("__ADULT_BOX__", a_box)

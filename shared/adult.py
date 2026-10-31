@@ -108,6 +108,7 @@ function setAdult(on, fromOtherTab){
   ADULT = !!on;
   if (!fromOtherTab) try{ localStorage.setItem('hub.adult', ADULT ? '1' : '0'); }catch(_){}
   adultStatic(); onAdult();
+  dispatchEvent(new Event('adultchange'));
 }
 function askAdult(){
   let seen = false; try{ seen = localStorage.getItem('hub.ageOk') === '1'; }catch(_){}

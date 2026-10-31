@@ -16,7 +16,7 @@ import json, os, sys, csv
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "shared"))
 from translations import CAT_ZH, TAG_ZH, TAG_JA, TAG_GROUPS, UI
-import adult  # noqa: E402
+import adult, sitenav  # noqa: E402
 import landing  # noqa: E402
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -140,12 +140,6 @@ button,select,input{font:inherit;color:inherit}
 /* hero */
 .hero{padding:22px clamp(16px,4vw,48px) 14px;max-width:1680px;margin:0 auto}
 .hero-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.home{display:inline-flex;align-items:center;gap:4px;flex:none;
-  font-size:11px;letter-spacing:.06em;color:var(--tx3);text-decoration:none;
-  border:1px solid var(--line2);border-radius:999px;padding:2px 9px 2px 6px;
-  transition:color .15s,border-color .15s}
-.home:hover{color:var(--tx);border-color:var(--tx3)}
-.home svg{width:11px;height:11px;display:block}
 .eyebrow{font-size:11.5px;letter-spacing:.22em;color:var(--tx3);text-transform:uppercase}
 .hero h1{margin:4px 0 5px;font-size:clamp(23px,3vw,33px);font-weight:700;letter-spacing:.02em}
 .hero h1 span{background:var(--title-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -332,13 +326,13 @@ __ADULT_CSS__
 }
 </style>
 <style>__SEO_CSS__.seo-intro{--si-max:1680px}</style>
+__SITENAV_HEAD__
 __FAQ_LD__
 </head>
 <body>
-
+__SITENAV__
 <header class="hero">
   <div class="hero-top">
-    <a class="home" href="../" data-i18n-aria="homeAria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span data-i18n="home">参考素材库</span></a>
     <div class="eyebrow" data-i18n="eyebrow">COSTUME-DB-01</div>
   </div>
   <h1><span data-i18n="brand1">服装集</span> <em data-i18n="brand2">数据库</em></h1>
@@ -804,6 +798,8 @@ html = (html.replace("__SEO_INTRO__", seo_intro).replace("__SEO_CSS__", landing.
             .replace("__FAQ_LD__", landing.faq_ld_script(FAQ)))
 
 a_css, a_sw, a_box, a_js = adult.parts("hide" if adult_ids else None)
+nav_head, nav_body = sitenav.parts("costume", 1680, sitenav.COSTUME_KEYS, "#q")
+html = html.replace("__SITENAV_HEAD__", nav_head).replace("__SITENAV__", nav_body)
 html = (html.replace("__ADULT_CSS__", a_css).replace("__ADULT_SW__", a_sw)
             .replace("__ADULT_BOX__", a_box).replace("__ADULT_JS__", a_js))
 html = html.replace("__PAYLOAD__", payload).replace("__SITE__", SITE_URL)

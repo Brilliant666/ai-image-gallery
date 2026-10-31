@@ -80,6 +80,7 @@ python tests/run.py                      # 提交前跑一遍；CI 也会跑
 
 新站点请保持一致：
 
+- 页首放共用顶部栏（`shared/sitenav.py` 的 `parts()`），栏上的短名在 `sitenav.LABELS` 里加一条
 - 主题切换 `[☀ Light][☾ Dark]`，默认浅色
 - 语言切换 `[中文][日本語]`，默认中文，中文在左
 - `<head>` 内用同步脚本应用已存偏好，避免刷新闪白

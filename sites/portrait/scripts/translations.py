@@ -84,7 +84,7 @@ STYLE_ZH = {
 UI = {
     "zh": {
         "title": "AI 绘画角色脸部一致性参考图库：1499 张 AI 人像，CC0 免费商用 · 人像集",
-        "home": "参考素材库", "brand": "FACE REFERENCE",
+        "brand": "FACE REFERENCE",
         "eyebrow": "免费人脸参考图库",
         "h1a": "AI 模特",
         "h1b": "脸库",
@@ -118,7 +118,7 @@ UI = {
     },
     "ja": {
         "title": "AI イラスト向け顔参考画像集：1499 枚の AI 人物、CC0 で商用可 · AIモデル顔データベース",
-        "home": "参照素材集", "brand": "FACE REFERENCE",
+        "brand": "FACE REFERENCE",
         "eyebrow": "Free Face Reference Library",
         "h1a": "AIモデル",
         "h1b": "顔データベース",
