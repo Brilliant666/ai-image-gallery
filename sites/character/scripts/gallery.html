@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>二次元角色库：发型服装姿势与标签组装 · photoai.life</title>
+<title>二次元角色图库：发型、服装与姿势 · photoai.life</title>
 <meta name="description" content="__DESCRIPTION__">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="__SITE__/">
@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="photoai.life">
-<meta property="og:title" content="二次元角色库：发型、服装、姿势与标签组装">
+<meta property="og:title" content="二次元角色图库：发型、服装与姿势">
 <meta property="og:description" content="__DESCRIPTION__">
 <meta property="og:url" content="__SITE__/">
 <meta property="og:image" content="https://charadb-2fi.pages.dev/thumb/H001.webp">
@@ -28,12 +28,11 @@ __CSS__</style>
 __BAR__
 <main class="ch-main">
 <section class="ch-heading">
-<div><h1><span class="zh">二次元角色库</span><span class="ja">キャラ組み立てDB</span></h1>
-<p><span class="zh">找参考，选部件，组合成自己的角色标签。</span><span class="ja">参考を探してパーツを選び、自分のキャラクターのタグを組み立てる。</span></p></div>
+<div><h1><span class="zh">二次元角色库</span><span class="ja">キャラ参考画像集</span></h1>
+<p><span class="zh">浏览发型、服装与姿势参考，查看和复制对应标签。</span><span class="ja">髪型・衣装・ポーズの参考画像と、対応するタグを探す。</span></p></div>
 <a class="btn ghost" href="https://charadb-2fi.pages.dev/" target="_blank" rel="noopener noreferrer"><span class="zh">原作者公开版</span><span class="ja">作者の公開版</span> ↗</a>
 </section>
 <p class="ch-source"><span class="zh">原作：たき AI。图片由原站提供；允许作品制作与商用，</span><span class="ja">原作：たき AI。画像は原サイトから読み込み。作品制作・商用利用可。</span><strong><span class="zh">禁止图片再分发</span><span class="ja">画像の再配布は禁止</span></strong>。 <a href="#aboutCharacter"><span class="zh">使用说明</span><span class="ja">利用条件</span></a></p>
-<div class="ch-layout">
 <section class="ch-browser" aria-label="角色参考">
 <div class="ch-tools">
 <div class="chips" id="sets" aria-label="分区"></div>
@@ -45,31 +44,17 @@ __BAR__
 <ul class="ch-grid" id="grid"></ul>
 <div id="empty" class="ch-empty" hidden></div>
 <div class="ch-more"><button class="btn ghost" id="more" type="button"><span class="zh">显示更多</span><span class="ja">もっと見る</span></button></div>
-<noscript><p>完整分类索引与使用说明可直接浏览。筛选、收藏与标签组装需要 JavaScript。</p><a href="browse/">打开角色参考分类索引</a></noscript>
+<noscript><p>完整分类索引与使用说明可直接浏览。筛选、收藏与标签复制需要 JavaScript。</p><a href="browse/">打开角色参考分类索引</a></noscript>
 </section>
-<aside class="ch-assembly">
-<details id="assembly" open><summary><span class="zh">我的角色标签</span><span class="ja">キャラクターのタグ</span><span id="slotCount"></span></summary>
-<div class="ch-assembly-body">
-<p class="ch-note"><span class="zh">点击卡片下方「选用」，每个部件可随时替换。</span><span class="ja">カードの「選択」で追加。各パーツはいつでも差し替えできます。</span></p>
-<label class="ch-label" for="output"><span class="zh">组合结果</span><span class="ja">組み立て結果</span></label><textarea id="output" rows="4" readonly spellcheck="false"></textarea>
-<p class="ch-conflict" id="conflict" role="status" hidden></p>
-<div class="ch-actions"><button id="copy" class="btn pri" type="button"><span class="zh">复制标签</span><span class="ja">タグをコピー</span></button><button id="clear" class="btn ghost" type="button"><span class="zh">清空选择</span><span class="ja">選択をクリア</span></button></div>
-<div class="ch-slots" id="slots"></div>
-<label class="ch-label" for="subject"><span class="zh">人数标签</span><span class="ja">人数タグ</span></label><select id="subject" class="sel"><option value="1girl, solo">1girl, solo</option><option value="1boy, solo">1boy, solo</option><option value="">—</option></select>
-<label class="ch-label" for="extras"><span class="zh">补充标签（英文逗号分隔）</span><span class="ja">追加タグ（英語のカンマ区切り）</span></label><textarea id="extras" rows="2" maxlength="2000" placeholder="smile, full body, white background"></textarea>
-<p class="ch-note"><span class="zh">选择和收藏保存在本浏览器。标签适用于支持此类关键词的模型，效果依模型而异。</span><span class="ja">選択とお気に入りはこのブラウザに保存。タグの効果はモデルによって異なります。</span></p>
-</div></details>
-</aside>
-</div>
 <div id="aboutCharacter">__INTRO__</div>
 <footer class="foot"><p><a href="https://x.com/taki_auto" target="_blank" rel="noopener noreferrer">たき AI</a> · <a href="https://charadb-2fi.pages.dev/" target="_blank" rel="noopener noreferrer"><span class="zh">原站与授权说明</span><span class="ja">原サイト・利用条件</span></a> · <a href="browse/"><span class="zh">分类索引</span><span class="ja">分類一覧</span></a></p>
 <p><span class="zh">只收录公开版。图片禁止再分发、转载与转售，包括加工后的图片；不得用于表现真实人物或未成年人。本站界面独立实现，图片权利归原作者。</span><span class="ja">公開版のみ収録。元画像・加工後の画像とも再配布・転載・転売は禁止。実在の人物や未成年を表す用途は禁止。独自のUIで、画像の権利は原作者に帰属します。</span></p></footer>
 </main>
 <div class="dlg ch-detail" id="detail" role="dialog" aria-modal="true" aria-labelledby="detailTitle" hidden>
 <div class="dlg-card"><div class="ch-detail-top"><h2 id="detailTitle"></h2><button type="button" class="btn ghost" data-close aria-label="关闭 / 閉じる">×</button></div>
-<div class="ch-detail-image"><img id="detailImage" alt=""><p id="detailError" hidden><span class="zh">图片未能加载，可打开原站检查。标签仍可选用。</span><span class="ja">画像を読み込めません。原サイトをご確認ください。タグは選択できます。</span></p></div>
+<div class="ch-detail-image"><img id="detailImage" alt=""><p id="detailError" hidden><span class="zh">图片未能加载，可打开原站检查。标签仍可复制。</span><span class="ja">画像を読み込めません。原サイトをご確認ください。タグはコピーできます。</span></p></div>
 <div class="ch-detail-meta"><p id="detailName"></p><p id="detailTags"></p><label id="detailColors" hidden><span class="zh">发型预览色</span><span class="ja">髪型の色</span> <select id="detailColor" class="sel"></select></label>
-<div class="ch-actions"><button class="btn pri" id="detailAdd" type="button"><span class="zh">选用标签</span><span class="ja">タグを選択</span></button><button class="btn ghost" id="detailFav" type="button"></button><button class="btn ghost" id="line" type="button" hidden><span class="zh">查看线稿</span><span class="ja">線画を見る</span></button><a class="btn ghost" id="original" target="_blank" rel="noopener noreferrer"><span class="zh">原图 ↗</span><span class="ja">元画像 ↗</span></a><a class="btn ghost" id="lineLink" target="_blank" rel="noopener noreferrer" hidden><span class="zh">原站线稿 ↗</span><span class="ja">原サイトの線画 ↗</span></a></div></div>
+<div class="ch-actions"><button class="btn pri" id="detailCopy" type="button"><span class="zh">复制标签</span><span class="ja">タグをコピー</span></button><button class="btn ghost" id="detailFav" type="button"></button><button class="btn ghost" id="line" type="button" hidden><span class="zh">查看线稿</span><span class="ja">線画を見る</span></button><a class="btn ghost" id="original" target="_blank" rel="noopener noreferrer"><span class="zh">原图 ↗</span><span class="ja">元画像 ↗</span></a><a class="btn ghost" id="lineLink" target="_blank" rel="noopener noreferrer" hidden><span class="zh">原站线稿 ↗</span><span class="ja">原サイトの線画 ↗</span></a></div></div>
 </div></div>
 <div id="toast" class="ch-toast" role="status" aria-live="polite" hidden></div>
 __DIALOGS__

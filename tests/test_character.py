@@ -3,8 +3,6 @@
 import importlib.util
 import json
 from pathlib import Path
-import shutil
-import subprocess
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -69,13 +67,6 @@ class Character(unittest.TestCase):
                 self.assertEqual(row[tier+'_url'], config['source'] + row[tier+'_path'])
         self.assertEqual(len([r for r in rows if r.get('line')]),281)
         self.assertEqual(int(config['stats'][0]['public']),791)
-
-    def test_assembly_model(self):
-        node = shutil.which('node')
-        if not node:
-            self.skipTest('node unavailable')
-        result = subprocess.run([node,str(ROOT/'tests/character.js')],capture_output=True,text=True,encoding='utf-8')
-        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
 
 
 if __name__ == '__main__':
