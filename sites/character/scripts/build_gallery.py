@@ -56,6 +56,7 @@ def build():
     site = landing.Site(id='character', root=str(ROOT), site_url=site_url, name='二次元角色库',
                         tagline='发型、服装与姿势的英文标签参考', license_note=LICENSE,
                         author='たき AI', author_url='https://x.com/taki_auto', source=SOURCE, faq=FAQ,
+                        share_image=SOURCE + 'thumb/H001.webp', gallery_features='可筛选、放大、收藏和复制标签',
                         index_title='二次元角色参考 · 全部分类与标签',
                         index_intro='按分类浏览二次元角色的发型、刘海、发色、眼睛、服装和姿势参考，保留原日文名称与英文标签。只展示非成人向公开条目；图片由原站提供，可在画廊中放大、收藏和复制单条标签。')
     facets = []

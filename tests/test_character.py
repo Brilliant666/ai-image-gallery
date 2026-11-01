@@ -51,6 +51,20 @@ class Character(unittest.TestCase):
             self.assertTrue(translations.chinese(row), row['id'])
             self.assertIn(row['cat'], translations.CATEGORIES)
 
+    def test_landing_share_images_and_features(self):
+        import re
+        pages = [SITE / 'browse/index.html'] + sorted((SITE / 'cat').glob('*/index.html'))
+        self.assertGreater(len(pages), 1)
+        for page in pages:
+            text = page.read_text(encoding='utf-8')
+            for field in ('og:image', 'twitter:image'):
+                self.assertIn('"%s" content="https://charadb-2fi.pages.dev/thumb/H001.webp"' % field, text, str(page))
+            self.assertNotIn('character/og-cover.jpg', text)
+            more = re.search(r'<p class="more">(.*?)</p>', text)
+            if more:
+                self.assertIn('收藏和复制标签', more.group(1))
+                self.assertNotIn('下载', more.group(1))
+
     def test_manifest_remote_and_adult_rules(self):
         rows = json.loads((SITE / 'manifest.json').read_text(encoding='utf-8'))
         by_id = {r['id']:r for r in rows}

@@ -278,7 +278,7 @@ def hub_seo(cfg, base):
     stat = lambda sid, i: f'{int(sites[sid]["stats"][i]["v"]):,}'
     shown = [s for s in cfg["sites"] if not s.get("mergedInto")]
     N, K = f"{total_images(cfg):,}", len(shown)
-    character_note = (f"二次元角色库另有 {stat('character', 0)} 个基础条目（发型 122、服装 440、姿势 281），"
+    character_note = (f"二次元角色库另有 {stat('character', 0)} 个基础条目（头发与眼睛 122、服装 440、姿势 281），"
                       f"加上 {stat('character', 1)} 个发色变体共 1,027 个条目，姿势另配 {stat('character', 2)} 张线稿。"
                       "角色库图片由原站远程加载，需要联网，不下载或镜像；条目与线稿均不计入本地托管图片文件总数。"
                       f"目录总量含默认隐藏的成人向条目；默认可见 {sites['character']['stats'][0].get('public', stat('character', 0))} 个基础条目。")

@@ -489,7 +489,7 @@ async function copyTags(id, opener){
     field.remove();if(back&&back.isConnected)back.focus({preventScroll:true});
     if(copied)toast(t('标签已复制','タグをコピーしました'));
     else if(allowed(item)){
-      openDetail(id,opener);
+      if($('#detail').hidden || detailId!==id)openDetail(id,opener);
       const range=document.createRange();range.selectNodeContents($('#detailTags'));
       const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
       toast(t('标签已选中，请按 Ctrl/Cmd+C 复制。','タグを選択しました。Ctrl/Cmd+C でコピーしてください。'));
