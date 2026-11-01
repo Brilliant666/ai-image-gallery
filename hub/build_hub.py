@@ -98,7 +98,12 @@ html:not([data-adult="1"]) .n-all,html[data-adult="1"] .n-pub{display:none}
 .hc .cv.split::after{content:"";position:absolute;top:6%;bottom:6%;left:50%;width:2px;margin-left:-1px;background:var(--ac);opacity:.8}
 .hc .tag{position:absolute;z-index:1;left:12px;bottom:12px;display:flex;gap:6px}
 .hc .tag span{padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.9);color:#111;font-size:11.5px;font-weight:700}
-.hc .tag span.ok{background:#16a34a;color:#fff}
+.hc .tag span.ok{background:#dcfce7;color:#166534}
+.hc .tag span.warn,.credits span.lic.warn{background:#fef3c7;color:#92400e}
+.hc .tag span.no,.credits span.lic.no{background:#fee2e2;color:#991b1b}
+html[data-theme="dark"] .hc .tag span.ok{background:#14301d;color:#86efac}
+html[data-theme="dark"] .hc .tag span.warn,html[data-theme="dark"] .credits .lic.warn{background:#422b0b;color:#fcd34d}
+html[data-theme="dark"] .hc .tag span.no,html[data-theme="dark"] .credits .lic.no{background:#451a1a;color:#fca5a5}
 .hc .tx{padding:14px 4px 0}
 .hc h2{display:flex;align-items:center;gap:8px;margin:0;font-size:19px;font-weight:800}
 .hc h2 svg{width:18px;height:18px;margin-left:auto;color:var(--mu);transition:transform .2s,color .2s}

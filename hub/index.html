@@ -57,6 +57,7 @@ html[data-theme="dark"]{
 }
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0}
+html{scrollbar-gutter:stable}
 body{background:var(--bg);color:var(--tx);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased;
   transition:background-color .2s,color .2s;min-height:100vh}
 a{color:inherit}
@@ -152,7 +153,7 @@ html[data-theme="dark"] .ph:not(.done)::before{background-image:linear-gradient(
 .loadmore[hidden]{display:none}
 
 /* 大图：主题色面板 */
-.modal{position:fixed;inset:0;z-index:60;background:var(--scrim);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+.modal{position:fixed;inset:0;z-index:60;background:var(--scrim);
   display:none;align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top)) 12px}
 .modal.open{display:flex}
 .mbox{position:relative;width:min(1280px,100%);max-height:100%;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;
@@ -186,10 +187,11 @@ kbd{display:inline-block;min-width:22px;padding:0 6px;border:1px solid var(--lin
 }
 
 /* 对话框 */
-.dlg{position:fixed;inset:0;z-index:80;background:var(--scrim);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+.dlg{position:fixed;inset:0;z-index:80;background:var(--scrim);
   display:flex;align-items:center;justify-content:center;padding:16px}
 .dlg[hidden]{display:none}
-.dlg-card{width:min(420px,100%);background:var(--bg2);color:var(--tx);border-radius:22px;padding:24px 24px 20px;box-shadow:var(--sh3)}
+.dlg-card{max-height:100%;overflow:auto;animation:pl-dialog-in .12s ease-out;width:min(420px,100%);background:var(--bg2);color:var(--tx);border-radius:22px;padding:24px 24px 20px;box-shadow:var(--sh3)}
+@keyframes pl-dialog-in{from{opacity:0}to{opacity:1}}
 .dlg-card h3{margin:0 0 10px;font-size:18px}
 .dlg-card p{margin:0 0 18px;font-size:13.5px;line-height:1.8;color:var(--tx2)}
 .dlg-card .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
@@ -296,7 +298,12 @@ html:not([data-adult="1"]) .n-all,html[data-adult="1"] .n-pub{display:none}
 .hc .cv.split::after{content:"";position:absolute;top:6%;bottom:6%;left:50%;width:2px;margin-left:-1px;background:var(--ac);opacity:.8}
 .hc .tag{position:absolute;z-index:1;left:12px;bottom:12px;display:flex;gap:6px}
 .hc .tag span{padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.9);color:#111;font-size:11.5px;font-weight:700}
-.hc .tag span.ok{background:#16a34a;color:#fff}
+.hc .tag span.ok{background:#dcfce7;color:#166534}
+.hc .tag span.warn,.credits span.lic.warn{background:#fef3c7;color:#92400e}
+.hc .tag span.no,.credits span.lic.no{background:#fee2e2;color:#991b1b}
+html[data-theme="dark"] .hc .tag span.ok{background:#14301d;color:#86efac}
+html[data-theme="dark"] .hc .tag span.warn,html[data-theme="dark"] .credits .lic.warn{background:#422b0b;color:#fcd34d}
+html[data-theme="dark"] .hc .tag span.no,html[data-theme="dark"] .credits .lic.no{background:#451a1a;color:#fca5a5}
 .hc .tx{padding:14px 4px 0}
 .hc h2{display:flex;align-items:center;gap:8px;margin:0;font-size:19px;font-weight:800}
 .hc h2 svg{width:18px;height:18px;margin-left:auto;color:var(--mu);transition:transform .2s,color .2s}
@@ -349,7 +356,7 @@ html[data-theme="dark"] .credits .lic.ok{background:#14301d;color:#86efac}
   <div class="hub-seo"><section class="seo-intro" aria-label="关于本站"><div class="seo-card"><p class="seo-eyebrow">关于本站</p><p class="seo-lead">photoai.life 收录 4 个 AI 绘画参考图库，共 15,241 个 AI 生成的图片文件，可在线浏览、按标签筛选和下载。</p><ul class="seo-facts"><li><span>图库</span>4 个</li><li><span>图片文件</span>15,241</li><li><span>语言</span>中文 / 日本語</li><li><span>素材</span>全部 AI 生成</li></ul><nav class="seo-links" aria-label="按分类浏览"><a href="portrait/browse/">人像集 · 分类</a><a href="costume/browse/">服装集 · 分类</a><a href="pose/browse/">姿势集 · 分类</a><a href="pose-depth/browse/">姿势集 · 深度图 · 分类</a><a href="shisei/browse/">CC0 姿势线稿 · 分类</a></nav><details class="seo-more"><summary>更多介绍与常见问题</summary><p>人像集 1,499 张，用来让 AI 生成的角色保持同一张脸，CC0 可商用；姿势集 288 个姿势，线稿与深度图各 1,439 张，每个姿势 5 个视角，一键切换、左右对比，深度图可直接用于 ControlNet；服装集 1,407 套服装、86 个标签，标签保留英文关键词，可直接作提示词；CC0 姿势线稿 280 个姿势、1,133 张，可商用、可再分发。</p><dl><dt>photoai.life 是什么？</dt><dd>一组面向 AI 绘画的参考图库：人像集（角色脸部一致性参考）、姿势集（人体姿势的线稿与 ControlNet 深度图，一键切换）、服装集（服装与穿搭参考）和 CC0 姿势线稿，共 15,241 个图片文件，全部为 AI 生成，中日双语。</dd><dt>图片可以商用吗？</dt><dd>要看图库。人像集与 CC0 姿势线稿为 CC0 1.0 公有领域，可以免费商用和再分发。姿势集（线稿、深度图）与服装集的原作者允许免费用于作品制作（包括商用与参考），但禁止再分发、转载或转售图片文件本身；深度图原站另禁止批量下载。</dd><dt>这些图是真人吗？</dt><dd>不是。人像是 AI 生成的虚构人物，姿势是无脸人偶，服装图由文字生成图像制作，都不对应真实人物或商品。</dd><dt>为什么有些内容看不到？</dt><dd>姿势集的双人与性感系列、服装集的内衣与性感两类属于成人向参考，默认隐藏，CC0 线稿里偏性感的姿势默认模糊。用顶部栏的「18+」确认一次年龄即可显示，各图库通用；这些内容不出现在静态落地页里。</dd><dt>和原站是什么关系？</dt><dd>这里是各原站的中文索引镜像：把日文分类、标签和姿势名译成中文，加了组合筛选、搜索和中日切换。图片著作权归原作者，每个图库页脚都有原站和作者链接。</dd></dl></details></div></section></div>
 </main>
 <div class="dlg" id="plHelp" role="dialog" aria-modal="true" aria-labelledby="plHelpT" hidden><div class="dlg-card"><h3 id="plHelpT"><span class="zh">快捷键</span><span class="ja">ショートカット</span></h3><dl><dt><kbd>T</kbd></dt><dd><span class="zh">切换深浅色</span><span class="ja">ライト / ダーク切り替え</span></dd><dt><kbd>L</kbd></dt><dd><span class="zh">切换中文 / 日本語</span><span class="ja">中文 / 日本語 切り替え</span></dd><dt><kbd>?</kbd></dt><dd><span class="zh">打开 / 关闭这个面板</span><span class="ja">このパネルを開く / 閉じる</span></dd></dl><div class="row"><button type="button" class="btn pri" data-close><span class="zh">知道了</span><span class="ja">閉じる</span></button></div></div></div>
-<div class="dlg" id="plAge" role="dialog" aria-modal="true" aria-labelledby="plAgeT" hidden><div class="dlg-card"><h3 id="plAgeT"><span class="zh">显示成人向内容？</span><span class="ja">成人向けの内容を表示しますか？</span></h3><p><span class="zh">包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类；CC0 线稿里偏性感的姿势关闭时模糊显示。</span><span class="ja">ポーズ集の 2人絡み・全身セクシー系・上半身の胸寄せ／セクシー露骨寄り、衣装集のランジェリー・セクシー、CC0 線画の suggestive ポーズ（オフの間はぼかし表示）が対象です。</span><span class="zh">仅适合已满 18 岁的用户。确认一次后，用顶部栏的「18+」随时打开或关闭，各图库通用。</span><span class="ja">18 歳以上の方のみご覧ください。一度確認すると、上部バーの「18+」でいつでも切り替えられ、全ギャラリー共通です。</span></p><div class="row"><button type="button" class="btn ghost" id="plAgeN"><span class="zh">暂不</span><span class="ja">やめておく</span></button><button type="button" class="btn pri" id="plAgeY"><span class="zh">我已满 18 岁，显示</span><span class="ja">18 歳以上です。表示する</span></button></div></div></div>
+<div class="dlg" id="plAge" role="dialog" aria-modal="true" aria-labelledby="plAgeT" hidden><div class="dlg-card"><h3 id="plAgeT"><span class="zh">显示成人向内容？</span><span class="ja">成人向けの内容を表示しますか？</span></h3><p><span class="zh">包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类；CC0 线稿里偏性感的姿势关闭时模糊显示。</span><span class="ja">ポーズ集の 2人絡み・全身セクシー系・上半身の胸寄せ／セクシー露骨寄り、衣装集のランジェリー・セクシー、CC0 線画の suggestive ポーズ（オフの間はぼかし表示）が対象です。</span><span class="zh">仅适合已满 18 岁的用户。确认结果与开关状态保存在当前浏览器，各图库通用；可通过顶部栏的「18+」随时关闭。</span><span class="ja">18 歳以上の方のみご覧ください。確認結果と表示設定はこのブラウザーに保存され、全ギャラリー共通です。上部バーの「18+」でいつでも非表示にできます。</span></p><div class="row"><button type="button" class="btn ghost" id="plAgeN"><span class="zh">暂不</span><span class="ja">やめておく</span></button><button type="button" class="btn pri" id="plAgeY"><span class="zh">我已满 18 岁，显示</span><span class="ja">18 歳以上です。表示する</span></button></div></div></div>
 <button type="button" class="totop" id="plTop" aria-label="Top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <script>
 (function(){
@@ -381,20 +388,36 @@ PL.setAdult = (on, quiet) => { on = !!on; if (on === PL.adult) return; d.dataset
 
 /* 弹窗：锁焦点、Esc 关闭、关闭后焦点回到打开它的元素（不在页面上时交给 fallback） */
 const stack = [];
+let scrollLock = null;
+function lockScroll(){
+  const b = document.body;
+  scrollLock = {overflow:b.style.overflow, padding:b.style.paddingRight};
+  if (!CSS.supports('scrollbar-gutter: stable')){
+    const gap = innerWidth - d.clientWidth;
+    if (gap > 0) b.style.paddingRight = (parseFloat(getComputedStyle(b).paddingRight) + gap) + 'px';
+  }
+  b.style.overflow = 'hidden';
+}
+function unlockScroll(){
+  if (!scrollLock) return;
+  document.body.style.overflow = scrollLock.overflow;
+  document.body.style.paddingRight = scrollLock.padding;
+  scrollLock = null;
+}
 const focusables = el => [...el.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])')]
   .filter(x => x.offsetParent !== null || x === document.activeElement);
 PL.openDialog = (el, opener, fallback) => {
   if (stack.some(s => s.el === el)) return;
+  if (!stack.length) lockScroll();
   stack.push({el, opener: opener || document.activeElement, fallback});
   if (el.classList.contains('modal')) el.classList.add('open'); else el.hidden = false;
-  document.body.style.overflow = 'hidden';
   const f = el.querySelector('[data-autofocus]') || focusables(el)[0]; if (f) f.focus({preventScroll:true});
 };
 PL.closeDialog = (el) => {
   const i = stack.findIndex(s => s.el === el); if (i < 0) return;
   const s = stack.splice(i, 1)[0];
   if (el.classList.contains('modal')) el.classList.remove('open'); else el.hidden = true;
-  if (!stack.length) document.body.style.overflow = '';
+  if (!stack.length) unlockScroll();
   const back = s.opener && s.opener.isConnected ? s.opener : (typeof s.fallback === 'function' ? s.fallback() : s.fallback);
   if (back && back.focus) back.focus({preventScroll:true});
   el.dispatchEvent(new Event('pl:close'));

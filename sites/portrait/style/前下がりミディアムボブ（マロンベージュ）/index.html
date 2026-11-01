@@ -54,6 +54,7 @@ html[data-theme="dark"]{
 }
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0}
+html{scrollbar-gutter:stable}
 body{background:var(--bg);color:var(--tx);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased;
   transition:background-color .2s,color .2s;min-height:100vh}
 a{color:inherit}
@@ -149,7 +150,7 @@ html[data-theme="dark"] .ph:not(.done)::before{background-image:linear-gradient(
 .loadmore[hidden]{display:none}
 
 /* 大图：主题色面板 */
-.modal{position:fixed;inset:0;z-index:60;background:var(--scrim);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+.modal{position:fixed;inset:0;z-index:60;background:var(--scrim);
   display:none;align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top)) 12px}
 .modal.open{display:flex}
 .mbox{position:relative;width:min(1280px,100%);max-height:100%;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;
@@ -183,10 +184,11 @@ kbd{display:inline-block;min-width:22px;padding:0 6px;border:1px solid var(--lin
 }
 
 /* 对话框 */
-.dlg{position:fixed;inset:0;z-index:80;background:var(--scrim);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+.dlg{position:fixed;inset:0;z-index:80;background:var(--scrim);
   display:flex;align-items:center;justify-content:center;padding:16px}
 .dlg[hidden]{display:none}
-.dlg-card{width:min(420px,100%);background:var(--bg2);color:var(--tx);border-radius:22px;padding:24px 24px 20px;box-shadow:var(--sh3)}
+.dlg-card{max-height:100%;overflow:auto;animation:pl-dialog-in .12s ease-out;width:min(420px,100%);background:var(--bg2);color:var(--tx);border-radius:22px;padding:24px 24px 20px;box-shadow:var(--sh3)}
+@keyframes pl-dialog-in{from{opacity:0}to{opacity:1}}
 .dlg-card h3{margin:0 0 10px;font-size:18px}
 .dlg-card p{margin:0 0 18px;font-size:13.5px;line-height:1.8;color:var(--tx2)}
 .dlg-card .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
@@ -319,7 +321,7 @@ dl.faq dt{font-weight:700;margin-top:16px}dl.faq dd{margin:4px 0 0;color:var(--t
 <p><a href="../../">返回人像集画廊</a> · <a href="../../browse/">全部分类与标签</a> · <a href="../../../">photoai.life 全部 4 个参考图库</a></p>
 </footer>
 <div class="dlg" id="plHelp" role="dialog" aria-modal="true" aria-labelledby="plHelpT" hidden><div class="dlg-card"><h3 id="plHelpT"><span class="zh">快捷键</span><span class="ja">ショートカット</span></h3><dl><dt><kbd>T</kbd></dt><dd><span class="zh">切换深浅色</span><span class="ja">ライト / ダーク切り替え</span></dd><dt><kbd>L</kbd></dt><dd><span class="zh">切换中文 / 日本語</span><span class="ja">中文 / 日本語 切り替え</span></dd><dt><kbd>?</kbd></dt><dd><span class="zh">打开 / 关闭这个面板</span><span class="ja">このパネルを開く / 閉じる</span></dd></dl><div class="row"><button type="button" class="btn pri" data-close><span class="zh">知道了</span><span class="ja">閉じる</span></button></div></div></div>
-<div class="dlg" id="plAge" role="dialog" aria-modal="true" aria-labelledby="plAgeT" hidden><div class="dlg-card"><h3 id="plAgeT"><span class="zh">显示成人向内容？</span><span class="ja">成人向けの内容を表示しますか？</span></h3><p><span class="zh">包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类；CC0 线稿里偏性感的姿势关闭时模糊显示。</span><span class="ja">ポーズ集の 2人絡み・全身セクシー系・上半身の胸寄せ／セクシー露骨寄り、衣装集のランジェリー・セクシー、CC0 線画の suggestive ポーズ（オフの間はぼかし表示）が対象です。</span><span class="zh">仅适合已满 18 岁的用户。确认一次后，用顶部栏的「18+」随时打开或关闭，各图库通用。</span><span class="ja">18 歳以上の方のみご覧ください。一度確認すると、上部バーの「18+」でいつでも切り替えられ、全ギャラリー共通です。</span></p><div class="row"><button type="button" class="btn ghost" id="plAgeN"><span class="zh">暂不</span><span class="ja">やめておく</span></button><button type="button" class="btn pri" id="plAgeY"><span class="zh">我已满 18 岁，显示</span><span class="ja">18 歳以上です。表示する</span></button></div></div></div>
+<div class="dlg" id="plAge" role="dialog" aria-modal="true" aria-labelledby="plAgeT" hidden><div class="dlg-card"><h3 id="plAgeT"><span class="zh">显示成人向内容？</span><span class="ja">成人向けの内容を表示しますか？</span></h3><p><span class="zh">包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类；CC0 线稿里偏性感的姿势关闭时模糊显示。</span><span class="ja">ポーズ集の 2人絡み・全身セクシー系・上半身の胸寄せ／セクシー露骨寄り、衣装集のランジェリー・セクシー、CC0 線画の suggestive ポーズ（オフの間はぼかし表示）が対象です。</span><span class="zh">仅适合已满 18 岁的用户。确认结果与开关状态保存在当前浏览器，各图库通用；可通过顶部栏的「18+」随时关闭。</span><span class="ja">18 歳以上の方のみご覧ください。確認結果と表示設定はこのブラウザーに保存され、全ギャラリー共通です。上部バーの「18+」でいつでも非表示にできます。</span></p><div class="row"><button type="button" class="btn ghost" id="plAgeN"><span class="zh">暂不</span><span class="ja">やめておく</span></button><button type="button" class="btn pri" id="plAgeY"><span class="zh">我已满 18 岁，显示</span><span class="ja">18 歳以上です。表示する</span></button></div></div></div>
 <button type="button" class="totop" id="plTop" aria-label="Top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <script>
 (function(){
@@ -351,20 +353,36 @@ PL.setAdult = (on, quiet) => { on = !!on; if (on === PL.adult) return; d.dataset
 
 /* 弹窗：锁焦点、Esc 关闭、关闭后焦点回到打开它的元素（不在页面上时交给 fallback） */
 const stack = [];
+let scrollLock = null;
+function lockScroll(){
+  const b = document.body;
+  scrollLock = {overflow:b.style.overflow, padding:b.style.paddingRight};
+  if (!CSS.supports('scrollbar-gutter: stable')){
+    const gap = innerWidth - d.clientWidth;
+    if (gap > 0) b.style.paddingRight = (parseFloat(getComputedStyle(b).paddingRight) + gap) + 'px';
+  }
+  b.style.overflow = 'hidden';
+}
+function unlockScroll(){
+  if (!scrollLock) return;
+  document.body.style.overflow = scrollLock.overflow;
+  document.body.style.paddingRight = scrollLock.padding;
+  scrollLock = null;
+}
 const focusables = el => [...el.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])')]
   .filter(x => x.offsetParent !== null || x === document.activeElement);
 PL.openDialog = (el, opener, fallback) => {
   if (stack.some(s => s.el === el)) return;
+  if (!stack.length) lockScroll();
   stack.push({el, opener: opener || document.activeElement, fallback});
   if (el.classList.contains('modal')) el.classList.add('open'); else el.hidden = false;
-  document.body.style.overflow = 'hidden';
   const f = el.querySelector('[data-autofocus]') || focusables(el)[0]; if (f) f.focus({preventScroll:true});
 };
 PL.closeDialog = (el) => {
   const i = stack.findIndex(s => s.el === el); if (i < 0) return;
   const s = stack.splice(i, 1)[0];
   if (el.classList.contains('modal')) el.classList.remove('open'); else el.hidden = true;
-  if (!stack.length) document.body.style.overflow = '';
+  if (!stack.length) unlockScroll();
   const back = s.opener && s.opener.isConnected ? s.opener : (typeof s.fallback === 'function' ? s.fallback() : s.fallback);
   if (back && back.focus) back.focus({preventScroll:true});
   el.dispatchEvent(new Event('pl:close'));
