@@ -35,10 +35,10 @@ __BAR__
 <p class="ch-source"><span class="zh">原作：たき AI。图片由原站提供；允许作品制作与商用，</span><span class="ja">原作：たき AI。画像は原サイトから読み込み。作品制作・商用利用可。</span><strong><span class="zh">禁止图片再分发</span><span class="ja">画像の再配布は禁止</span></strong>。 <a href="#aboutCharacter"><span class="zh">使用说明</span><span class="ja">利用条件</span></a></p>
 <section class="ch-browser" aria-label="角色参考">
 <div class="ch-tools">
-<div class="chips" id="sets" aria-label="分区"></div>
+<div class="ch-sets" id="sets" role="group" aria-label="分区"></div>
 <div class="ch-search"><label for="search" class="vh"><span class="zh">搜索名称、ID 或英文标签</span><span class="ja">名前・ID・英語タグを検索</span></label><input id="search" type="search" data-pl-search autocomplete="off" placeholder="搜索名称、ID 或英文标签"><button class="btn ghost" id="reset" type="button"><span class="zh">重置</span><span class="ja">リセット</span></button></div>
-<div class="ch-filters"><label for="category"><span class="zh">分类</span><span class="ja">分類</span></label><select id="category" class="sel"></select>
-<label for="hairColor"><span class="zh">发型预览色</span><span class="ja">髪型の色</span></label><select id="hairColor" class="sel"></select></div>
+<div class="ch-categories" id="category" role="group" aria-label="分类"></div>
+<div class="ch-filters" id="globalColors"><label for="hairColor"><span class="zh">统一发色预览</span><span class="ja">髪型をまとめて色変更</span></label><select id="hairColor" class="sel"></select><span class="ch-color-hint"><span class="zh">也可点击每张发型下的色点单独换色</span><span class="ja">各カードの色ボタンで個別に変更できます</span></span></div>
 <div class="ch-results"><p id="count" role="status" aria-live="polite"></p><label><input type="checkbox" id="onlyFav"> <span class="zh">只看收藏</span><span class="ja">お気に入りのみ</span></label></div>
 </div>
 <ul class="ch-grid" id="grid"></ul>
