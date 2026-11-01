@@ -4,7 +4,7 @@
 入口页、三套画廊模板（人像、服装、姿势生成器）和静态落地页都从这里取样式与顶部栏，
 各页只写自己的布局。依赖：页面 <head> 先放 head_script()，<body> 开头放 bar()，末尾放 dialogs() 和 script()。
 
-偏好全站共用（五个子站同源）：
+偏好全站共用（各子站同源）：
   pl.theme   light / dark（没存过时跟随系统）
   pl.lang    zh / ja
   hub.adult  1 = 显示成人向内容；hub.ageOk 1 = 已确认年龄（沿用 2026-10-31 阶段 1 的键）
@@ -30,6 +30,7 @@ LABELS = {
     "costume": {"zh": "服装", "ja": "衣装"},
     "pose": {"zh": "姿势", "ja": "ポーズ"},
     "shisei": {"zh": "CC0 线稿", "ja": "CC0 線画"},
+    "character": {"zh": "角色", "ja": "キャラ"},
 }
 
 
@@ -346,8 +347,8 @@ COSTUME_KEYS = [K_SEARCH, K_THEME, K_LANG, K_LR, K_ESC, K_HELP]
 POSE_KEYS = [K_SEARCH, K_DEPTH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ESC, K_HELP]
 LINE_KEYS = [K_SEARCH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ESC, K_HELP]
 
-AGE_WHAT = {"zh": "包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类；CC0 线稿的全身性感、双人系列与标为 suggestive 的姿势默认隐藏。",
-            "ja": "ポーズ集の 2人絡み・全身セクシー系・上半身の胸寄せ／セクシー露骨寄り、衣装集のランジェリー・セクシー、CC0 線画の全身・セクシー、ふたり、および suggestive ポーズが対象で、初期状態では非表示です。"}
+AGE_WHAT = {"zh": "包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类；CC0 线稿的全身性感、双人系列与标为 suggestive 的姿势，以及角色库标为 suggestive 的条目默认隐藏。",
+            "ja": "ポーズ集の 2人絡み・全身セクシー系・上半身の胸寄せ／セクシー露骨寄り、衣装集のランジェリー・セクシー、CC0 線画の全身・セクシー、ふたり、および suggestive ポーズ、キャラDB の suggestive 項目が対象で、初期状態では非表示です。"}
 
 
 def dialogs(keys):

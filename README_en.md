@@ -2,14 +2,16 @@
 
 # AI Image Reference Library
 
-**Five AI art reference galleries, built from one repo and served from one directory**
+**Five AI art reference galleries with six site entries, built from one repo and served from one directory**
 
-Portrait · Pose · Pose Depth · Costume · CC0 Pose Line Art · 15,241 images · Chinese / Japanese UI · Light / Dark
+Portrait · Pose (line art and depth) · Costume · CC0 Pose Line Art · Character · Chinese / Japanese UI · Light / Dark
+
+15,241 locally hosted image files (including size variants); Character adds 843 base entries and 184 hair-color variants. Its remote images are excluded from the file total.
 
 [![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
-[![sites](https://img.shields.io/badge/sites-5-0ea5e9?style=flat-square)](#sites)
-[![images](https://img.shields.io/badge/images-15%2C241-8b5cf6?style=flat-square)](#sites)
+[![sites](https://img.shields.io/badge/sites-6-0ea5e9?style=flat-square)](#sites)
+[![images](https://img.shields.io/badge/image_files-15%2C241-8b5cf6?style=flat-square)](#sites)
 [![Python](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square&logo=python&logoColor=white)](#quick-start)
 [![License](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](#license-and-credits)
 
@@ -52,15 +54,18 @@ Screenshots are taken from the live site to show the UI. The artwork belongs to 
 | [Pose](https://photoai.life/pose/) | Faceless gray mannequin line art, 5 angles per pose | 1,439 | No redistribution |
 | [Pose Depth](https://photoai.life/pose-depth/) | Grayscale depth maps of the same poses, for ControlNet | 1,439 | No redistribution |
 | [Costume](https://photoai.life/costume/) | Outfits without models, 86 faceted tags | 1,407 items / 4,221 files | No redistribution |
-| [Shisei line art](https://photoai.life/shisei/) | Faceless mannequin line art, 4 series × 5 angles; suggestive poses blurred by default | 280 poses / 1,133 | **CC0** |
+| [Shisei line art](https://photoai.life/shisei/) | Faceless mannequin line art, 4 series, up to 5 angles; adult content hidden by default | 280 poses / 1,133 | **CC0** |
+| [Character](https://photoai.life/character/) | Hairstyle, outfit and pose references, loaded from the source | 843 base entries + 184 hair-color variants; 281 pose line drawings | No redistribution of original or processed images |
 
-Every site has paginated grids, filters and search, a lightbox (`←` `→` to step, `Esc` to close, swipe on touch), original downloads, and theme and language switches. A shared top bar holds the gallery links and the 18+, light / dark and language switches; preferences apply across all galleries. Press `?` for shortcuts and `/` to jump to search. Pose has one switch between line art and depth maps, and the lightbox can compare both with a draggable divider. Adult-oriented items are hidden by default on Pose, Pose Depth and Costume, and blurred on Shisei; the 18+ switch in the top bar shows them after a one-time age check, shared across all five sites. They never appear on static landing pages or in the sitemap. Each page is a single `index.html` with embedded data and no framework, CDN or web fonts.
+Six physical sites appear as five galleries in navigation because Pose and Pose Depth share one gallery. Character has 122 hairstyles, 440 outfits and 281 poses (843 base entries); including hair-color variants there are 1,027 entries, with line art counted separately. These remote items are excluded from the 15,241 locally hosted image files.
 
-> **Portrait and Shisei images are CC0.** The other three sites forbid redistribution. Shisei's pose list follows ai-pose-gallery and is credited only. See `sites/<id>/NOTICE.md`.
+Every site has paginated grids, filters and search, a lightbox (`←` `→` to step, `Esc` to close, swipe on touch), original downloads, and theme and language switches. A shared top bar holds the gallery links and the 18+, light / dark and language switches; preferences apply across all galleries. Press `?` for shortcuts and `/` to jump to search. Pose has one switch between line art and depth maps, and the lightbox can compare both with a draggable divider. Adult-oriented items are hidden by default on Pose, Pose Depth, Costume, Shisei and Character (Character initially shows 791 base entries and all 184 hair-color variants); the 18+ switch in the top bar shows them after a one-time age check, shared across all sites. They never appear on static landing pages or in the sitemap. Each page is a single `index.html` with embedded data and no framework, CDN or web fonts.
+
+> **Portrait and Shisei images are CC0.** The other sites forbid redistribution. Character allows commercial artwork, reference use and modifications, but forbids redistributing original or processed images and using them to represent real people or minors. Shisei's pose list follows ai-pose-gallery and is credited only. See `sites/<id>/NOTICE.md`.
 
 ## Quick start
 
-This repo contains no image files; `tools/fetch.py` downloads them from each original site. Requires **Python 3.8+**. `tools/mid.py`, which generates lightbox previews, also needs Pillow (`pip install pillow`); every other script uses only the standard library.
+This repo contains no source image files. `tools/fetch.py` downloads images for locally hosted sites and explicitly skips Character (`imageMode: "remote"`); its thumbnails, originals and line art must not be downloaded or mirrored. Local pages, source data and manifests remain available, while image URLs point directly to the source and need a network connection even under `file://`. Requires **Python 3.8+**. `tools/mid.py`, which generates lightbox previews, also needs Pillow (`pip install pillow`); every other script uses only the standard library.
 
 ```bash
 git clone https://github.com/Brilliant666/ai-image-gallery.git
@@ -68,7 +73,7 @@ cd ai-image-gallery
 
 python tools/fetch.py      # download all images (~6.8 GB first time, then only missing files)
 python tools/mid.py        # generate lightbox previews (~290 MB)
-python tools/build.py      # build the five sites and the hub
+python tools/build.py      # build six site entries (five galleries) and the hub
 python tools/release.py    # assemble dist/ (images are hard links, no extra disk)
 python tools/serve.py      # preview at http://127.0.0.1:8080/
 ```
@@ -91,13 +96,13 @@ Check the result through `serve.py`, not by opening `dist/index.html` directly: 
 | `python tools/serve.py --root sites/pose` | Preview one site |
 | `python tests/run.py` | Checks that need no images: build output up to date, duplicate ids, inline JS syntax, manifests, doc links (CI runs it on every push) |
 
-`release.py` verifies images first and stops if any are missing (add `--skip-verify` if you fetched only some tiers). It deletes and recreates each target site directory. `--no-images` copies site files only; it does not keep old images in place.
+`release.py` verifies local images first and stops if any are missing (add `--skip-verify` if you fetched only some tiers). Remote sites receive metadata validation only; network availability, image existence and decoding are not verified. Their releases contain pages, `data/` and manifests, with no remote image assets. It deletes and recreates each target site directory. `--no-images` copies site files only; it does not keep old images in place.
 
 </details>
 
 ## Image loading
 
-Each image has three tiers: thumbnails for the grid, previews for the lightbox, originals for download only.
+Locally hosted galleries normally have three tiers: thumbnails for the grid, previews for the lightbox, originals for download only. Character uses remote source thumbnails, originals and optional line art; `tiers: []` and `imageDirs: []` disable local fetching and image packaging.
 
 | Tier | Portrait | Pose | Pose Depth | Costume |
 | --- | ---: | ---: | ---: | ---: |
@@ -155,4 +160,4 @@ The deployment guide and adding-a-site guide are in Chinese.
 | Images | Differs per site, see `sites/<id>/NOTICE.md` |
 | Chinese translations in `data/` | CC BY 4.0 |
 
-Images come from the original sites. Portrait by [あぎ](https://x.com/agi_aibusi) ([original](https://ai-portrait-gallery.pages.dev/)); Pose, Pose Depth and Costume by [ギア](https://x.com/giaaibusi) ([pose](https://ai-pose-gallery.pages.dev/) · [pose depth](https://ai-pose-depth-gallery.pages.dev/) · [costume](https://ai-costume-gallery.pages.dev/)). Shisei line art comes from [wquguru/shisei](https://github.com/wquguru/shisei) (CC0). This project is a personal Chinese-language mirror for learning.
+Images come from the original sites. Portrait by [あぎ](https://x.com/agi_aibusi) ([original](https://ai-portrait-gallery.pages.dev/)); Pose, Pose Depth and Costume by [ギア](https://x.com/giaaibusi) ([pose](https://ai-pose-gallery.pages.dev/) · [pose depth](https://ai-pose-depth-gallery.pages.dev/) · [costume](https://ai-costume-gallery.pages.dev/)). Shisei line art comes from [wquguru/shisei](https://github.com/wquguru/shisei) (CC0). Character comes from [たき AI](https://x.com/taki_auto)'s [キャラ組み立てDB](https://charadb-2fi.pages.dev/), with images loaded only from the source. This project is a personal Chinese-language index for learning.

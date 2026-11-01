@@ -37,6 +37,9 @@ def main():
     for s in sites:
         sid = s["id"]
         sd = site_dir(sid)
+        if s.get("imageMode") == "remote":
+            print(f"  – {sid}: remote 图片由原站加载；禁止本地下载或镜像，跳过\n")
+            continue
 
         tiers = s.get("tiers", ["thumb"])
         if only_tier:

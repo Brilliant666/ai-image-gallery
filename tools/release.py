@@ -15,7 +15,8 @@
   ├── costume/
   ├── pose/
   ├── pose-depth/
-  └── shisei/
+  ├── shisei/
+  └── character/          ← 仅页面和元数据，图片从原站加载
 
 说明:
   图片使用硬链接（同文件系统），不复制、不额外占盘。若跨文件系统则退化为复制。
@@ -98,7 +99,7 @@ def main():
         if bad:
             sys.exit("\n图片校验未通过，已中止，目标目录未改动。"
                      "\n详情: python tools/verify.py；确认要发布可加 --skip-verify")
-        print("  图片校验通过\n")
+        print("  校验通过（remote 站点仅校验元数据，未校验网络或图片文件）\n")
 
     # 清空目标里本次涉及的站点目录（保留其它站）
     os.makedirs(out, exist_ok=True)
@@ -132,7 +133,9 @@ def main():
 
         # 图片
         img_note = ""
-        if with_images:
+        if s.get("imageMode") == "remote":
+            img_note = "  remote 原站图片（不下载、不复制；仅发布页面、数据与 manifest）"
+        elif with_images:
             nl = nc = 0
             for dn in s.get("imageDirs", []):
                 src = os.path.join(sd, dn)

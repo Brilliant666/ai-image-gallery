@@ -1,0 +1,190 @@
+const CharacterModel = (() => {
+  const normalize = tag => tag.trim().toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' ');
+  const tags = text => String(text || '').split(',').map(s => s.trim()).filter(Boolean);
+  function compose(parts, subject, extras){
+    const all = [...tags(subject), ...parts.flatMap(p => tags(p.tags)), ...tags(extras)];
+    const multi = all.some(t => /^(?:[2-9]|\d{2,})(?:girls?|boys?|others?|people|characters?)$/.test(normalize(t))) || all.some(t => normalize(t) === 'multiple girls' || normalize(t) === 'multiple boys');
+    const seen = new Set(), result = [];
+    let conflict = false;
+    for (const tag of all){
+      const key = normalize(tag);
+      if (multi && /^(solo|1girl|1boy|1other)$/.test(key)){ conflict = true; continue; }
+      if (!seen.has(key)){ seen.add(key); result.push(tag); }
+    }
+    return {text: result.join(', '), conflict};
+  }
+  function slot(item){
+    if (item.set !== 'hair') return item.set;
+    return {'髪型':'style','前髪':'bangs','髪色':'color','髪飾り':'acc','目の色':'eyeColor','瞳の形':'eyeShape'}[item.cat];
+  }
+  function restore(value, items, slots){
+    if (!value || typeof value !== 'object') return {selected:{}, extras:'', subject:'1girl, solo'};
+    const selected = {};
+    for (const s of slots){
+      const item = items.get(value.selected && value.selected[s]);
+      if (item && slot(item) === s) selected[s] = item.id;
+    }
+    return {selected, extras:typeof value.extras === 'string' ? value.extras.slice(0,2000) : '',
+      subject:['1girl, solo','1boy, solo',''].includes(value.subject) ? value.subject : '1girl, solo'};
+  }
+  return {compose, slot, restore};
+})();
+(function(){
+'use strict';
+const $ = s => document.querySelector(s), grid = $('#grid');
+const escape = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const t = (zh, ja) => PL.lang === 'ja' ? ja : zh;
+const cats = DB.cats;
+const items = new Map(DB.items.map(r => [r[0], {id:r[0], jp:r[1], zh:r[2], tags:r[3], cat:cats[r[4]][0], adult:!!r[5],
+  set:r[0][0] === 'H' ? 'hair' : r[0][0] === 'O' ? 'outfit' : 'pose', parent:'', line:r[0][0] === 'P'}]));
+const colorNames = {brown:['棕色','茶色'], black:['黑色','黒'], blonde:['金色','金'], pink:['粉色','ピンク'], silver:['银色','銀']};
+const colorIds = {brown:'H050',black:'H049',blonde:'H052',pink:'H057',silver:'H055'};
+for (const [id, parent] of DB.variants){
+  const base = items.get(parent), color = id.split('-')[1], names = colorNames[color];
+  if (base && names) items.set(id, {...base, id, parent, zh:base.zh+'（'+names[0]+'）', jp:base.jp+'('+names[1]+')'});
+}
+const slots = ['style','bangs','color','acc','eyeColor','eyeShape','outfit','pose'];
+const slotNames = {style:['发型','髪型'],bangs:['刘海','前髪'],color:['发色','髪色'],acc:['发饰','髪飾り'],eyeColor:['眼睛颜色','目の色'],eyeShape:['眼睛形状','瞳の形'],outfit:['服装','衣装'],pose:['姿势','ポーズ']};
+const key = 'pl.character.v1', favKey = 'pl.character.favorites.v1';
+const read = k => {try{return JSON.parse(localStorage.getItem(k));}catch(_){return null;}};
+let state = CharacterModel.restore(read(key), items, slots);
+const validFav = value => new Set(Array.isArray(value) ? value.filter(id => items.has(id)) : []);
+let favorites = validFav(read(favKey)), set = 'hair', category = '', query = '', color = 'brown', limit = 48, detailId = '', detailLine = false, toastTimer;
+const allowed = item => item && (PL.adult || !item.adult);
+const label = item => PL.lang === 'ja' ? item.jp : item.zh;
+const slotLabel = slot => t(...slotNames[slot]);
+const image = (item, tier='thumb') => DB.source + (tier === 'thumb' ? 'thumb/'+item.id+'.webp' : tier === 'line' ? 'line/'+item.id+'.png' : 'img/'+item.id+'.jpg');
+function toast(text){
+  $('#toast').textContent = text; $('#toast').hidden = false; clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {$('#toast').hidden=true;}, 3500);
+}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(_){toast(t('本浏览器未允许保存，当前选择仍可使用。','ブラウザに保存できませんが、このページ内では使えます。'));}}
+const persist = () => save(key,state);
+function colorOptions(){return Object.entries(colorNames).map(([value,names]) => '<option value="'+value+'">'+escape(t(...names))+'</option>').join('');}
+function variant(base){return color === 'brown' || !items.has(base.id+'-'+color) ? base : items.get(base.id+'-'+color);}
+function currentItems(){
+  let list = $('#onlyFav').checked ? [...favorites].map(id=>items.get(id)) : [...items.values()].filter(i=>!i.parent).map(i=>i.cat==='髪型'?variant(i):i);
+  const terms = query.normalize('NFKC').toLowerCase().split(/\s+/).filter(Boolean);
+  return list.filter(i=>allowed(i) && i.set===set && (!category || i.cat===category) && terms.every(q=>[i.id,i.parent,i.jp,i.zh,i.tags,i.cat,cats.find(c=>c[0]===i.cat)[1]].join(' ').normalize('NFKC').toLowerCase().includes(q)));
+}
+function drawFilters(){
+  $('#sets').innerHTML = [['hair','头发与眼睛','髪・目'],['outfit','服装','衣装'],['pose','姿势','ポーズ']].map(([id,zh,ja])=>'<button class="chip" type="button" data-set="'+id+'" aria-pressed="'+(set===id)+'">'+escape(t(zh,ja))+'</button>').join('');
+  const options = cats.filter(c=>[...items.values()].some(i=>i.cat===c[0]&&i.set===set&&!i.parent));
+  $('#category').innerHTML = '<option value="">'+t('全部分类','すべての分類')+'</option>'+options.map(c=>'<option value="'+escape(c[0])+'">'+escape(PL.lang==='ja'?c[0]:c[1])+'</option>').join('');
+  $('#category').value = category;
+  $('#hairColor').innerHTML = colorOptions(); $('#hairColor').value = color;
+  $('#hairColor').disabled = set!=='hair' || (!!category && category!=='髪型');
+  $('#search').placeholder=t('搜索名称、ID 或英文标签','名前・ID・英語タグを検索');
+  $('#search').value=query;
+  $('#sets').ariaLabel=t('分区','区分'); $('#grid').ariaLabel=t('参考条目','参考項目');
+}
+function card(item){
+  const selected = state.selected[CharacterModel.slot(item)]===item.id;
+  return '<li class="ch-card'+(selected?' ch-selected':'')+'" data-id="'+item.id+'">'+
+    '<button class="ch-open" type="button" data-open="'+item.id+'" aria-label="'+escape(t('放大：','拡大：')+label(item))+'"><img src="'+image(item)+'" alt="'+escape(label(item))+'" loading="lazy" decoding="async"><span class="ch-img-error" hidden>'+t('图片未能加载<br>点击查看详情','画像を読み込めません<br>クリックで詳細')+'</span></button>'+
+    '<h3><small>'+item.id+'</small>'+escape(label(item))+'</h3><p class="ch-tags" title="'+escape(item.tags)+'">'+escape(item.tags)+'</p>'+
+    '<div class="ch-card-actions"><button class="btn ghost ch-pick" type="button" data-add="'+item.id+'" aria-pressed="'+selected+'">'+t(selected?'已选用':'选用',selected?'選択中':'選択')+'</button><button class="btn ghost" type="button" data-fav="'+item.id+'" aria-pressed="'+favorites.has(item.id)+'" aria-label="'+escape(t('收藏：','お気に入り：')+label(item))+'">'+(favorites.has(item.id)?'★':'☆')+'</button></div></li>';
+}
+function draw(){
+  const focused = grid.contains(document.activeElement) ? document.activeElement : null;
+  const action = focused && ['open','add','fav'].find(k=>focused.dataset[k]);
+  const focusedId = action && focused.dataset[action];
+  const list=currentItems();
+  grid.innerHTML=list.slice(0,limit).map(card).join('');
+  if(focusedId){const target=grid.querySelector('[data-'+action+'="'+focusedId+'"]');if(target)target.focus({preventScroll:true});}
+  $('#count').textContent=t(list.length+' 个条目 · 已显示 '+Math.min(limit,list.length),list.length+' 項目 · '+Math.min(limit,list.length)+' 件表示');
+  $('#more').hidden=limit>=list.length; $('#empty').hidden=!!list.length;
+  const hidden = [...items.values()].some(i=>!i.parent&&i.set===set&&(!category||i.cat===category)&&i.adult);
+  $('#empty').innerHTML='<p>'+t('没有匹配的条目。可清除搜索、分类或收藏筛选。','一致する項目がありません。検索・分類・お気に入り条件を解除してください。')+'</p>'+(!PL.adult&&hidden?'<button type="button" class="btn ghost" data-adult-go>'+t('查看成人向参考','成人向け参考を見る')+'</button>':'');
+}
+function drawAssembly(){
+  const visible = slots.map(s=>items.get(state.selected[s])).filter(allowed);
+  const hiddenCount = slots.filter(s=>state.selected[s]&&!allowed(items.get(state.selected[s]))).length;
+  $('#slotCount').textContent=visible.length+'/'+slots.length;
+  $('#slots').innerHTML=slots.map(s=>{
+    const item=items.get(state.selected[s]), show=allowed(item);
+    return '<div class="ch-slot" data-slot="'+s+'">'+(show?'<img src="'+image(item)+'" alt="" loading="lazy">':'')+'<div class="ch-slot-text"><b>'+slotLabel(s)+'</b><span'+(show?'':' class="ch-no-selection"')+'>'+escape(show?label(item):item?t('18+ 已隐藏','18+ 非表示'):t('未选择','未選択'))+'</span></div>'+(item?'<button class="ch-remove" type="button" data-remove="'+s+'" aria-label="'+escape(t('移除','削除')+slotLabel(s))+'">×</button>':'')+'</div>';
+  }).join('');
+  const result=CharacterModel.compose(visible,state.subject,state.extras);
+  $('#output').value=result.text;
+  const messages=[];
+  if(result.conflict)messages.push(t('双人标签已移除 solo、1girl 等单人标签；请确认服装和人数搭配。','複数人のタグに合わせて solo・1girl などを除外しました。衣装と人数をご確認ください。'));
+  if(hiddenCount)messages.push(t(hiddenCount+' 个成人向选择已隐藏，不加入结果。',hiddenCount+' 件の成人向け選択は非表示で、結果に含まれません。'));
+  $('#conflict').textContent=messages.join(' '); $('#conflict').hidden=!messages.length;
+}
+function choose(id){
+  const item=items.get(id); if(!allowed(item))return;
+  const s=CharacterModel.slot(item);state.selected[s]=id;
+  if(s==='style'&&item.parent){state.selected.color=colorIds[id.split('-')[1]];}
+  if(s==='color'&&state.selected.style){
+    const style=items.get(state.selected.style), base=style.parent||style.id, c=Object.keys(colorIds).find(k=>colorIds[k]===id);
+    state.selected.style=c&&c!=='brown'&&items.has(base+'-'+c)?base+'-'+c:base;
+  }
+  persist();drawAssembly();draw();toast(t('已选用：','選択：')+label(item));
+}
+function favorite(id){
+  if(!items.has(id))return;
+  favorites.has(id)?favorites.delete(id):favorites.add(id);save(favKey,[...favorites]);draw();if(detailId)syncDetailFav();
+}
+function syncDetailFav(){
+  $('#detailFav').textContent=favorites.has(detailId)?t('★ 已收藏','★ 保存済み'):t('☆ 收藏','☆ お気に入り');
+  $('#detailFav').setAttribute('aria-pressed',String(favorites.has(detailId)));
+}
+function renderDetail(){
+  const item=items.get(detailId);if(!allowed(item))return;
+  $('#detailTitle').textContent=label(item);$('#detailName').textContent=item.id+' · '+(PL.lang==='ja'?item.zh:item.jp);
+  $('#detailTags').textContent=item.tags;$('#detailError').hidden=true;$('#detailImage').hidden=false;
+  $('#detailImage').alt=label(item)+(detailLine?t('线稿','の線画'):'');$('#detailImage').src=image(item,detailLine?'line':'full');
+  $('#original').href=image(item,'full');$('#lineLink').hidden=!item.line;
+  if(item.line)$('#lineLink').href=image(item,'line');else $('#lineLink').removeAttribute('href');
+  $('#line').hidden=!item.line;$('#line').setAttribute('aria-pressed',String(detailLine));
+  $('#line').innerHTML=detailLine?t('查看彩图','カラーを見る'):t('查看线稿','線画を見る');
+  $('#detailColors').hidden=item.cat!=='髪型';$('#detailColor').innerHTML=colorOptions();
+  $('#detailColor').value=item.parent?item.id.split('-')[1]:'brown';syncDetailFav();
+}
+function openDetail(id,opener){
+  if(!allowed(items.get(id)))return;
+  detailId=id;detailLine=false;renderDetail();PL.openDialog($('#detail'),opener,()=>grid.querySelector('[data-open="'+id+'"]')||$('#search'));
+}
+$('#detail').addEventListener('pl:close',()=>{detailId='';$('#detailImage').removeAttribute('src');$('#original').removeAttribute('href');$('#lineLink').removeAttribute('href');});
+$('#detailImage').addEventListener('error',()=>{$('#detailImage').hidden=true;$('#detailError').hidden=false;});
+grid.addEventListener('error',e=>{if(e.target.tagName==='IMG'){e.target.hidden=true;e.target.nextElementSibling.hidden=false;}},true);
+grid.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.open)openDetail(b.dataset.open,b);else if(b.dataset.add)choose(b.dataset.add);else if(b.dataset.fav)favorite(b.dataset.fav);});
+$('#slots').addEventListener('click',e=>{const b=e.target.closest('[data-remove]');if(b){delete state.selected[b.dataset.remove];persist();drawAssembly();draw();}});
+$('#detailAdd').addEventListener('click',()=>choose(detailId));$('#detailFav').addEventListener('click',()=>favorite(detailId));
+$('#line').addEventListener('click',()=>{detailLine=!detailLine;renderDetail();});
+$('#detailColor').addEventListener('change',()=>{const item=items.get(detailId),base=item.parent||item.id,c=$('#detailColor').value;detailId=c==='brown'?base:base+'-'+c;renderDetail();});
+function writeHash(){const h=category?'cat='+encodeURIComponent(category):'';try{history.replaceState(null,'',location.pathname+location.search+(h?'#'+h:''));}catch(_){}}
+function filterChanged(){limit=48;drawFilters();draw();writeHash();}
+$('#sets').addEventListener('click',e=>{const b=e.target.closest('[data-set]');if(b){set=b.dataset.set;category='';filterChanged();}});
+$('#category').addEventListener('change',()=>{category=$('#category').value;filterChanged();});
+$('#hairColor').addEventListener('change',()=>{color=$('#hairColor').value;filterChanged();});
+$('#search').addEventListener('input',()=>{query=$('#search').value;limit=48;draw();});
+$('#onlyFav').addEventListener('change',()=>{limit=48;draw();});
+$('#more').addEventListener('click',()=>{limit+=48;draw();});
+$('#reset').addEventListener('click',()=>{category='';query='';color='brown';$('#onlyFav').checked=false;filterChanged();});
+$('#extras').value=state.extras;$('#subject').value=state.subject;
+$('#extras').addEventListener('input',()=>{state.extras=$('#extras').value;persist();drawAssembly();});
+$('#subject').addEventListener('change',()=>{state.subject=$('#subject').value;persist();drawAssembly();});
+$('#clear').addEventListener('click',()=>{state.selected={};state.extras='';$('#extras').value='';persist();drawAssembly();draw();});
+$('#copy').addEventListener('click',async()=>{
+  const value=$('#output').value;
+  try{if(!navigator.clipboard)throw Error();await navigator.clipboard.writeText(value);toast(t('标签已复制','タグをコピーしました'));}
+  catch(_){$('#output').focus();$('#output').select();let copied=false;try{copied=document.execCommand('copy');}catch(_){}toast(copied?t('标签已复制','タグをコピーしました'):t('结果已选中，请按 Ctrl/Cmd+C 复制。','結果を選択しました。Ctrl/Cmd+C でコピーしてください。'));}
+});
+function readHash(){
+  query='';$('#onlyFav').checked=false;
+  const c=new URLSearchParams(location.hash.slice(1)).get('cat');
+  if(c&&cats.some(x=>x[0]===c)){category=c;set=[...items.values()].find(i=>i.cat===c).set;}
+  else category='';
+  limit=48;drawFilters();draw();
+}
+addEventListener('hashchange',readHash);
+addEventListener('pl:lang',()=>{drawFilters();draw();drawAssembly();if(detailId)renderDetail();document.title=t('二次元角色库：发型服装姿势与标签组装 · photoai.life','キャラ組み立てDB：髪型・衣装・ポーズ · photoai.life');});
+addEventListener('pl:adult',()=>{if(detailId)PL.closeDialog($('#detail'));draw();drawAssembly();});
+addEventListener('storage',e=>{if(e.key===favKey){favorites=validFav(read(favKey));draw();if(detailId)syncDetailFav();}else if(e.key===key){state=CharacterModel.restore(read(key),items,slots);$('#extras').value=state.extras;$('#subject').value=state.subject;drawAssembly();draw();}});
+if(matchMedia('(max-width:800px)').matches)$('#assembly').open=false;
+$('#count').title=t('原站目录版本标记：','原サイトのバージョン表記：')+DB.built;
+readHash();drawAssembly();
+document.title=t('二次元角色库：发型服装姿势与标签组装 · photoai.life','キャラ組み立てDB：髪型・衣装・ポーズ · photoai.life');
+})();

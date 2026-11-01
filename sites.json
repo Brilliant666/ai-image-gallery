@@ -6,8 +6,8 @@
       "ja": "参照素材集"
     },
     "lead": {
-      "zh": "AI 生成的绘画参考图，可离线浏览。每个子站都能切换主题（浅色／深色）与语言（中文／日本語）。",
-      "ja": "AI生成の参照画像をオフラインで閲覧するための索引です。各サイトでテーマ（ライト／ダーク）と言語（中文／日本語）を切り替えられます。"
+      "zh": "AI 生成的绘画参考索引，中日双语、浅色／深色主题。二次元角色库图片由原站远程加载，需要联网。",
+      "ja": "AI 生成の描画参考インデックス。中文／日本語とライト／ダークに対応。キャラ組み立てDB の画像は元サイトから読み込むため、接続が必要です。"
     },
     "licenseNote": {
       "zh": "以上素材著作权归各原作者所有。本项目为个人学习用途的中文镜像，代码 MIT，素材按各原站条件使用。",
@@ -296,6 +296,36 @@
         "url": "https://github.com/wquguru"
       },
       "imageBase": "https://raw.githubusercontent.com/wquguru/shisei/v0.3.0/"
+    },
+    {
+      "id": "character",
+      "updated": "2026-11-01",
+      "code": "CHARACTER-DB-01",
+      "name": {
+        "zh": "二次元角色库",
+        "ja": "キャラ組み立てDB"
+      },
+      "desc": {
+        "zh": "发型、服装与姿势的角色参考：843 个基础条目，另有 184 个发色变体与 281 张姿势线稿。图片由原站加载，需要联网。",
+        "ja": "髪型・衣装・ポーズのキャラ参考。基本 843 件に髪色違い 184 件、ポーズ線画 281 枚。画像は元サイトから読み込み、接続が必要です。"
+      },
+      "stats": [
+        {"v": "843", "public": "791", "l": {"zh": "基础条目", "ja": "基本項目"}},
+        {"v": "184", "l": {"zh": "发色变体", "ja": "髪色違い"}},
+        {"v": "281", "l": {"zh": "姿势线稿", "ja": "ポーズ線画"}}
+      ],
+      "license": "restricted",
+      "source": "https://charadb-2fi.pages.dev/",
+      "adult": {"rating": ["suggestive"]},
+      "imageMode": "remote",
+      "imageBase": "https://charadb-2fi.pages.dev/",
+      "cover": "thumb/H001.webp",
+      "tiers": [],
+      "imageDirs": [],
+      "author": {
+        "name": "たき AI",
+        "url": "https://x.com/taki_auto"
+      }
     }
   ]
 }

@@ -2,14 +2,16 @@
 
 # AI 参照画像ライブラリ
 
-**AI イラスト向けの参照画像ギャラリー 5 つ、1 リポジトリでビルド、1 ディレクトリで公開**
+**参照画像ギャラリー 5 つ、サイト入口 6 つ、1 リポジトリでビルド、1 ディレクトリで公開**
 
-ポートレート · ポーズ · デプス ポーズ · 衣装 · CC0 ポーズ線画 · 15,241 枚 · 中国語 / 日本語 · ライト / ダーク
+ポートレート · ポーズ（線画とデプス） · 衣装 · CC0 ポーズ線画 · キャラ組み立てDB · 中国語 / 日本語 · ライト / ダーク
+
+ローカル画像ファイル 15,241 個（サイズ違いを含む）。キャラDB は基本 843 件と髪色違い 184 件を別に収録し、リモート画像はファイル総数に含めません。
 
 [![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
-[![sites](https://img.shields.io/badge/sites-5-0ea5e9?style=flat-square)](#サイト)
-[![images](https://img.shields.io/badge/images-15%2C241-8b5cf6?style=flat-square)](#サイト)
+[![sites](https://img.shields.io/badge/sites-6-0ea5e9?style=flat-square)](#サイト)
+[![images](https://img.shields.io/badge/image_files-15%2C241-8b5cf6?style=flat-square)](#サイト)
 [![Python](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square&logo=python&logoColor=white)](#クイックスタート)
 [![License](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](#ライセンスとクレジット)
 
@@ -52,15 +54,18 @@
 | [ポーズ集](https://photoai.life/pose/) | 顔なしグレーマネキンの線画、1 ポーズ 5 アングル | 1,439 枚 | 再配布禁止 |
 | [デプス ポーズ集](https://photoai.life/pose-depth/) | 同じポーズの深度マップ、ControlNet 向け | 1,439 枚 | 再配布禁止 |
 | [衣装集](https://photoai.life/costume/) | 人物なしの衣装、86 タグで絞り込み | 1,407 着 / 4,221 枚 | 再配布禁止 |
-| [Shisei 線画](https://photoai.life/shisei/) | 顔なしマネキン線画、4 シリーズ × 5 アングル。suggestive はぼかし表示 | 280 ポーズ / 1,133 枚 | **CC0** |
+| [Shisei 線画](https://photoai.life/shisei/) | 顔なしマネキン線画、4 シリーズ、各最大 5 アングル。成人向けは初期状態で非表示 | 280 ポーズ / 1,133 枚 | **CC0** |
+| [キャラ組み立てDB](https://photoai.life/character/) | 髪型・衣装・ポーズ参考、画像は元サイトから読み込み | 基本 843 件 + 髪色違い 184 件、ポーズ線画 281 枚 | 原画像・加工画像とも再配布禁止 |
 
-各サイト共通：ページ送り付きグリッド、絞り込みと検索、ライトボックス（`←` `→` で移動、`Esc` で閉じる、タッチでスワイプ）、原寸ダウンロード、テーマと言語の切り替え。ページ上部の共通バーにギャラリー切り替え・18+・ライト / ダーク・言語をまとめ、設定は全ギャラリー共通です。`?` でショートカット一覧、`/` で検索欄へ移動します。ポーズ集はスイッチ一つで線画と深度マップを切り替え、拡大表示では仕切りをドラッグして左右に比較できます。ポーズ集・深度ポーズ集・衣装集の成人向け内容は初期状態で非表示、Shisei はぼかし表示です。上部バーの「18+」で年齢を一度確認すると表示され、5 サイト共通で記憶します。成人向け内容は静的ランディングページと sitemap には載りません。ページは単一の `index.html` でデータを内蔵し、フレームワーク・CDN・Web フォントを使いません。
+6 サイトを 5 つのギャラリーとしてナビゲーションに表示します。ポーズ線画とデプスは一つのギャラリーです。キャラDB は髪型 122・衣装 440・ポーズ 281 の基本 843 件、髪色違いを含め 1,027 件で、線画は別に数えます。これらはローカル画像ファイル 15,241 個に含みません。
 
-> **CC0 はポートレート集と Shisei です。** 他の 3 サイトの素材は再配布禁止です。Shisei のポーズ目録は ai-pose-gallery に基づき出典表記のみです。詳しくは `sites/<id>/NOTICE.md` を参照してください。
+各サイト共通：ページ送り付きグリッド、絞り込みと検索、ライトボックス（`←` `→` で移動、`Esc` で閉じる、タッチでスワイプ）、原寸ダウンロード、テーマと言語の切り替え。ページ上部の共通バーにギャラリー切り替え・18+・ライト / ダーク・言語をまとめ、設定は全ギャラリー共通です。`?` でショートカット一覧、`/` で検索欄へ移動します。ポーズ集はスイッチ一つで線画と深度マップを切り替え、拡大表示では仕切りをドラッグして左右に比較できます。ポーズ集・深度ポーズ集・衣装集・Shisei・キャラDB の成人向け内容は初期状態で非表示です（キャラDB は基本 791 件と髪色違い 184 件を表示）。上部バーの「18+」で年齢を一度確認すると表示され、全サイト共通で記憶します。成人向け内容は静的ランディングページと sitemap には載りません。ページは単一の `index.html` でデータを内蔵し、フレームワーク・CDN・Web フォントを使いません。
+
+> **CC0 はポートレート集と Shisei です。** 他のサイトの素材は再配布禁止です。キャラDB は商用作品制作・参考・改変を認めますが、原画像と加工画像の再配布、および実在人物や未成年者の表現への利用を禁じます。Shisei のポーズ目録は ai-pose-gallery に基づき出典表記のみです。詳しくは `sites/<id>/NOTICE.md` を参照してください。
 
 ## クイックスタート
 
-このリポジトリに画像ファイルは含まれていません。`tools/fetch.py` が各元サイトから取得します。**Python 3.8+** が必要です。ライトボックス用の中サイズ画像を作る `tools/mid.py` だけは Pillow（`pip install pillow`）も必要で、他のスクリプトは標準ライブラリのみで動きます。
+このリポジトリに素材画像ファイルは含まれていません。`tools/fetch.py` はローカル配信サイトの画像を取得しますが、キャラDB（`imageMode: "remote"`）は明示的にスキップします。サムネイル・原画像・線画のダウンロードやミラーは行いません。ページ・元データ・manifest はローカルに保持し、画像は元サイトの URL を直接参照するため `file://` でも接続が必要です。**Python 3.8+** が必要です。ライトボックス用の中サイズ画像を作る `tools/mid.py` だけは Pillow（`pip install pillow`）も必要で、他のスクリプトは標準ライブラリのみで動きます。
 
 ```bash
 git clone https://github.com/Brilliant666/ai-image-gallery.git
@@ -68,7 +73,7 @@ cd ai-image-gallery
 
 python tools/fetch.py      # 全画像をダウンロード（初回約 6.8 GB、以降は不足分のみ）
 python tools/mid.py        # ライトボックス用の中サイズ画像を生成（約 290 MB）
-python tools/build.py      # 5 サイトとトップをビルド
+python tools/build.py      # 6 サイト入口（5 ギャラリー）とトップをビルド
 python tools/release.py    # dist/ を組み立て（画像はハードリンク、容量は増えない）
 python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 ```
@@ -91,13 +96,13 @@ python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 | `python tools/serve.py --root sites/pose` | 1 サイトだけプレビュー |
 | `python tests/run.py` | 画像不要のチェック：ビルド成果物の更新漏れ、重複 id、インライン JS 構文、manifest、文書リンク（CI が push ごとに実行） |
 
-`release.py` は先に画像を検証し、欠けていれば中止します（一部の段階だけ取得した場合は `--skip-verify`）。対象サイトのディレクトリは削除してから作り直します。`--no-images` はサイトファイルのみをコピーするもので、既存の画像を残す用途には使えません。
+`release.py` は先にローカル画像を検証し、欠けていれば中止します（一部の段階だけ取得した場合は `--skip-verify`）。remote サイトはメタデータのみ検証し、ネットワーク・画像の存在・デコードは確認しません。ページ・`data/`・manifest を公開対象とし、リモート画像は含めません。対象サイトのディレクトリは削除してから作り直します。`--no-images` はサイトファイルのみをコピーするもので、既存の画像を残す用途には使えません。
 
 </details>
 
 ## 画像の読み込み
 
-画像は 3 段階あります。グリッドはサムネイル、ライトボックスは中サイズ、原寸はダウンロード時のみ使います。
+ローカル配信ギャラリーは通常 3 段階です。グリッドはサムネイル、ライトボックスは中サイズ、原寸はダウンロード時のみ使います。キャラDB は元サイトのサムネイル・原画像・線画を参照し、`tiers: []` と `imageDirs: []` で取得・画像パッケージ化を無効にします。
 
 | 段階 | ポートレート | ポーズ | デプス | 衣装 |
 | --- | ---: | ---: | ---: | ---: |
@@ -155,4 +160,4 @@ ai-image-gallery/
 | 画像素材 | サイトごとに異なる。`sites/<id>/NOTICE.md` を参照 |
 | `data/` の中国語訳 | CC BY 4.0 |
 
-素材は各元サイトによるものです。ポートレート集：[あぎ](https://x.com/agi_aibusi)（[元サイト](https://ai-portrait-gallery.pages.dev/)）。ポーズ集・デプス ポーズ集・衣装集：[ギア](https://x.com/giaaibusi)（[ポーズ](https://ai-pose-gallery.pages.dev/) · [デプス](https://ai-pose-depth-gallery.pages.dev/) · [衣装](https://ai-costume-gallery.pages.dev/)）。Shisei の線画は [wquguru/shisei](https://github.com/wquguru/shisei)（CC0）より。本プロジェクトは個人学習目的の中国語ミラーです。
+素材は各元サイトによるものです。ポートレート集：[あぎ](https://x.com/agi_aibusi)（[元サイト](https://ai-portrait-gallery.pages.dev/)）。ポーズ集・デプス ポーズ集・衣装集：[ギア](https://x.com/giaaibusi)（[ポーズ](https://ai-pose-gallery.pages.dev/) · [デプス](https://ai-pose-depth-gallery.pages.dev/) · [衣装](https://ai-costume-gallery.pages.dev/)）。Shisei の線画は [wquguru/shisei](https://github.com/wquguru/shisei)（CC0）より。キャラDB は [たき AI](https://x.com/taki_auto) の [キャラ組み立てDB](https://charadb-2fi.pages.dev/) を出典とし、画像は元サイトからのみ読み込みます。本プロジェクトは個人学習目的の中国語インデックスです。

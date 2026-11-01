@@ -29,7 +29,7 @@ GRID_MAX = 60       # 每页最多展示的缩略图
 
 @dataclass
 class Item:
-    thumb: str              # 相对站点根的缩略图路径
+    thumb: str              # 相对站点根的缩略图路径，或原站绝对 HTTPS URL
     alt: str                # 图片说明（中文）
     caption: str = ""       # 卡片下方小字
     w: int = 0
@@ -168,9 +168,14 @@ def _faq_ld(faq):
         {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]}
 
 
+def thumb_src(thumb, prefix):
+    """远程缩略图保持原站 HTTPS URL；本地缩略图沿用当前页面 / 站点前缀。"""
+    return thumb if thumb.startswith("https://") else prefix + thumb
+
+
 def _img_ld(site, it):
     """缩略图的 ImageObject：CC0 站点写 license / acquireLicensePage；禁止再分发的站点写版权与出处"""
-    o = {"@type": "ImageObject", "contentUrl": f"{site.site_url}/{it.thumb}", "caption": it.alt,
+    o = {"@type": "ImageObject", "contentUrl": thumb_src(it.thumb, site.site_url + "/"), "caption": it.alt,
          "creator": {"@type": "Person", "name": site.author, "url": site.author_url},
          "creditText": f"{site.author} / {site.source}"}
     if site.license_url:
@@ -185,7 +190,7 @@ def facet_page(site, f, all_facets):
     up = "../" * depth
     shown = f.items[:GRID_MAX]
     grid = "\n".join(
-        f'<li><figure style="margin:0"><img src="{up}{esc(it.thumb)}" alt="{esc(it.alt)}" loading="lazy" decoding="async"'
+        f'<li><figure style="margin:0"><img src="{esc(thumb_src(it.thumb, up))}" alt="{esc(it.alt)}" loading="lazy" decoding="async"'
         + (f' width="{it.w}" height="{it.h}" style="--ar:{it.w}/{it.h}"' if it.w and it.h else "")
         + f'>' + (f'<figcaption>{esc(it.caption)}</figcaption>' if it.caption else "") + '</figure></li>'
         for it in shown)
