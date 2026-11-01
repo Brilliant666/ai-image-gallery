@@ -26,13 +26,15 @@
 python tools/build.py --site character
 ```
 
-`data/catalog.json` 是 2026-11-01 原站 `data.js` 公开版的字段白名单快照，记录原文件 SHA-256。原文件仅作 JSON 解析，不执行 JavaScript，不保留社区或额外下载入口。
+`data/catalog.json` 是本次接入保留的原站 `data.js` 公开版字段白名单快照，记录原文件 SHA-256。目录的 `built: 2026-11-02` 是原站版本标记；本站 `sites.json.updated: 2026-11-01` 是接入记录日期，用于 sitemap，不代表采集时间。原文件仅作 JSON 解析，不执行 JavaScript，不保留社区或额外下载入口。
 
 维护者可手动保存新公开版 `data.js`，再导入：
 
 ```bash
 python -I sites/character/scripts/import_catalog.py /path/to/data.js
 ```
+
+来源条件与图片加载方式见 [NOTICE.md](NOTICE.md)。目录是人工审核后更新的快照，构建与预览不会自动同步原站。
 
 新增条目须在 `scripts/translations.py` 添加自己的中文短名，审核 `scripts/build_gallery.py` 的默认隐藏规则，并更新 `sites.json` 数量。导入器拒绝非 public tier、重复 ID、未知 ID 与缺失父条目；不要用镜像仓库的汉化文件直接覆盖本站翻译。
 
