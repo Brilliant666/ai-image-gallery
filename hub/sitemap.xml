@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://example.com/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/</loc><lastmod>2026-11-01</lastmod></url>
   <url><loc>https://example.com/portrait/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://example.com/portrait/browse/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://example.com/portrait/section/face/</loc><lastmod>2026-10-31</lastmod></url>
@@ -183,4 +183,34 @@
   <url><loc>https://example.com/shisei/series/%E5%85%A8%E8%BA%AB%E3%83%BB%E6%A8%99%E6%BA%96/%E3%81%97%E3%82%83%E3%81%8C%E3%81%BF/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://example.com/shisei/series/%E5%85%A8%E8%BA%AB%E3%83%BB%E6%A8%99%E6%BA%96/%E5%89%8D%E3%81%8B%E3%81%8C%E3%81%BF/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://example.com/shisei/series/%E4%B8%8A%E5%8D%8A%E8%BA%AB/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://example.com/character/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/browse/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E9%AB%AA%E5%9E%8B/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E5%89%8D%E9%AB%AA/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E9%AB%AA%E8%89%B2/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E9%AB%AA%E9%A3%BE%E3%82%8A/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E7%9B%AE%E3%81%AE%E8%89%B2/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E7%9E%B3%E3%81%AE%E5%BD%A2/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E5%88%B6%E6%9C%8D%E3%83%BB%E5%AD%A6%E7%94%9F/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E3%82%AB%E3%82%B8%E3%83%A5%E3%82%A2%E3%83%AB%28%E6%98%A5%E5%A4%8F%29/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E3%82%AB%E3%82%B8%E3%83%A5%E3%82%A2%E3%83%AB%28%E7%A7%8B%E5%86%AC%29/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E3%81%8D%E3%82%8C%E3%81%84%E3%82%81%E3%83%BB%E3%82%AA%E3%83%95%E3%82%A3%E3%82%B9/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E3%83%89%E3%83%AC%E3%82%B9%E3%83%BB%E3%83%91%E3%83%BC%E3%83%86%E3%82%A3/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E5%92%8C%E6%9C%8D/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%84%E3%83%BB%E9%83%A8%E6%B4%BB/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E8%81%B7%E6%A5%AD%E3%83%BB%E3%82%B3%E3%82%B9%E3%83%97%E3%83%AC/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E3%83%95%E3%82%A1%E3%83%B3%E3%82%BF%E3%82%B8%E3%83%BC/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E9%83%A8%E5%B1%8B%E7%9D%80%E3%83%BB%E3%83%91%E3%82%B8%E3%83%A3%E3%83%9E/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E3%82%A4%E3%83%99%E3%83%B3%E3%83%88%E3%83%BB%E5%AD%A3%E7%AF%80/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E3%82%A2%E3%82%A4%E3%83%89%E3%83%AB%E3%83%BB%E3%82%B9%E3%83%86%E3%83%BC%E3%82%B8/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E3%82%B4%E3%82%B9%E3%83%AD%E3%83%AA%E3%83%BB%E5%9C%B0%E9%9B%B7%E7%B3%BB/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E3%83%9F%E3%83%AA%E3%82%BF%E3%83%AA%E3%83%BC%E3%83%BBSF/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E7%AB%8B%E3%81%A1/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E5%BA%A7%E3%82%8A/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E5%AF%9D%E3%81%9D%E3%81%B9%E3%82%8A/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E3%81%97%E3%82%83%E3%81%8C%E3%81%BF%E3%83%BB%E8%86%9D%E7%AB%8B%E3%81%A1/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E4%B8%8A%E5%8D%8A%E8%BA%AB%E3%83%BB%E6%89%8B%E3%81%AE%E4%BB%95%E8%8D%89/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E5%8B%95%E3%81%8D/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/2%E4%BA%BA/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/character/cat/%E6%97%A5%E5%B8%B8%E3%81%AE%E5%8B%95%E4%BD%9C/</loc><lastmod>2026-11-01</lastmod></url>
 </urlset>

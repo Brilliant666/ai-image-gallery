@@ -29,7 +29,7 @@ BUILD_OUTPUT = re.compile(
     r"|sites/[^/]+/(index\.html|404\.html|robots\.txt|sitemap\.xml"
     r"|data/(meta\.json|translations\.csv|landing\.json|[a-z-]+-zh\.json)"
     # shared/landing.py 生成的静态落地页
-    r"|(browse|tag|category|series|section|style)/.*index\.html))$"
+    r"|(browse|tag|cat|category|series|section|style)/.*index\.html))$"
 )
 
 

@@ -29,7 +29,7 @@ GRID_MAX = 60       # 每页最多展示的缩略图
 
 @dataclass
 class Item:
-    thumb: str              # 相对站点根的缩略图路径
+    thumb: str              # 相对站点根的缩略图路径，或原站绝对 HTTPS URL
     alt: str                # 图片说明（中文）
     caption: str = ""       # 卡片下方小字
     w: int = 0
@@ -67,6 +67,8 @@ class Site:
     index_title: str = ""   # 分面索引页 /<站点>/browse/ 的标题
     index_intro: str = ""
     license_url: str = ""   # 图片授权地址（CC0 站点填 CC0 链接，结构化数据写 license / acquireLicensePage）
+    share_image: str = ""   # 可选的绝对 HTTPS 分享图；默认使用站点根的 og-cover.jpg
+    gallery_features: str = "可筛选、放大、下载"
 
 
 def esc(s):
@@ -109,6 +111,8 @@ def _page(site, *, slug, title, h1, description, crumbs, body, ld, depth):
     """depth = slug 的层数，用于回到站点根的相对路径"""
     up = "../" * depth
     canonical = f"{site.site_url}/{slug}/"
+    share_image = site.share_image or site.site_url + "/og-cover.jpg"
+    share_size = '' if site.share_image else '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">'
     nav = ' <span>/</span> '.join(
         f'<a href="{esc(href)}">{esc(label)}</a>' if href else esc(label) for href, label in crumbs)
     return f"""<!doctype html>
@@ -128,12 +132,11 @@ def _page(site, *, slug, title, h1, description, crumbs, body, ld, depth):
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(description)}">
 <meta property="og:url" content="{esc(canonical)}">
-<meta property="og:image" content="{esc(site.site_url)}/og-cover.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image" content="{esc(share_image)}">
+{share_size}
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="{esc(site.site_url)}/og-cover.jpg">
+<meta name="twitter:image" content="{esc(share_image)}">
 <script type="application/ld+json">{_ld(ld)}</script>
 {ui.head_script()}
 {ui.head_css()}
@@ -168,9 +171,14 @@ def _faq_ld(faq):
         {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]}
 
 
+def thumb_src(thumb, prefix):
+    """远程缩略图保持原站 HTTPS URL；本地缩略图沿用当前页面 / 站点前缀。"""
+    return thumb if thumb.startswith("https://") else prefix + thumb
+
+
 def _img_ld(site, it):
     """缩略图的 ImageObject：CC0 站点写 license / acquireLicensePage；禁止再分发的站点写版权与出处"""
-    o = {"@type": "ImageObject", "contentUrl": f"{site.site_url}/{it.thumb}", "caption": it.alt,
+    o = {"@type": "ImageObject", "contentUrl": thumb_src(it.thumb, site.site_url + "/"), "caption": it.alt,
          "creator": {"@type": "Person", "name": site.author, "url": site.author_url},
          "creditText": f"{site.author} / {site.source}"}
     if site.license_url:
@@ -185,7 +193,7 @@ def facet_page(site, f, all_facets):
     up = "../" * depth
     shown = f.items[:GRID_MAX]
     grid = "\n".join(
-        f'<li><figure style="margin:0"><img src="{up}{esc(it.thumb)}" alt="{esc(it.alt)}" loading="lazy" decoding="async"'
+        f'<li><figure style="margin:0"><img src="{esc(thumb_src(it.thumb, up))}" alt="{esc(it.alt)}" loading="lazy" decoding="async"'
         + (f' width="{it.w}" height="{it.h}" style="--ar:{it.w}/{it.h}"' if it.w and it.h else "")
         + f'>' + (f'<figcaption>{esc(it.caption)}</figcaption>' if it.caption else "") + '</figure></li>'
         for it in shown)
@@ -195,7 +203,7 @@ def facet_page(site, f, all_facets):
             + ('<ul class="facts">' + "".join(f"<li><b>{esc(k)}</b>{esc(v)}</li>" for k, v in f.facts) + "</ul>" if f.facts else "")
             + f'<a class="btn pri cta" href="{esc(gallery_url)}">在画廊中查看全部 {len(f.items)} 张 →</a>'
             + f'<ul class="lgrid">{grid}</ul>'
-            + (f'<p class="more">本页展示前 {len(shown)} 张，其余 {len(f.items) - len(shown)} 张请在<a href="{esc(gallery_url)}">画廊</a>中查看（可筛选、放大、下载）。</p>'
+            + (f'<p class="more">本页展示前 {len(shown)} 张，其余 {len(f.items) - len(shown)} 张请在<a href="{esc(gallery_url)}">画廊</a>中查看（{esc(site.gallery_features)}）。</p>'
                if len(f.items) > len(shown) else "")
             + ('<h2>相关分类与标签</h2><ul class="lchips">' + "".join(
                 f'<li><a href="{up}{esc(s)}/">{esc(label)}<small>{n}</small></a></li>' for s, label, n in rel) + "</ul>" if rel else "")

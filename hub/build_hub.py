@@ -34,6 +34,9 @@ def check(cfg):
     """封面图存在性检查。缺失时给出警告但不中断。"""
     bad = 0
     for s in cfg["sites"]:
+        if s.get("imageMode") == "remote":
+            print(f"  – {s['code']:16s} remote 封面: {cover_src(s)}（仅引用 URL，未校验网络或图片文件）")
+            continue
         p = os.path.join(ROOT, "sites", s["id"], s["cover"])
         if not os.path.exists(p):
             print(f"  ✗ {s['code']:16s} 封面缺失: {s['cover']}")
@@ -84,7 +87,7 @@ __UI_CSS__
 .big li>span{margin-top:2px;font-size:13px;color:var(--mu)}
 /* 姿势、服装的数字：18+ 关闭时显示可见数量 */
 html:not([data-adult="1"]) .n-all,html[data-adult="1"] .n-pub{display:none}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:22px;margin:8px 0 0;padding:0;list-style:none}
+.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:22px;margin:8px 0 0;padding:0;list-style:none}
 .hc{display:flex;flex-direction:column;text-decoration:none;color:var(--tx);min-width:0}
 .hc .cv{position:relative;aspect-ratio:4/5;overflow:hidden;border-radius:20px;background:var(--imgbg);
   transition:transform .3s var(--ease),box-shadow .3s}
@@ -109,7 +112,7 @@ html[data-theme="dark"] .hc .tag>span.no,html[data-theme="dark"] .credits .lic.n
 .hc h2 svg{width:18px;height:18px;margin-left:auto;color:var(--mu);transition:transform .2s,color .2s}
 .hc:hover h2 svg{transform:translateX(3px);color:var(--tx)}
 .hc p{margin:6px 0 0;color:var(--tx2);font-size:13.5px;line-height:1.7}
-.hc .nums{margin-top:10px;display:flex;gap:16px;font-size:12.5px;color:var(--mu)}
+.hc .nums{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--mu)}
 .hc .nums b{color:var(--tx);font-size:14px;font-variant-numeric:tabular-nums;margin-right:3px}
 .credits{margin:46px 0 0;padding:22px 0 0;border-top:1px solid var(--line)}
 .credits h2{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--mu)}
@@ -123,6 +126,8 @@ html[data-theme="dark"] .hc .tag>span.no,html[data-theme="dark"] .credits .lic.n
 html[data-theme="dark"] .credits .lic.ok{background:#14301d;color:#86efac}
 .credits .note{margin:12px 0 0;font-size:12px;color:var(--mu);line-height:1.8}
 .hub-seo{margin-top:34px}
+@media(max-width:1279px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:899px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){
   .hero{padding:22px 0 16px}
   .hero .lead{font-size:14px}
@@ -134,6 +139,15 @@ html[data-theme="dark"] .credits .lic.ok{background:#14301d;color:#86efac}
   .hc .nums{display:none}
   .hc .tag{left:8px;bottom:8px}.hc .tag>span{font-size:10.5px;padding:2px 8px}
 }
+@media(max-width:480px){
+  .cards{grid-template-columns:1fr;gap:22px}
+  .hc{display:grid;grid-template-columns:104px minmax(0,1fr);gap:14px;align-items:start}
+  .hc .cv{aspect-ratio:3/4;border-radius:12px}
+  .hc .tx{padding:3px 0 0;min-width:0}.hc h2{font-size:16px}
+  .hc p{-webkit-line-clamp:4;margin-top:5px}
+  .hc .nums{display:flex;margin-top:7px;font-size:11px;gap:2px 10px}.hc .nums b{font-size:12px}
+  .hc .tag{left:6px;right:6px;bottom:6px;gap:3px;flex-wrap:wrap}.hc .tag>span{font-size:9px;padding:2px 5px}
+}
 </style>
 __SEO_CSS__
 __FAQ_LD__
@@ -144,7 +158,7 @@ __UI_BAR__
   <section class="hero">
     <p class="eyebrow">Reference Gallery · <span class="zh">AI 绘画参考图库</span><span class="ja">AI イラスト参考画像集</span></p>
     <h1><span class="zh">画画、出图时用的<br><em>参考图库</em></span><span class="ja">描く・生成するための<br><em>参考画像集</em></span></h1>
-    <p class="lead"><span class="zh">人像、人体姿势的线稿与深度图、服装、CC0 姿势线稿。全部为 AI 生成，可按标签筛选、放大和下载，中日双语。</span><span class="ja">ポートレート、ポーズの線画と深度マップ、衣装、CC0 ポーズ線画。すべて AI 生成で、タグ絞り込み・拡大・ダウンロードに対応。</span></p>
+    <p class="lead"><span class="zh">人像、人体姿势的线稿与深度图、服装、CC0 姿势线稿、二次元角色参考。全部为 AI 生成，中日双语。角色库图片由原站加载，需要联网。</span><span class="ja">ポートレート、ポーズの線画と深度マップ、衣装、CC0 ポーズ線画、キャラ参考。すべて AI 生成、中文／日本語に対応。キャラ画像は元サイトから読み込むため接続が必要です。</span></p>
     <ul class="big">__BIG__</ul>
   </section>
   <ul class="cards">__CARDS__</ul>
@@ -174,9 +188,16 @@ def num(s, i=0):
     return v
 
 
+def cover_src(s):
+    """仅 remote 模式从 imageBase 加载；有 imageBase 的本地站点仍使用本地封面。"""
+    if s.get("imageMode") == "remote":
+        return s["imageBase"].rstrip("/") + "/" + s["cover"]
+    return f"./{s['id']}/{s['cover']}"
+
+
 def cover(s, by_id, extra=""):
     """卡片封面：姿势卡左半线稿、右半深度图（同一张图的两个版本，逐像素对齐）。extra 放在封面框里（授权标签等）"""
-    src = f"./{s['id']}/{s['cover']}"
+    src = cover_src(s)
     pos = f' style="object-position:{escape(s["coverPos"])}"' if s.get("coverPos") else ""
     if s["id"] == "pose" and "pose-depth" in by_id:
         dep = f"./pose-depth/{by_id['pose-depth']['cover']}"
@@ -190,7 +211,8 @@ def page(cfg, shown, base, title, desc, ld, seo):
     by_id = {s["id"]: s for s in cfg["sites"]}
     # 一行大数字：每个图库一项，标签用图库短名（姿势、服装的数字跟随 18+）
     unit = {"portrait": ("张人像", "枚のポートレート"), "costume": ("套服装", "着の衣装"),
-            "pose": ("个姿势 · 线稿与深度图", "ポーズ · 線画とデプス"), "shisei": ("个 CC0 线稿姿势", "の CC0 線画ポーズ")}
+            "pose": ("个姿势 · 线稿与深度图", "ポーズ · 線画とデプス"), "shisei": ("个 CC0 线稿姿势", "の CC0 線画ポーズ"),
+            "character": ("个角色基础条目 · 原站图片", "のキャラ基本項目 · 元サイト画像")}
     big = "".join(
         f'<li><b>{num(s)}</b><span>{ui.bi(*unit.get(s["id"], (s["name"]["zh"], s["name"]["ja"])))}</span></li>'
         for s in shown)
@@ -237,9 +259,12 @@ def page(cfg, shown, base, title, desc, ld, seo):
 def total_images(cfg):
     """对外公布的「参考图」总数，沿用最初 12,975 的口径：原站提供的图片文件数，
     即 manifest 条数 × 档位数，不含 mid 档（中图是本仓库生成或补的）。
-    这是文件数，不是不同画面数：人像、姿势、深度姿势、Shisei 每张图按缩略图 + 原图算两个文件，服装按三档算三个。"""
+    这是本地托管文件数，不是不同画面数：人像、姿势、深度姿势、Shisei 每张图按缩略图 + 原图算两个文件，服装按三档算三个。
+    remote 站点的条目、变体和线稿单独说明，不计入文件总数，也不读取其 manifest。"""
     n = 0
     for s in cfg["sites"]:
+        if s.get("imageMode") == "remote":
+            continue
         p = os.path.join(ROOT, "sites", s["id"], "manifest.json")
         with open(p, encoding="utf-8") as f:
             rows = len(json.load(f))
@@ -253,50 +278,59 @@ def hub_seo(cfg, base):
     stat = lambda sid, i: f'{int(sites[sid]["stats"][i]["v"]):,}'
     shown = [s for s in cfg["sites"] if not s.get("mergedInto")]
     N, K = f"{total_images(cfg):,}", len(shown)
+    character_note = (f"二次元角色库另有 {stat('character', 0)} 个基础条目（头发与眼睛 122、服装 440、姿势 281），"
+                      f"加上 {stat('character', 1)} 个发色变体共 1,027 个条目，姿势另配 {stat('character', 2)} 张线稿。"
+                      "角色库图片由原站远程加载，需要联网，不下载或镜像；条目与线稿均不计入本地托管图片文件总数。"
+                      f"目录总量含默认隐藏的成人向条目；默认可见 {sites['character']['stats'][0].get('public', stat('character', 0))} 个基础条目。")
     faq = [
         ("photoai.life 是什么？",
-         f"一组面向 AI 绘画的参考图库：人像集（角色脸部一致性参考）、姿势集（人体姿势的线稿与 ControlNet 深度图，一键切换）、"
-         f"服装集（服装与穿搭参考）和 CC0 姿势线稿，共 {N} 个图片文件，全部为 AI 生成，中日双语。"),
+         f"一组面向 AI 绘画的 {K} 个参考图库：人像集（角色脸部一致性参考）、姿势集（人体姿势的线稿与 ControlNet 深度图，一键切换）、"
+         f"服装集（服装与穿搭参考）、CC0 姿势线稿与二次元角色库。本地托管 {N} 个图片文件，全部为 AI 生成，中日双语。" + character_note),
         ("图片可以商用吗？",
          "要看图库。人像集与 CC0 姿势线稿为 CC0 1.0 公有领域，可以免费商用和再分发。姿势集（线稿、深度图）与服装集的原作者"
-         "允许免费用于作品制作（包括商用与参考），但禁止再分发、转载或转售图片文件本身；深度图原站另禁止批量下载。"),
+         "允许免费用于作品制作（包括商用与参考），但禁止再分发、转载或转售图片文件本身；深度图原站另禁止批量下载。"
+         "二次元角色库允许商用作品制作、参考与修改，但禁止再分发原图或加工图，也禁止用于表现真实人物或未成年人。"),
         ("这些图是真人吗？",
          "不是。人像是 AI 生成的虚构人物，姿势是无脸人偶，服装图由文字生成图像制作，都不对应真实人物或商品。"),
         ("为什么有些内容看不到？",
-         "姿势集的双人与性感系列、服装集的内衣与性感两类属于成人向参考，默认隐藏，CC0 线稿的全身性感、双人系列与标为 suggestive 的姿势也默认隐藏。"
+         "姿势集的双人与性感系列、服装集的内衣与性感两类属于成人向参考，默认隐藏，CC0 线稿的全身性感、双人系列与标为 suggestive 的姿势，以及角色库标为 suggestive 的条目也默认隐藏。"
          "用顶部栏的「18+」确认一次年龄即可显示，各图库通用；这些内容不出现在静态落地页里。"),
         ("和原站是什么关系？",
          "这里是各原站的中文索引镜像：把日文分类、标签和姿势名译成中文，加了组合筛选、搜索和中日切换。"
          "图片著作权归原作者，每个图库页脚都有原站和作者链接。"),
     ]
     labels = {"portrait": ("人像", "ポートレート"), "costume": ("服装", "衣装"),
-              "pose": ("姿势", "ポーズ"), "pose-depth": ("深度图", "デプスマップ"), "shisei": ("CC0 线稿", "CC0 線画")}
+              "pose": ("姿势", "ポーズ"), "pose-depth": ("深度图", "デプスマップ"), "shisei": ("CC0 线稿", "CC0 線画"),
+              "character": ("角色", "キャラ")}
     links = [(f"{s['id']}/browse/", labels[s["id"]]) for s in cfg["sites"]]
     intro = landing.static_intro(
-        [("为画画与 AI 绘画寻找人像、服装和姿势参考。素材全部由 AI 生成，可按分类或标签浏览、放大和下载。",
-          "描画や AI イラスト制作のためのポートレート・衣装・ポーズ集。すべて AI 生成で、カテゴリーやタグで探し、拡大・ダウンロードできます。"),
+        [("为画画与 AI 绘画寻找人像、服装、姿势和二次元角色参考。素材全部由 AI 生成。角色库图片从原站远程加载，需要联网。",
+          "描画や AI イラスト制作のためのポートレート・衣装・ポーズ・キャラ参考。すべて AI 生成です。キャラ画像は元サイトから読み込むため接続が必要です。"),
          f"人像集 {stat('portrait', 0)} 张，用来让 AI 生成的角色保持同一张脸，CC0 可商用；"
          f"姿势集 {stat('pose', 0)} 个姿势，线稿与深度图各 {stat('pose', 1)} 张，每个姿势 5 个视角，一键切换、左右对比，深度图可直接用于 ControlNet；"
          f"服装集 {stat('costume', 0)} 套服装、{stat('costume', 2)} 个标签，标签保留英文关键词，可直接作提示词；"
-         f"CC0 姿势线稿 {stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张，可商用、可再分发。"],
-        [(("图库", "ギャラリー"), str(K)), (("图片文件", "画像ファイル"), N), (("语言", "言語"), "中文 / 日本語")],
+         f"CC0 姿势线稿 {stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张，可商用、可再分发。", character_note],
+        [(("图库", "ギャラリー"), str(K)), (("本地图片文件", "ローカル画像ファイル"), N), (("语言", "言語"), "中文 / 日本語")],
         links, faq, more_href=None, title=("关于 photoai.life", "photoai.life について"),
-        nav_note=("深度图与姿势线稿属于同一图库。文件总数含不同尺寸，并非独立画面数。",
-                  "デプスマップとポーズ線画は同じギャラリーです。総ファイル数にはサイズ違いも含まれます。"))
+        nav_note=("深度图与姿势线稿属于同一图库。文件总数含不同尺寸，并非独立画面数；角色库远程图片不计入。",
+                  "デプスマップとポーズ線画は同じギャラリーです。ファイル数はサイズ違いを含み、キャラのリモート画像は含みません。"))
 
     lic = {"portrait": "CC0 1.0 公有领域，可商用、可再分发。",
            "pose": "允许免费用于作品制作（含商用与参考）；禁止再分发、转载、转售图片文件本身。",
            "pose-depth": "同姿势集；原站另禁止批量下载或用工具自动获取。",
            "costume": "允许免费用于作品制作（含商用与参考）；禁止再分发、转载、转售图片文件本身。",
-           "shisei": "图片 CC0 1.0，可商用、可再分发；姿势目录沿用 ai-pose-gallery，仅注明出处。"}
+           "shisei": "图片 CC0 1.0，可商用、可再分发；姿势目录沿用 ai-pose-gallery，仅注明出处。",
+           "character": "允许商用作品制作、参考与修改；禁止再分发原图及加工图，禁止用于表现真实人物或未成年人。图片仅从原站加载。"}
     what = {"portrait": f"{stat('portrait', 0)} 张 AI 生成人像：面部 {stat('portrait', 1)} 张（正面、纯色背景），造型 {stat('portrait', 2)} 张。用于 AI 绘画中保持角色脸部一致，按发型分类。",
             "pose": f"{stat('pose', 0)} 个人体姿势、{stat('pose', 1)} 张无脸灰色人偶线稿，每个姿势正面、侧面、斜角、俯视、仰视 5 个视角；页面里可切换到同一姿势的深度图。双人与性感系列默认隐藏。",
             "pose-depth": f"姿势集的深度图入口：同一批 {stat('pose-depth', 0)} 个姿势的 {stat('pose-depth', 1)} 张灰度深度图，可直接作为 ControlNet depth 控制图，可切换回线稿。",
             "costume": f"{stat('costume', 0)} 套 AI 生成服装、{stat('costume', 1)} 个文件，8 个分类、{stat('costume', 2)} 个标签；标签为英文关键词，可直接用作提示词。内衣与性感两类默认隐藏。",
-            "shisei": f"{stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张无脸人偶线稿（全身・标准、上半身、全身・性感、双人），每个姿势最多 5 个视角；全身性感、双人系列与标为 suggestive 的姿势默认隐藏。"}
+            "shisei": f"{stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张无脸人偶线稿（全身・标准、上半身、全身・性感、双人），每个姿势最多 5 个视角；全身性感、双人系列与标为 suggestive 的姿势默认隐藏。",
+            "character": character_note}
     lines = ["# photoai.life", "",
-             f"> AI 绘画参考图库合集：人像、人体姿势（线稿与 ControlNet 深度图）、服装、CC0 姿势线稿，共 {N} 个图片文件，全部为 AI 生成。"
-             "中文索引镜像，界面支持中文与日本語。", "",
+             f"> {K} 个 AI 绘画参考图库：人像、人体姿势（线稿与 ControlNet 深度图）、服装、CC0 姿势线稿、二次元角色库。"
+             f"本地托管 {N} 个图片文件（含不同尺寸）；角色库远程图片不计入文件总数。全部为 AI 生成，界面支持中文与日本語。", "",
+             character_note, "",
              "每个图库都是一个可筛选的画廊页，另有按分类 / 标签 / 发型生成的静态落地页（见各图库的 browse/ 目录与 sitemap）。"
              "成人向内容默认隐藏，不进落地页与 sitemap。图片著作权归各原作者，授权各不相同，引用时请注明对应图库的授权。", "",
              "## 图库", ""]
@@ -336,10 +370,10 @@ def main():
     shown = [s for s in cfg["sites"] if not s.get("mergedInto")]
     by_id = {s["id"]: s for s in cfg["sites"]}
     st = lambda sid, i=0: int(by_id[sid]["stats"][i]["v"])
-    title = (f"photoai.life · AI 绘画参考图库：人像、姿势线稿与深度图、服装、CC0 线稿")
+    title = "photoai.life · AI 绘画参考：人像、姿势、服装、角色"
     desc = (f"{len(shown)} 个 AI 绘画参考图库：{st('portrait'):,} 张 CC0 人像（角色脸部一致性）、"
             f"{st('pose')} 个人体姿势的线稿与 ControlNet 深度图（各 {st('pose', 1):,} 张，五视角）、"
-            f"{st('costume'):,} 套服装（{st('costume', 2)} 个标签）、{st('shisei')} 个 CC0 姿势线稿。中日双语，在线浏览。")
+            f"{st('costume'):,} 套服装、{st('shisei')} 个 CC0 姿势线稿、{st('character')} 个二次元角色基础条目。角色图片从原站加载，不计入本地文件总数。中日双语。")
     seo = hub_seo(cfg, base)
 
     # 结构化数据：告诉搜索引擎/AI 引擎这是一组并列的子站点

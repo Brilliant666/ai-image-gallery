@@ -48,11 +48,12 @@ sites/<新站id>/
 |---|---|
 | `id` | 唯一标识，同时是目录名和 URL 路径 |
 | `source` | 原站地址，下载时作为 Referer |
-| `imageBase` | 可选。图片不在原站域名下时填写（如 Shisei 的图片在上游 GitHub 固定标签里），测试据此核对 manifest 的 URL |
+| `imageBase` | 本地站点可选；remote 模式必填，以 `/` 结尾的 HTTPS 图片根地址。测试据此核对 manifest 的 URL |
+| `imageMode` | 可选，默认本地托管。`remote` 表示浏览器直接加载原站图片，fetch/mid 不处理图片，verify 仅校验元数据，release 不包含图片 |
 | `code` | 站点编号，写在画廊页头的小标题里 |
 | `mergedInto` | 可选。并入另一个站点的模块时填对方 id（如 `pose-depth` → `pose`）：入口页与顶部栏不单独列出，下载、校验、发布照常 |
 | `updated` | 站点数据最近更新的日期，写进 sitemap 的 lastmod |
-| `cover` | 相对站点目录的封面路径 |
+| `cover` | 本地模式相对站点目录；remote 模式相对 `imageBase`，须对应 manifest 的 `thumb_path` |
 | `coverPos` | 入口页封面框是 4:5，横图必然裁切：脸部特写用 `25%`–`35%`，全身图用 `0%`–`10%`，主体居中用 `50%` |
 | `tiers` | 下载与校验的档位，对应 manifest 里的 `<tier>_url` / `<tier>_path` |
 | `imageDirs` | `release.py` 硬链接的目录；含 `mid` 时 `mid.py` 会为该站生成中图（`tiers` 里已有 `mid` 的站点由上游提供，不生成） |
@@ -60,6 +61,26 @@ sites/<新站id>/
 | `adult` | 可选。成人向内容的判定规则：`{manifest 字段名: [取值, …]}`，任一字段命中即算成人向，例如 `{"分类": ["ランジェリー"]}`。命中的图不进任何静态落地页；画廊里默认隐藏，工具栏「18+」开关打开后显示。`tests/run.py` 会检查（见 `shared/adult.py`） |
 
 站点在入口页的顺序 = `sites.json` 数组顺序。
+
+### 远程图片站点
+
+不能镜像图片的图库可参考 [角色库](../sites/character/README.md)。仅将 `imageMode` 改为 `remote` 不等于取得图片展示许可，先记录原作者条件。配置还须包含：
+
+```json
+{
+  "imageMode": "remote",
+  "imageBase": "https://source.example/",
+  "cover": "thumb/A001.webp",
+  "tiers": [],
+  "imageDirs": []
+}
+```
+
+manifest 仍需非空的 `thumb_path`/`thumb_url`、`full_path`/`full_url`，线稿如有则同时提供 `line_path`/`line_url`。路径为可移植相对路径，URL 必须等于 `imageBase + path`；verify 不访问网络，不证明上游图片存在或可解码。
+
+画廊内嵌元数据与脚本；静态落地页的 `landing.Item.thumb` 使用原站 HTTPS URL。`landing.Site.share_image` 指向实际可用的原站分享图，`gallery_features` 填写本图库实际支持的功能，避免沿用本地图库的下载说明。浏览器离线时仍可检索元数据，图片无法显示。图片不得通过 fetch、mid、release 或新建的下载脚本变成本地托管。
+
+新增落地页目录时同步 `tools/update.py` 的 `BUILD_OUTPUT`；发布读取 `data/landing.json` 的目录清单。角色库使用 `cat/`。
 
 ## 3. 构建
 
@@ -85,6 +106,6 @@ python tests/run.py                      # 提交前跑一遍；CI 也会跑
 - 页面骨架用 `shared/ui.py`：`<head>` 放 `head_script()` 和 `head_css()`，`<body>` 开头放 `bar(<站点id>)`，末尾放 `dialogs()` 和 `body_script()`。顶部栏里的短名在 `ui.LABELS` 里加一条
 - 深浅色、语言、18+ 都在顶部栏，偏好全站共用（`pl.theme` / `pl.lang` / `hub.adult`），页面监听 `pl:lang`、`pl:adult` 事件更新自己
 - 静态中日文写成 `<span class="zh">…</span><span class="ja">…</span>`，动态文案放进站点的 UI 表
-- 单文件 `index.html`，数据内嵌，零外部依赖
-- 分页加 `IntersectionObserver` 预取，不一次渲染全部卡片
-- 灯箱底图用清晰缩略图，不加模糊；中图到达后淡入
+- 单文件 `index.html`，数据与脚本内嵌，不依赖前端框架、外部脚本或字体；remote 图片联网加载
+- 分批渲染卡片，使用自动加载或显式「显示更多」，不一次渲染全部目录
+- 本地图库的灯箱底图用清晰缩略图，不加模糊；中图到达后淡入。remote 图库直接引用原站图片，不生成或预取本地中图

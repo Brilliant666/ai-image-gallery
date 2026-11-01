@@ -18,6 +18,14 @@ from mid import mid_rel  # noqa: E402
 
 CFG = load_cfg()
 SITES = [s["id"] for s in CFG["sites"]]
+SITE_CONFIG = {s["id"]: s for s in CFG["sites"]}
+
+
+def manifest_tiers(site):
+    # remote 不下载图片，但仍要求完整的缩略图 / 原图元数据；可选 line 另由 remote 校验覆盖。
+    return ["thumb", "full"] if site.get("imageMode") == "remote" else site["tiers"]
+
+
 PAGES = ["hub/index.html", "hub/404.html"] + [f"sites/{s}/{f}" for s in SITES for f in ("index.html", "404.html")]
 BUILD_OUTPUT = ["hub/index.html", "hub/404.html", "hub/robots.txt", "hub/sitemap.xml", "hub/llms.txt"] + [
     f"sites/{s}/{f}" for s in SITES for f in ("index.html", "404.html", "robots.txt", "sitemap.xml")] + [
@@ -72,7 +80,7 @@ class Build(unittest.TestCase):
         tmp = tempfile.mkdtemp(prefix="gallery-build-")
         try:
             # 复制源码到临时目录构建，不碰工作区；图片目录不需要
-            ignore = shutil.ignore_patterns("thumbs", "mid", "img", "png", "raw", "dist*", ".git",
+            ignore = shutil.ignore_patterns("thumbs", "mid", "img", "png", "raw", "dist*", ".git", ".venv*", "_v",
                                             "__pycache__", "failed_*.json")
             dst = os.path.join(tmp, "repo")
             shutil.copytree(ROOT, dst, ignore=ignore)
@@ -98,6 +106,11 @@ class Build(unittest.TestCase):
 
 
 class Pages(unittest.TestCase):
+
+    def test_generated_landing_paths_are_updatable(self):
+        from update import BUILD_OUTPUT as update_output
+        self.assertEqual([rel for rel in landing_pages() if not update_output.match(rel)], [],
+                         "新增落地页路径需登记 tools/update.py，避免服务器更新误判为手改文件")
 
     def test_ids_unique(self):
         # 2026-10-30：姿势集筛选区和分页按钮都叫 id="more"，分页停在 60 组
@@ -234,12 +247,19 @@ class Landing(unittest.TestCase):
 
     def test_thumbs_are_in_manifest(self):
         for s in SITES:
-            thumbs = {r["thumb_path"] for r in json.loads(read(f"sites/{s}/manifest.json"))}
+            remote = SITE_CONFIG[s].get("imageMode") == "remote"
+            key = "thumb_url" if remote else "thumb_path"
+            thumbs = {r[key] for r in json.loads(read(f"sites/{s}/manifest.json"))}
             for rel in self.site_pages(s):
                 up = "../" * (rel.count("/") - 2)
                 for src in re.findall(r'<img src="([^"]+)"', read(rel)):
-                    self.assertTrue(src.startswith(up), f"{rel} 图片路径层级不对: {src}")
-                    self.assertIn(src[len(up):], thumbs, f"{rel} 引用了不在 manifest 的图: {src}")
+                    src = html.unescape(src)
+                    if remote:
+                        self.assertTrue(src.startswith("https://"), f"{rel} 应引用原站 HTTPS 缩略图: {src}")
+                        self.assertIn(src, thumbs, f"{rel} 引用了不在 manifest 的图: {src}")
+                    else:
+                        self.assertTrue(src.startswith(up), f"{rel} 图片路径层级不对: {src}")
+                        self.assertIn(src[len(up):], thumbs, f"{rel} 引用了不在 manifest 的图: {src}")
 
     def test_only_thumbnails_exposed(self):
         # 落地页只用缩略图，不暴露中图和原图（三站禁止再分发）
@@ -249,7 +269,7 @@ class Landing(unittest.TestCase):
     def test_gallery_hash_params_known(self):
         # 「在画廊中查看」带的 #参数必须是画廊能识别的
         for rel in self.pages:
-            for hsh in re.findall(r'class="cta" href="[^"]*#([^"]+)"', read(rel)):
+            for hsh in re.findall(r'class="[^"]*\bcta\b[^"]*" href="[^"]*#([^"]+)"', read(rel)):
                 for kv in html.unescape(hsh).split("&"):
                     self.assertIn(kv.split("=")[0], {"cat", "tag", "series", "sec", "hair"}, f"{rel}: {hsh}")
 
@@ -269,12 +289,15 @@ class Landing(unittest.TestCase):
         for s in SITES:
             rule = adult.rules(s)
             rows = json.loads(read(f"sites/{s}/manifest.json"))
-            bad = {r["thumb_path"] for r in rows if adult.is_adult(r, rule)}
+            remote = SITE_CONFIG[s].get("imageMode") == "remote"
+            key = "thumb_url" if remote else "thumb_path"
+            bad = {r[key] for r in rows if adult.is_adult(r, rule)}
             if rule:
                 self.assertTrue(bad, f"{s} 的 adult 规则一张图都没命中，字段名或取值写错了")
             for rel in self.site_pages(s):
                 up = "../" * (rel.count("/") - 2)
-                hit = [src for src in re.findall(r'<img src="([^"]+)"', read(rel)) if src[len(up):] in bad]
+                srcs = [html.unescape(src) for src in re.findall(r'<img src="([^"]+)"', read(rel))]
+                hit = [src for src in srcs if (src if remote else src[len(up):]) in bad]
                 self.assertEqual(hit, [], f"{rel} 出现了成人向缩略图")
             # 分类 / 系列名本身就是成人向的，不生成页面
             for k, vs in rule.items():
@@ -398,7 +421,8 @@ class Landing(unittest.TestCase):
         mode = {"pose": "hide", "pose-depth": "hide", "shisei": "hide"}
         for s in SITES:
             rule = adult.rules(s)
-            if not rule:
+            # 新 remote 画廊的内联数据格式由各站专用测试覆盖；通用落地页成人检查仍适用。
+            if not rule or SITE_CONFIG[s].get("imageMode") == "remote":
                 continue
             h = read(f"sites/{s}/index.html")
             db = page_db(h)
@@ -537,7 +561,7 @@ class Manifests(unittest.TestCase):
         for s in CFG["sites"]:
             rows = json.loads(read(f"sites/{s['id']}/manifest.json"))
             self.assertTrue(rows, s["id"])
-            for t in s["tiers"]:
+            for t in manifest_tiers(s):
                 for k in (t + "_url", t + "_path"):
                     bad = [r.get("id") for r in rows if not r.get(k)]
                     self.assertEqual(bad, [], f"{s['id']} 缺 {k}")
@@ -545,7 +569,7 @@ class Manifests(unittest.TestCase):
     def test_paths_portable_and_unique(self):
         for s in CFG["sites"]:
             rows = json.loads(read(f"sites/{s['id']}/manifest.json"))
-            for t in s["tiers"]:
+            for t in manifest_tiers(s):
                 paths = [r[t + "_path"] for r in rows]
                 self.assertFalse([p for p in paths if "\\" in p or p.startswith("/") or ".." in p],
                                  f"{s['id']} {t} 有反斜杠、绝对路径或 ..")
@@ -556,24 +580,130 @@ class Manifests(unittest.TestCase):
         for s in CFG["sites"]:
             base = s.get("imageBase", s["source"])
             rows = json.loads(read(f"sites/{s['id']}/manifest.json"))
-            for t in s["tiers"]:
+            for t in manifest_tiers(s):
                 off = [r[t + "_url"] for r in rows if not r[t + "_url"].startswith(base)]
                 self.assertEqual(off, [], f"{s['id']} {t} 的 URL 不在 {base} 下")
 
     def test_image_dirs_match_paths(self):
-        # release.py 只硬链接 imageDirs；manifest 里的图片都应落在这些目录里
+        # release.py 只硬链接 imageDirs；remote 站点没有本地图片目录。
         for s in CFG["sites"]:
+            if s.get("imageMode") == "remote":
+                self.assertEqual(s["imageDirs"], [], s["id"])
+                self.assertEqual(s["tiers"], [], s["id"])
+                continue
             rows = json.loads(read(f"sites/{s['id']}/manifest.json"))
             dirs = set(s["imageDirs"])
-            for t in s["tiers"]:
+            for t in manifest_tiers(s):
                 tops = {r[t + "_path"].split("/")[0] for r in rows}
                 self.assertTrue(tops <= dirs, f"{s['id']} {t} 用到 {tops - dirs}，不在 imageDirs 里")
+
+    def test_remote_metadata(self):
+        from verify import remote_metadata_errors
+        for s in CFG["sites"]:
+            if s.get("imageMode") == "remote":
+                rows = json.loads(read(f"sites/{s['id']}/manifest.json"))
+                self.assertEqual(remote_metadata_errors(s, rows), [], s["id"])
 
     def test_cover_in_manifest(self):
         for s in CFG["sites"]:
             rows = json.loads(read(f"sites/{s['id']}/manifest.json"))
             thumbs = {r["thumb_path"] for r in rows}
             self.assertIn(s["cover"], thumbs, f"{s['id']} 的封面 {s['cover']} 不在 manifest 里")
+
+
+class RemoteIntegration(unittest.TestCase):
+    """仅用临时数据检查共享 remote 行为，无需构建图库或访问原站。"""
+
+    def setUp(self):
+        self.site = {"id": "remote-fixture", "imageMode": "remote", "tiers": [], "imageDirs": [],
+                     "imageBase": "https://images.example/", "cover": "thumb/A001.webp"}
+        self.rows = [{"id": "A001", "thumb_path": "thumb/A001.webp", "full_path": "img/A001.jpg",
+                      "thumb_url": "https://images.example/thumb/A001.webp",
+                      "full_url": "https://images.example/img/A001.jpg"}]
+
+    def test_remote_metadata_rejects_invalid_fields(self):
+        import copy
+        from verify import remote_metadata_errors
+        self.assertEqual(remote_metadata_errors(self.site, self.rows), [])
+        self.assertEqual(remote_metadata_errors(self.site, [dict(self.rows[0], line_path="line/A001.png",
+                         line_url="https://images.example/line/A001.png")]), [])
+        for field, value in (("thumb_url", "https://other.example/thumb/A001.webp"),
+                             ("full_path", "../A001.jpg"), ("thumb_path", "C:/A001.webp"),
+                             ("thumb_url", ""), ("line_path", "line/A001.png")):
+            rows = copy.deepcopy(self.rows)
+            rows[0][field] = value
+            self.assertTrue(remote_metadata_errors(self.site, rows), (field, value))
+        self.assertTrue(remote_metadata_errors(dict(self.site, tiers=["thumb"]), self.rows))
+        self.assertTrue(remote_metadata_errors(dict(self.site, imageDirs=["img"]), self.rows))
+        self.assertTrue(remote_metadata_errors(self.site, self.rows * 2))
+        self.assertTrue(remote_metadata_errors(self.site, []))
+
+    def test_remote_landing_sources_and_jsonld(self):
+        import landing
+        site = landing.Site(id="remote-fixture", root="", site_url="https://example.com/remote-fixture",
+                            name="参考图库", tagline="测试", license_note="禁止再分发", author="作者",
+                            author_url="https://example.org/author", source="https://images.example/", faq=[])
+        remote = landing.Item(thumb=self.rows[0]["thumb_url"], alt="远程参考图的文字说明")
+        local = landing.Item(thumb="thumbs/local.webp", alt="本地参考图的文字说明")
+        facet = landing.Facet(slug="category/hair", title="参考分类", h1="参考分类", description="分类介绍",
+                              intro=[], items=[remote, local], gallery_hash="cat=hair")
+        h = landing.facet_page(site, facet, [facet])
+        self.assertIn(f'<img src="{remote.thumb}"', h)
+        self.assertIn('<img src="../../thumbs/local.webp"', h)
+        self.assertEqual(landing._img_ld(site, remote)["contentUrl"], remote.thumb)
+        self.assertEqual(landing._img_ld(site, local)["contentUrl"], site.site_url + "/" + local.thumb)
+        self.assertIn('href="../../#cat=hair"', h)
+
+    def test_remote_tools_never_fetch_or_verify_files(self):
+        import contextlib, io
+        from unittest.mock import patch
+        import fetch, verify
+        out = io.StringIO()
+        with patch.object(verify.assets, "load_manifest", return_value=self.rows), \
+                patch.object(verify.assets, "verify", side_effect=AssertionError("local image check")):
+            self.assertEqual(verify.check_site(self.site, "thumb", log=lambda s: out.write(s)), (0, 0))
+        self.assertIn("NOT network/files verified", out.getvalue())
+        with patch.object(fetch, "load_cfg", return_value={"sites": [self.site]}), \
+                patch.object(sys, "argv", ["fetch.py", "--tier", "thumb"]), \
+                patch.object(fetch.assets, "download", side_effect=AssertionError("image download")), \
+                contextlib.redirect_stdout(out):
+            fetch.main()
+        self.assertIn("禁止本地下载或镜像", out.getvalue())
+
+    def test_remote_cover_and_hosted_file_count(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("hub_remote_test", os.path.join(ROOT, "hub", "build_hub.py"))
+        hub = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(hub)
+        local = [s for s in CFG["sites"] if s.get("imageMode") != "remote"]
+        self.assertEqual(hub.total_images({"sites": local + [self.site]}), hub.total_images({"sites": local}))
+        self.assertEqual(hub.cover_src(self.site), self.rows[0]["thumb_url"])
+        shisei = SITE_CONFIG["shisei"]
+        self.assertEqual(hub.cover_src(shisei), f"./shisei/{shisei['cover']}")
+
+    def test_remote_release_retains_data_without_images(self):
+        import contextlib, io
+        from unittest.mock import patch
+        import release
+        with tempfile.TemporaryDirectory(prefix="remote-release-") as tmp:
+            sd, out = os.path.join(tmp, "source"), os.path.join(tmp, "out")
+            os.makedirs(os.path.join(sd, "data"))
+            for rel, text in (("index.html", "fixture"), ("manifest.json", json.dumps(self.rows)),
+                              ("data/source.json", "[]")):
+                with open(os.path.join(sd, rel), "w", encoding="utf-8") as f:
+                    f.write(text)
+            # 即使本地误留图片，也不应发布。
+            os.makedirs(os.path.join(sd, "thumb"))
+            with open(os.path.join(sd, "thumb", "A001.webp"), "wb") as f:
+                f.write(b"unpublished")
+            with patch.object(release, "load_cfg", return_value={"sites": [self.site]}), \
+                    patch.object(release, "site_dir", return_value=sd), \
+                    patch.object(sys, "argv", ["release.py", "--site", self.site["id"], "--out", out, "--skip-verify"]), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                release.main()
+            dst = os.path.join(out, self.site["id"])
+            self.assertEqual(sorted(os.listdir(dst)), ["data", "index.html", "manifest.json"])
+            self.assertTrue(os.path.isfile(os.path.join(dst, "data", "source.json")))
 
 
 class MidRule(unittest.TestCase):
@@ -629,6 +759,9 @@ class Docs(unittest.TestCase):
         gone = ["scripts/download.py", "scripts/verify.py", "build_dist.sh"]
         hits = [f"{rel}: {g}" for rel in self.DOCS for g in gone if g in read(rel)]
         self.assertEqual(hits, [])
+
+
+from test_character import Character  # noqa: E402,F401 — 原生角色库专用检查也由 CI 入口运行
 
 
 if __name__ == "__main__":

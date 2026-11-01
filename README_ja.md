@@ -2,14 +2,16 @@
 
 # AI 参照画像ライブラリ
 
-**AI イラスト向けの参照画像ギャラリー 5 つ、1 リポジトリでビルド、1 ディレクトリで公開**
+**参照画像ギャラリー 5 つ、サイト入口 6 つ、1 リポジトリでビルド、1 ディレクトリで公開**
 
-ポートレート · ポーズ · デプス ポーズ · 衣装 · CC0 ポーズ線画 · 15,241 枚 · 中国語 / 日本語 · ライト / ダーク
+ポートレート · ポーズ（線画とデプス） · 衣装 · CC0 ポーズ線画 · キャラ参考画像集 · 中国語 / 日本語 · ライト / ダーク
+
+ローカル画像ファイル 15,241 個（サイズ違いを含む）。キャラDB は基本 843 件と髪色違い 184 件を別に収録し、リモート画像はファイル総数に含めません。
 
 [![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
-[![sites](https://img.shields.io/badge/sites-5-0ea5e9?style=flat-square)](#サイト)
-[![images](https://img.shields.io/badge/images-15%2C241-8b5cf6?style=flat-square)](#サイト)
+[![sites](https://img.shields.io/badge/sites-6-0ea5e9?style=flat-square)](#サイト)
+[![images](https://img.shields.io/badge/image_files-15%2C241-8b5cf6?style=flat-square)](#サイト)
 [![Python](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square&logo=python&logoColor=white)](#クイックスタート)
 [![License](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](#ライセンスとクレジット)
 
@@ -52,23 +54,37 @@
 | [ポーズ集](https://photoai.life/pose/) | 顔なしグレーマネキンの線画、1 ポーズ 5 アングル | 1,439 枚 | 再配布禁止 |
 | [デプス ポーズ集](https://photoai.life/pose-depth/) | 同じポーズの深度マップ、ControlNet 向け | 1,439 枚 | 再配布禁止 |
 | [衣装集](https://photoai.life/costume/) | 人物なしの衣装、86 タグで絞り込み | 1,407 着 / 4,221 枚 | 再配布禁止 |
-| [Shisei 線画](https://photoai.life/shisei/) | 顔なしマネキン線画、4 シリーズ × 5 アングル。suggestive はぼかし表示 | 280 ポーズ / 1,133 枚 | **CC0** |
+| [Shisei 線画](https://photoai.life/shisei/) | 顔なしマネキン線画、4 シリーズ、各最大 5 アングル。成人向けは初期状態で非表示 | 280 ポーズ / 1,133 枚 | **CC0** |
+| [キャラ参考画像集](https://photoai.life/character/) | 髪型・衣装・ポーズ参考、画像は元サイトから読み込み | 基本 843 件 + 髪色違い 184 件、ポーズ線画 281 枚 | 原画像・加工画像とも再配布禁止 |
 
-各サイト共通：ページ送り付きグリッド、絞り込みと検索、ライトボックス（`←` `→` で移動、`Esc` で閉じる、タッチでスワイプ）、原寸ダウンロード、テーマと言語の切り替え。ページ上部の共通バーにギャラリー切り替え・18+・ライト / ダーク・言語をまとめ、設定は全ギャラリー共通です。`?` でショートカット一覧、`/` で検索欄へ移動します。ポーズ集はスイッチ一つで線画と深度マップを切り替え、拡大表示では仕切りをドラッグして左右に比較できます。ポーズ集・深度ポーズ集・衣装集の成人向け内容は初期状態で非表示、Shisei はぼかし表示です。上部バーの「18+」で年齢を一度確認すると表示され、5 サイト共通で記憶します。成人向け内容は静的ランディングページと sitemap には載りません。ページは単一の `index.html` でデータを内蔵し、フレームワーク・CDN・Web フォントを使いません。
+6 サイトを 5 つのギャラリーとしてナビゲーションに表示します。ポーズ線画とデプスは一つのギャラリーです。キャラDB は髪・目 122・衣装 440・ポーズ 281 の基本 843 件、髪色違いを含め 1,027 件で、線画は別に数えます。これらはローカル画像ファイル 15,241 個に含みません。
 
-> **CC0 はポートレート集と Shisei です。** 他の 3 サイトの素材は再配布禁止です。Shisei のポーズ目録は ai-pose-gallery に基づき出典表記のみです。詳しくは `sites/<id>/NOTICE.md` を参照してください。
+各ギャラリーは一覧の段階表示、絞り込み・検索、画像拡大、テーマと言語切り替えに対応します。ローカル配信ギャラリーでは矢印キー・スワイプによる移動と原寸ダウンロードも利用できます。キャラDB は原画像と線画を元サイトへリンクし、`Esc` で詳細を閉じます。ページ上部の共通バーにギャラリー切り替え・18+・ライト / ダーク・言語をまとめ、設定は全ギャラリー共通です。`?` でショートカット一覧、`/` で検索欄へ移動します。ポーズ集はスイッチ一つで線画と深度マップを切り替え、拡大表示では仕切りをドラッグして左右に比較できます。ポーズ集・深度ポーズ集・衣装集・Shisei・キャラDB の成人向け内容は初期状態で非表示です（キャラDB は基本 791 件が閲覧でき、髪色違い 184 件は色変更で確認）。上部バーの「18+」で年齢を一度確認すると表示され、全サイト共通で記憶します。成人向け内容は静的ランディングページと sitemap には載りません。ページは単一の `index.html` でデータを内蔵し、フレームワーク・CDN・Web フォントを使いません。
+
+> **CC0 はポートレート集と Shisei です。** 他のサイトの素材は再配布禁止です。キャラDB は商用作品制作・参考・改変を認めますが、原画像と加工画像の再配布、および実在人物や未成年者の表現への利用を禁じます。Shisei のポーズ目録は ai-pose-gallery に基づき出典表記のみです。詳しくは `sites/<id>/NOTICE.md` を参照してください。
+
+### キャラ参考画像集
+
+本サイトは参照素材のギャラリーです。画像生成・API キー設定・複数パーツのタグ組み立ては提供しません。白背景の正方形画像表示に加えて、以下に対応します。
+
+- 髪・目、衣装、ポーズの区分と、件数付きの分類ボタン。非表示の成人専用分類には 18+ を表示。
+- 各髪型カードに茶・黒・金・ピンク・銀の色ボタン。ほかのカードと独立し、詳細での変更もカードへ反映。上部メニューで全体を変更し、リセットで茶色へ戻せます。
+- 現在の項目の元の英語タグをコピー。お気に入りは表示中の色違いをブラウザ内に保存し、プレビュー変更では保存内容を書き換えません。
+- 目録・検索・分類・タグコピーはオフラインでも利用可能。画像は元サイトの接続が必要で、取得・梱包・ミラーは行いません。
+
+利用と目録更新は [キャラDB 説明](sites/character/README.md)、画像条件は [出典と利用条件](sites/character/NOTICE.md) を参照してください。
 
 ## クイックスタート
 
-このリポジトリに画像ファイルは含まれていません。`tools/fetch.py` が各元サイトから取得します。**Python 3.8+** が必要です。ライトボックス用の中サイズ画像を作る `tools/mid.py` だけは Pillow（`pip install pillow`）も必要で、他のスクリプトは標準ライブラリのみで動きます。
+このリポジトリに素材画像ファイルは含まれていません。`tools/fetch.py` はローカル配信サイトの画像を取得しますが、キャラDB（`imageMode: "remote"`）は明示的にスキップします。サムネイル・原画像・線画のダウンロードやミラーは行いません。ページ・元データ・manifest はローカルに保持し、画像は元サイトの URL を直接参照するため `file://` でも接続が必要です。**Python 3.8+** が必要です。ライトボックス用の中サイズ画像を作る `tools/mid.py` だけは Pillow（`pip install pillow`）も必要で、他のスクリプトは標準ライブラリのみで動きます。
 
 ```bash
 git clone https://github.com/Brilliant666/ai-image-gallery.git
 cd ai-image-gallery
 
-python tools/fetch.py      # 全画像をダウンロード（初回約 6.8 GB、以降は不足分のみ）
+python tools/fetch.py      # ローカル配信画像を取得。キャラDB はスキップ（初回約 6.8 GB、以降は不足分のみ）
 python tools/mid.py        # ライトボックス用の中サイズ画像を生成（約 290 MB）
-python tools/build.py      # 5 サイトとトップをビルド
+python tools/build.py      # 6 サイト入口（5 ギャラリー）とトップをビルド
 python tools/release.py    # dist/ を組み立て（画像はハードリンク、容量は増えない）
 python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 ```
@@ -84,26 +100,29 @@ python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 | --- | --- |
 | `python tools/fetch.py --site pose` | 1 サイトだけダウンロード |
 | `python tools/mid.py --site portrait` | 1 サイトだけ中サイズ画像を生成 |
-| `python tools/verify.py` | 画像を検証：存在・サイズ・寸法・中サイズの有無 |
+| `python tools/verify.py` | ローカル画像を検証。キャラDB はメタデータのみ検証 |
+| `python tools/build.py --site character` | 画像へ接続せずキャラDB とトップを再ビルド |
 | `python tools/build.py --site pose` | 1 サイトだけ再ビルド |
 | `python tools/build.py --base https://x.com` | 公開ドメインを canonical / og / sitemap に反映 |
 | `python tools/release.py --out <dir>` | 別のディレクトリへリリース |
 | `python tools/serve.py --root sites/pose` | 1 サイトだけプレビュー |
 | `python tests/run.py` | 画像不要のチェック：ビルド成果物の更新漏れ、重複 id、インライン JS 構文、manifest、文書リンク（CI が push ごとに実行） |
 
-`release.py` は先に画像を検証し、欠けていれば中止します（一部の段階だけ取得した場合は `--skip-verify`）。対象サイトのディレクトリは削除してから作り直します。`--no-images` はサイトファイルのみをコピーするもので、既存の画像を残す用途には使えません。
+`release.py` は先にローカル画像を検証し、欠けていれば中止します（一部の段階だけ取得した場合は `--skip-verify`）。remote サイトはメタデータのみ検証し、ネットワーク・画像の存在・デコードは確認しません。ページ・`data/`・manifest を公開対象とし、リモート画像は含めません。対象サイトのディレクトリは削除してから作り直します。`--no-images` はサイトファイルのみをコピーするもので、既存の画像を残す用途には使えません。
 
 </details>
 
 ## 画像の読み込み
 
-画像は 3 段階あります。グリッドはサムネイル、ライトボックスは中サイズ、原寸はダウンロード時のみ使います。
+ローカル配信ギャラリーは通常 3 段階です。グリッドはサムネイル、ライトボックスは中サイズ、原寸はダウンロード時のみ使います。キャラDB は元サイトのサムネイル・原画像・線画を参照し、`tiers: []` と `imageDirs: []` で取得・画像パッケージ化を無効にします。
 
 | 段階 | ポートレート | ポーズ | デプス | 衣装 |
 | --- | ---: | ---: | ---: | ---: |
 | サムネイル | 約 20 KB | 約 17 KB | 約 11 KB | 約 10 KB |
 | 中サイズ | 約 150 KB | 約 33 KB | 約 10 KB | 約 90 KB |
 | 原寸 | 約 3.2 MB | 約 450 KB | 約 95 KB | 約 1 MB |
+
+以下の先読みと中サイズ画像の処理はローカル配信ギャラリーに適用します。キャラDB の詳細は元サイトの原画像を直接読み込みます。
 
 - ライトボックスは鮮明なサムネイルをすぐ表示し、中サイズが届いたらフェードインします。画像を切り替えると前の画像はすぐ消えます。
 - カードに 120 ms ホバー、タップ開始、キーボードフォーカスで中サイズを先読みします。開いた後は前後の画像も先読みします。
@@ -143,7 +162,7 @@ ai-image-gallery/
 
 ## ドキュメント
 
-[デプロイ手順](deploy/DEPLOY.md) · [サイトの追加](docs/ADDING_A_SITE.md) · [nginx テンプレート](deploy/nginx.conf) · 各サイト：[ポートレート](sites/portrait/README.md) · [ポーズ](sites/pose/README.md) · [デプス ポーズ](sites/pose-depth/README.md) · [衣装](sites/costume/README.md) · [Shisei](sites/shisei/README.md)
+[デプロイ手順](deploy/DEPLOY.md) · [サイトの追加](docs/ADDING_A_SITE.md) · [nginx テンプレート](deploy/nginx.conf) · 各サイト：[ポートレート](sites/portrait/README.md) · [ポーズ](sites/pose/README.md) · [デプス ポーズ](sites/pose-depth/README.md) · [衣装](sites/costume/README.md) · [Shisei](sites/shisei/README.md) · [キャラDB](sites/character/README.md)
 
 デプロイ手順とサイト追加ガイドは中国語です。
 
@@ -153,6 +172,7 @@ ai-image-gallery/
 | --- | --- |
 | コード：`tools/`、`hub/`、`shared/`、各サイトの `scripts/`、`index.html` 内の HTML/CSS/JS | [MIT](LICENSE) |
 | 画像素材 | サイトごとに異なる。`sites/<id>/NOTICE.md` を参照 |
-| `data/` の中国語訳 | CC BY 4.0 |
+| 本サイト独自の中国語訳（`data/` とキャラDB の中国語名称表） | CC BY 4.0 |
+| キャラDB の元の目録データと画像 | 原作者の条件が適用され、本サイトでは再ライセンスしません。[NOTICE](sites/character/NOTICE.md) を参照 |
 
-素材は各元サイトによるものです。ポートレート集：[あぎ](https://x.com/agi_aibusi)（[元サイト](https://ai-portrait-gallery.pages.dev/)）。ポーズ集・デプス ポーズ集・衣装集：[ギア](https://x.com/giaaibusi)（[ポーズ](https://ai-pose-gallery.pages.dev/) · [デプス](https://ai-pose-depth-gallery.pages.dev/) · [衣装](https://ai-costume-gallery.pages.dev/)）。Shisei の線画は [wquguru/shisei](https://github.com/wquguru/shisei)（CC0）より。本プロジェクトは個人学習目的の中国語ミラーです。
+素材は各元サイトによるものです。ポートレート集：[あぎ](https://x.com/agi_aibusi)（[元サイト](https://ai-portrait-gallery.pages.dev/)）。ポーズ集・デプス ポーズ集・衣装集：[ギア](https://x.com/giaaibusi)（[ポーズ](https://ai-pose-gallery.pages.dev/) · [デプス](https://ai-pose-depth-gallery.pages.dev/) · [衣装](https://ai-costume-gallery.pages.dev/)）。Shisei の線画は [wquguru/shisei](https://github.com/wquguru/shisei)（CC0）より。キャラDB は [たき AI](https://x.com/taki_auto) の [キャラ組み立てDB](https://charadb-2fi.pages.dev/) を出典とし、画像は元サイトからのみ読み込みます。本プロジェクトは個人学習目的の中国語インデックスです。
