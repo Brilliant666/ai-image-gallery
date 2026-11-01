@@ -344,8 +344,8 @@ COSTUME_KEYS = [K_SEARCH, K_THEME, K_LANG, K_LR, K_ESC, K_HELP]
 POSE_KEYS = [K_SEARCH, K_DEPTH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ESC, K_HELP]
 LINE_KEYS = [K_SEARCH, K_THEME, K_LANG, K_POSE_LR, K_POSE_UD, K_ESC, K_HELP]
 
-AGE_WHAT = {"zh": "包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类；CC0 线稿里偏性感的姿势关闭时模糊显示。",
-            "ja": "ポーズ集の 2人絡み・全身セクシー系・上半身の胸寄せ／セクシー露骨寄り、衣装集のランジェリー・セクシー、CC0 線画の suggestive ポーズ（オフの間はぼかし表示）が対象です。"}
+AGE_WHAT = {"zh": "包括姿势里的双人交缠、全身性感系与上半身的聚胸、性感露骨分类，服装的内衣、性感两类；CC0 线稿的全身性感、双人系列与标为 suggestive 的姿势默认隐藏。",
+            "ja": "ポーズ集の 2人絡み・全身セクシー系・上半身の胸寄せ／セクシー露骨寄り、衣装集のランジェリー・セクシー、CC0 線画の全身・セクシー、ふたり、および suggestive ポーズが対象で、初期状態では非表示です。"}
 
 
 def dialogs(keys):

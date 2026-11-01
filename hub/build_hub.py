@@ -97,13 +97,13 @@ html:not([data-adult="1"]) .n-all,html[data-adult="1"] .n-pub{display:none}
 .hc .cv.split img+img{clip-path:inset(0 0 0 50%)}
 .hc .cv.split::after{content:"";position:absolute;top:6%;bottom:6%;left:50%;width:2px;margin-left:-1px;background:var(--ac);opacity:.8}
 .hc .tag{position:absolute;z-index:1;left:12px;bottom:12px;display:flex;gap:6px}
-.hc .tag span{padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.9);color:#111;font-size:11.5px;font-weight:700}
-.hc .tag span.ok{background:#dcfce7;color:#166534}
-.hc .tag span.warn,.credits span.lic.warn{background:#fef3c7;color:#92400e}
-.hc .tag span.no,.credits span.lic.no{background:#fee2e2;color:#991b1b}
-html[data-theme="dark"] .hc .tag span.ok{background:#14301d;color:#86efac}
-html[data-theme="dark"] .hc .tag span.warn,html[data-theme="dark"] .credits .lic.warn{background:#422b0b;color:#fcd34d}
-html[data-theme="dark"] .hc .tag span.no,html[data-theme="dark"] .credits .lic.no{background:#451a1a;color:#fca5a5}
+.hc .tag>span{padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.9);color:#111;font-size:11.5px;font-weight:700}
+.hc .tag>span.ok{background:#dcfce7;color:#166534}
+.hc .tag>span.warn,.credits span.lic.warn{background:#fef3c7;color:#92400e}
+.hc .tag>span.no,.credits span.lic.no{background:#fee2e2;color:#991b1b}
+html[data-theme="dark"] .hc .tag>span.ok{background:#14301d;color:#86efac}
+html[data-theme="dark"] .hc .tag>span.warn,html[data-theme="dark"] .credits .lic.warn{background:#422b0b;color:#fcd34d}
+html[data-theme="dark"] .hc .tag>span.no,html[data-theme="dark"] .credits .lic.no{background:#451a1a;color:#fca5a5}
 .hc .tx{padding:14px 4px 0}
 .hc h2{display:flex;align-items:center;gap:8px;margin:0;font-size:19px;font-weight:800}
 .hc h2 svg{width:18px;height:18px;margin-left:auto;color:var(--mu);transition:transform .2s,color .2s}
@@ -132,7 +132,7 @@ html[data-theme="dark"] .credits .lic.ok{background:#14301d;color:#86efac}
   .hc h2{font-size:15.5px}
   .hc p{font-size:12.5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   .hc .nums{display:none}
-  .hc .tag{left:8px;bottom:8px}.hc .tag span{font-size:10.5px;padding:2px 8px}
+  .hc .tag{left:8px;bottom:8px}.hc .tag>span{font-size:10.5px;padding:2px 8px}
 }
 </style>
 __SEO_CSS__
@@ -169,7 +169,7 @@ def num(s, i=0):
     """入口页的数字；有 public（成人向隐藏后的数量）时两套都写，CSS 按 18+ 状态显示一套"""
     x = s["stats"][i]
     v = f"{int(x['v']):,}"
-    if i == 0 and x.get("public"):
+    if "public" in x:
         return f'<span class="n-pub">{int(x["public"]):,}</span><span class="n-all">{v}</span>'
     return v
 
@@ -263,7 +263,7 @@ def hub_seo(cfg, base):
         ("这些图是真人吗？",
          "不是。人像是 AI 生成的虚构人物，姿势是无脸人偶，服装图由文字生成图像制作，都不对应真实人物或商品。"),
         ("为什么有些内容看不到？",
-         "姿势集的双人与性感系列、服装集的内衣与性感两类属于成人向参考，默认隐藏，CC0 线稿里偏性感的姿势默认模糊。"
+         "姿势集的双人与性感系列、服装集的内衣与性感两类属于成人向参考，默认隐藏，CC0 线稿的全身性感、双人系列与标为 suggestive 的姿势也默认隐藏。"
          "用顶部栏的「18+」确认一次年龄即可显示，各图库通用；这些内容不出现在静态落地页里。"),
         ("和原站是什么关系？",
          "这里是各原站的中文索引镜像：把日文分类、标签和姿势名译成中文，加了组合筛选、搜索和中日切换。"
@@ -288,7 +288,7 @@ def hub_seo(cfg, base):
             "pose": f"{stat('pose', 0)} 个人体姿势、{stat('pose', 1)} 张无脸灰色人偶线稿，每个姿势正面、侧面、斜角、俯视、仰视 5 个视角；页面里可切换到同一姿势的深度图。双人与性感系列默认隐藏。",
             "pose-depth": f"姿势集的深度图入口：同一批 {stat('pose-depth', 0)} 个姿势的 {stat('pose-depth', 1)} 张灰度深度图，可直接作为 ControlNet depth 控制图，可切换回线稿。",
             "costume": f"{stat('costume', 0)} 套 AI 生成服装、{stat('costume', 1)} 个文件，8 个分类、{stat('costume', 2)} 个标签；标签为英文关键词，可直接用作提示词。内衣与性感两类默认隐藏。",
-            "shisei": f"{stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张无脸人偶线稿（全身・标准、上半身、全身・性感、双人），每个姿势最多 5 个视角；偏性感的姿势默认模糊。"}
+            "shisei": f"{stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张无脸人偶线稿（全身・标准、上半身、全身・性感、双人），每个姿势最多 5 个视角；全身性感、双人系列与标为 suggestive 的姿势默认隐藏。"}
     lines = ["# photoai.life", "",
              f"> AI 绘画参考图库合集：人像、人体姿势（线稿与 ControlNet 深度图）、服装、CC0 姿势线稿，共 {N} 个图片文件，全部为 AI 生成。"
              "中文索引镜像，界面支持中文与日本語。", "",

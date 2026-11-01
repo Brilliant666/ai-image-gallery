@@ -13,7 +13,7 @@ cfg 需要的键：code, title, desc, ogSite, ogTitle, ogDesc, twTitle, twDesc, 
   seriesZh / catZh / angZh 中文名表；nameZh 为 None 时直接用 manifest 的「姿势名_zh」
   author / authorUrl       原作者
   imgExt                   原图扩展名
-  adultMode                成人向姿势（sites.json 的 adult 规则）在画廊里的处理：hide 隐藏（默认）/ blur 模糊
+  adultMode                成人向姿势（sites.json 的 adult 规则）在画廊里的处理：hide 隐藏（默认）
   variant / variants       姿势模块：本页默认版本（line / depth）与两个版本的站点 id、文案
 """
 import csv, json, os, re
@@ -48,7 +48,7 @@ def build(root, cfg):
     N_ZH = cfg.get("nameZh", NAME_ZH)
     AUTHOR, AUTHOR_URL = cfg.get("author", "ギア"), cfg.get("authorUrl", "https://x.com/giaaibusi")
     EXT = cfg.get("imgExt", ".png")
-    ADULT_MODE = cfg.get("adultMode", "hide") if ADULT_RULE else None
+    ADULT_MODE = "hide" if ADULT_RULE else None
     UI = adult.ui(cfg["ui"])
 
     # 姿势模块：两个版本的图片目录相对本页的前缀
@@ -114,7 +114,6 @@ def build(root, cfg):
     html = TEMPLATE
     for k, v in {
         "__UI_HEAD__": ui.head_script(), "__UI_CSS__": ui.head_css(),
-        "__BLUR_CSS__": adult.BLUR_CSS if ADULT_MODE == "blur" else "",
         "__UI_BAR__": ui.bar(sid), "__UI_DIALOGS__": ui.dialogs(keys), "__UI_JS__": ui.body_script(),
         "__SEO_CSS__": landing.SEO_INTRO_CSS, "__SEO_INTRO__": seo_intro,
         "__FAQ_LD__": landing.faq_ld_script(FAQ) if FAQ else "",
@@ -249,7 +248,6 @@ html:not([data-theme="dark"]) .ph>img,html:not([data-theme="dark"]) .strip img,h
 .mang button.on{outline-color:var(--sel)}
 .mview{display:flex}
 .mview button{flex:1}
-__BLUR_CSS__
 .seo-intro{--si-max:var(--w)}
 __SEO_CSS__
 </style>
@@ -325,7 +323,7 @@ __UI_JS__
 const DB = __PAYLOAD__;
 const POSES = DB.poses, SERIES = DB.series, CATS = DB.cats, ANGS = DB.angs;
 const SZ = DB.seriesZh, CZ = DB.catZh, AZ = DB.angZh, UI = DB.ui;
-const ADULT_MODE = '__ADULT_MODE__';     // hide：18+ 关闭时隐藏成人向；blur：模糊；none：本站没有成人向
+const ADULT_MODE = '__ADULT_MODE__';     // hide：18+ 关闭时隐藏成人向；none：本站没有成人向
 const DL_ICON = __DL_ICON__;
 const $ = s => document.querySelector(s);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -360,7 +358,6 @@ const S = {series:null, cat:null, ang:null, sort:'series', view:'pose', q:'', n:
   const c = h.get('cat');    if (c && CATS.includes(c) && POSES.some(p => p.c === c && (!S.series || p.s === S.series))) S.cat = c;
 })();
 const visible = () => (PL.adult || ADULT_MODE !== 'hide') ? POSES : POSES.filter(p => !p.x);
-const unblurred = new Set();
 
 /* ══ 文案 ══ */
 function applyText(){
@@ -390,7 +387,11 @@ function drawCats(){
   const sel = $('#cat'), pool = visible().filter(p=>!S.series||p.s===S.series), avail = CATS.filter(c=>pool.some(p=>p.c===c));
   sel.innerHTML = '<option value="">'+esc(t('catAll'))+' ('+pool.length+')</option>' +
     avail.map(c=>'<option value="'+esc(c)+'">'+esc(nC(c))+' ('+pool.filter(p=>p.c===c).length+')</option>').join('');
-  if (S.cat && !avail.includes(S.cat)) S.cat = null;
+  // 隐藏分类的直链仍保留筛选，显示 18+ 提示；打开开关后恢复该分类的结果。
+  const hiddenCat = S.cat && !avail.includes(S.cat) && !PL.adult && ADULT_MODE === 'hide' &&
+    POSES.some(p => p.x && p.c === S.cat && (!S.series || p.s === S.series));
+  if (hiddenCat) sel.innerHTML += '<option value="'+esc(S.cat)+'">'+esc(nC(S.cat))+' (0)</option>';
+  else if (S.cat && !avail.includes(S.cat)) S.cat = null;
   sel.value = S.cat || '';
 }
 function drawAng(){
@@ -466,8 +467,8 @@ function card({p, d}, i){
   const strip = S.view === 'pose' ? '<div class="strip">' + p.v.map(v =>
     '<button type="button" data-a="'+esc(v.a)+'" class="'+(v.a===d.a?'on':'')+'" title="'+esc(nA(v.a))+'" aria-label="'+esc(nA(v.a))+'">'+
     '<img loading="lazy" decoding="async" src="'+esc(thumbOf(p, v))+'" alt=""></button>').join('') + '</div>' : '';
-  return '<article class="card'+(unblurred.has(p.p)?' unblur':'')+'" tabindex="0" data-i="'+i+'"'+(p.x?' data-x="1"':'')+' aria-label="'+esc(name+' '+p.p)+'">'+
-    '<div class="ph"'+(p.x?' data-blur="'+esc(t('blurTap'))+'"':'')+'><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(thumbOf(p, d))+'" alt="'+esc(name)+'">'+
+  return '<article class="card" tabindex="0" data-i="'+i+'"'+(p.x?' data-x="1"':'')+' aria-label="'+esc(name+' '+p.p)+'">'+
+    '<div class="ph"><img'+(i<12?' fetchpriority="high"':' loading="lazy"')+' decoding="async" src="'+esc(thumbOf(p, d))+'" alt="'+esc(name)+'">'+
       '<span class="badge">'+esc(S.view==='pose' ? p.p : nA(d.a))+'</span>'+
       '<a class="dl" href="'+esc(fullOf(p, d))+'" download="'+esc(file)+'" title="'+esc(t('dlOne'))+'" aria-label="'+esc(t('dlOne'))+'">'+DL_ICON+'</a></div>'+
     '<div class="info"><h3>'+esc(name)+'</h3><div class="sub">'+esc(nS(p.s)+' · '+nC(p.c)+(S.view==='card'?' · '+p.p:''))+'</div></div>'+strip+'</article>';
@@ -538,13 +539,16 @@ function fitStage(){
 }
 addEventListener('resize', () => { if (modal.classList.contains('open')) fitStage(); });
 function openM(i, v, opener){
+  const o = VIEW[i]; if (!o || (!PL.adult && ADULT_MODE === 'hide' && o.p.x)) return;
   M = {i, d:v}; MV = VAR;
-  const o = VIEW[i];
-  if (ADULT_MODE === 'blur' && o && o.p.x){ unblurred.add(o.p.p); grid.querySelectorAll('.card[data-i="'+i+'"]').forEach(c => c.classList.add('unblur')); }
   PL.openDialog(modal, opener, () => grid.querySelector('.card[data-i="'+M.i+'"]') || grid);
   showM();
 }
-modal.addEventListener('pl:close', () => { mimg.onerror = null; mimg.removeAttribute('src'); });
+modal.addEventListener('pl:close', () => {
+  clearTimeout(loT); mimg.onload = mimg.onerror = mimgLo.onload = null;
+  [mimg, mimgLo, $('#cmpA'), $('#cmpB')].forEach(im => im.removeAttribute('src'));
+  $('#mang').innerHTML = ''; $('#mfull').removeAttribute('href'); $('#mdl').removeAttribute('href');
+});
 function drawMView(){
   const box = $('#mview'); if (!VARS){ box.hidden = true; return; }
   box.hidden = false;
@@ -626,16 +630,15 @@ addEventListener('pl:lang', () => {
     c.querySelector('.ph>img').alt = nN(o.p); c.ariaLabel = nN(o.p) + ' ' + o.p.p;
     const dl = c.querySelector('.dl'); dl.title = dl.ariaLabel = t('dlOne');
     if (S.view === 'card') c.querySelector('.badge').textContent = nA(o.d.a);
-    if (o.p.x) c.querySelector('.ph').dataset.blur = t('blurTap');
     c.querySelectorAll('.strip button').forEach(b => { b.title = b.ariaLabel = nA(b.dataset.a); }); });
   if (!grid.querySelector('.card')) draw();
   if (modal.classList.contains('open')) showM();
 });
 addEventListener('pl:adult', () => {
   if (ADULT_MODE !== 'hide') return;
-  if (S.series && !visible().some(p => p.s === S.series)) S.series = null;
+  // VIEW 重排后下标可能指向另一姿势，先关闭大图并清除旧图片与下载链接。
+  if (modal.classList.contains('open')) PL.closeDialog(modal);
   drawTabs(); drawCats(); draw();
-  if (modal.classList.contains('open') && !VIEW[M.i]) PL.closeDialog(modal);
 });
 
 applyText(); drawTabs(); drawCats(); drawAng(); draw();

@@ -378,24 +378,24 @@ class Landing(unittest.TestCase):
         self.assertIn('"404.html"', read("tools/release.py"))
 
     def test_shisei_suggestive(self):
-        # Shisei：上游标为 suggestive 的姿势在画廊里带成人向标记（模糊模式），不出现在任何落地页
+        # Shisei：两个成人系列整体隐藏，其他 suggestive 也隐藏，不出现在任何落地页
         if "shisei" not in SITES:
             self.skipTest("没有 shisei")
         rows = json.loads(read("sites/shisei/manifest.json"))
-        sugg = {r["编号"] for r in rows if r["rating"] == "suggestive"}
+        sugg = {r["编号"] for r in rows if r["rating"] == "suggestive" or r["系列"] in ("全身・セクシー", "ふたり")}
         db = page_db(read("sites/shisei/index.html"))
         self.assertEqual({p["p"] for p in db["poses"] if p.get("x")}, sugg)
-        self.assertIn("const ADULT_MODE = 'blur';", read("sites/shisei/index.html"))
+        self.assertIn("const ADULT_MODE = 'hide';", read("sites/shisei/index.html"))
         for rel in self.site_pages("shisei"):
             shown = set(re.findall(r"<figcaption>([A-Z]\d+) ", read(rel)))
             self.assertFalse(shown & sugg, f"{rel} 出现了 suggestive 姿势: {sorted(shown & sugg)[:5]}")
             self.assertFalse(re.search(r"ふたり|セクシー", rel), f"{rel} 不应为双人或性感系列生成落地页")
 
     def test_adult_markers_in_galleries(self):
-        # 18+：有 adult 规则的站点，内联数据里的成人向标记与规则一致；姿势 / 服装默认隐藏，Shisei 模糊
+        # 18+：有 adult 规则的站点，内联数据里的成人向标记与规则一致，默认隐藏
         sys.path.insert(0, os.path.join(ROOT, "shared"))
         import adult
-        mode = {"pose": "hide", "pose-depth": "hide", "shisei": "blur"}
+        mode = {"pose": "hide", "pose-depth": "hide", "shisei": "hide"}
         for s in SITES:
             rule = adult.rules(s)
             if not rule:
@@ -469,6 +469,65 @@ class Landing(unittest.TestCase):
             h = read(rel)
             for fn in icons:
                 self.assertIn(f'href="/{fn}"', h, f"{rel} 没引用 {fn}")
+
+
+class ShiseiAdultSource(unittest.TestCase):
+    """只在临时目录渲染 Shisei，改源码后无需全量构建即可回归成人向策略。"""
+
+    def test_shisei_adult_source(self):
+        import contextlib
+        import importlib.util
+        import io
+        import adult
+        import pose_gallery
+
+        spec = importlib.util.spec_from_file_location("shisei_config", os.path.join(ROOT, "sites", "shisei", "config.py"))
+        config = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(config)
+        rows = json.loads(read("sites/shisei/manifest.json"))
+        rule = adult.rules("shisei")
+        expected = lambda r: r["系列"] in ("全身・セクシー", "ふたり") or r["rating"] == "suggestive"
+        self.assertTrue(all(adult.is_adult(r, rule) == expected(r) for r in rows))
+        public = [r for r in rows if not expected(r)]
+        counts = [len({(r["系列"], r["分類"], r["编号"]) for r in public}), len(public), len({r["系列"] for r in public})]
+        site = next(s for s in CFG["sites"] if s["id"] == "shisei")
+        self.assertEqual([int(x["public"]) for x in site["stats"]], counts)
+        self.assertEqual(counts, [96, 395, 2])
+        self.assertEqual(config.CONFIG["adultMode"], "hide")
+        with tempfile.TemporaryDirectory(prefix="shisei-adult-") as tmp:
+            root = os.path.join(tmp, "shisei")
+            os.makedirs(os.path.join(root, "data"))
+            shutil.copyfile(os.path.join(ROOT, "sites", "shisei", "manifest.json"), os.path.join(root, "manifest.json"))
+            with contextlib.redirect_stdout(io.StringIO()):
+                pose_gallery.build(root, config.CONFIG)
+            with open(os.path.join(root, "index.html"), encoding="utf-8") as f:
+                h = f.read()
+            db = page_db(h)
+            self.assertEqual({(p["s"], p["p"]) for p in db["poses"] if p.get("x")},
+                             {(r["系列"], r["编号"]) for r in rows if expected(r)})
+            self.assertIn("const ADULT_MODE = 'hide';", h)
+            self.assertNotRegex(h, r"unblurred|data-blur|blurTap|默认模糊|ぼかし表示")
+            bad = {r["thumb_path"] for r in rows if expected(r)}
+            for pg in landing_meta_for_root(root)["pages"]:
+                self.assertNotRegex(pg, r"ふたり|セクシー")
+                with open(os.path.join(root, pg, "index.html"), encoding="utf-8") as f:
+                    page = f.read()
+                self.assertFalse(any(path in page for path in bad), pg)
+            with open(os.path.join(root, "sitemap.xml"), encoding="utf-8") as f:
+                sitemap = f.read()
+            import urllib.parse
+            self.assertNotRegex(urllib.parse.unquote(sitemap), r"ふたり|セクシー")
+            node = shutil.which("node")
+            if not node:
+                self.skipTest("没有 node；Python 规则与 SEO 检查已通过")
+            r = subprocess.run([node, os.path.join(ROOT, "tests", "shisei_adult.js"), os.path.join(root, "index.html")],
+                               capture_output=True, text=True, encoding="utf-8")
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+
+def landing_meta_for_root(root):
+    with open(os.path.join(root, "data", "landing.json"), encoding="utf-8") as f:
+        return json.load(f)
 
 
 class Manifests(unittest.TestCase):
