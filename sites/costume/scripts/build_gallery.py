@@ -54,7 +54,7 @@ html = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AI 绘画服装参考图库：1407 套服装、86 个标签组合筛选 · 服装集</title>
+<title>服装参考图库：1407 套服装与标签筛选 · photoai.life</title>
 <meta name="description" content="AI 绘画服装参考图库中文版：1407 套不含真人的服装图、8 个分类、86 个标签，按颜色・单品・鞋袜・配饰・材质・长度组合筛选，标签可直接作提示词，中日双语。">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="__SITE__/">
@@ -62,7 +62,7 @@ html = r"""<!doctype html>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="服装集 COSTUME-DB-01">
+<meta property="og:site_name" content="photoai.life">
 <meta property="og:title" content="AI 绘画服装参考图库 · 1407 套服装 / 86 个标签">
 <meta property="og:description" content="AI 绘画服装参考图库中文版。按颜色・单品・鞋袜・配饰・材质・长度六组标签组合筛选。">
 <meta property="og:url" content="__SITE__/">
@@ -198,7 +198,7 @@ const visible = () => PL.adult ? ITEMS : ITEMS.filter(x => !x.x);
 const visCats = () => CATS.filter(c => visible().some(x => x.c === c));
 
 function applyText(){
-  document.title = t('title');
+  document.title = (PL.lang === 'ja' ? '衣装参考画像集' : '服装参考图库') + ' · photoai.life';
   $('#q').placeholder = t('search'); $('#ftogT').textContent = t('filter');
   ['sortCat','sortId','sortTag'].forEach((k,i) => { $('#sort').options[i].textContent = t(k); });
   $('#sort').ariaLabel = t('sortLabel'); $('#clearTags').textContent = t('clearTags');

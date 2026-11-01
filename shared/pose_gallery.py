@@ -127,7 +127,7 @@ def build(root, cfg):
         "__N_IMAGES__": str(cfg.get("schemaImages", n_images)),
         "__LICENSE_LD__": cfg.get("licenseLd", ""),
         "__AUTHOR_URL__": AUTHOR_URL, "__AUTHOR__": AUTHOR,
-        "__TITLE__": cfg["title"], "__DESC__": cfg["desc"], "__OG_SITE__": cfg["ogSite"],
+        "__TITLE__": U["brand1"] + " " + U["brand2"] + " · photoai.life", "__DESC__": cfg["desc"], "__OG_SITE__": "photoai.life",
         "__OG_TITLE__": cfg["ogTitle"], "__OG_DESC__": cfg["ogDesc"], "__TW_TITLE__": cfg["twTitle"], "__TW_DESC__": cfg["twDesc"],
         "__SCHEMA_NAME__": cfg["schemaName"], "__SCHEMA_ALT__": cfg["schemaAlt"], "__SCHEMA_ABOUT__": cfg["schemaAbout"],
     }.items():
@@ -361,7 +361,7 @@ const visible = () => (PL.adult || ADULT_MODE !== 'hide') ? POSES : POSES.filter
 
 /* ══ 文案 ══ */
 function applyText(){
-  document.title = t('title');
+  document.title = t('brand1') + ' ' + t('brand2') + ' · photoai.life';
   $('#q').placeholder = t('search');
   $('#ftogT').textContent = t('filter');
   ['series','pid','cat','name'].forEach((k,i) => { $('#sort').options[i].textContent = t('sort' + k[0].toUpperCase() + k.slice(1)); });

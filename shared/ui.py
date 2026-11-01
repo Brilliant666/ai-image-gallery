@@ -244,6 +244,8 @@ BAR_CSS = r"""
   -webkit-backdrop-filter:saturate(180%) blur(14px);box-shadow:0 1px 0 var(--line)}
 .pl-in{max-width:var(--w);margin:0 auto;padding:0 var(--gut);height:var(--bar);display:flex;align-items:center;gap:14px}
 .pl-brand{flex:none;display:flex;align-items:center;gap:9px;height:44px;min-width:44px;color:var(--tx);text-decoration:none;font-weight:800;font-size:16px;letter-spacing:.01em}
+.pl-brand .nm{display:flex;flex-direction:column;line-height:1.2}
+.pl-brand small{margin-top:3px;font-size:10.5px;font-weight:500;letter-spacing:0;color:var(--tx2)}
 .pl-brand svg{width:28px;height:28px;display:block}
 .pl-nav{flex:1 1 auto;min-width:0;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
 .pl-nav::-webkit-scrollbar{display:none}
@@ -316,7 +318,7 @@ def bar(current=None, up="../"):
         links.append(f'<a href="{up}{escape(s["id"])}/"{aria}>{bi(lab["zh"], lab["ja"])}</a>')
     return (
         '<header class="pl-bar" id="plBar"><div class="pl-in">'
-        f'<a class="pl-brand" href="{up}" aria-label="photoai.life">{LOGO}<span class="nm">photoai.life</span></a>'
+        f'<a class="pl-brand" href="{up}" aria-label="photoai.life">{LOGO}<span class="nm">photoai.life<small>{bi("AI 绘画参考图库", "AI イラスト参考画像集")}</small></span></a>'
         f'<nav class="pl-nav" aria-label="{escape("图库")}">{"".join(links)}</nav>'
         '<div class="pl-tools">'
         '<button type="button" class="pl-adult" id="plAdult" role="switch" aria-checked="false">'

@@ -54,7 +54,7 @@ html = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AI 绘画角色脸部一致性参考图库：1499 张 AI 人像，CC0 免费商用 · 人像集</title>
+<title>人像参考图库：1499 张 CC0 AI 人像 · photoai.life</title>
 <meta name="description" content="让 AI 生成的角色保持同一张脸的人像参考图库：1499 张 AI 生成人像，面部 893 张（正面、纯色背景）、造型 606 张，可按发型筛选，CC0 免费商用，中日双语。">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="__SITE__/">
@@ -62,7 +62,7 @@ html = r"""<!doctype html>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="人像集 · AI 模特脸库">
+<meta property="og:site_name" content="photoai.life">
 <meta property="og:title" content="AI 绘画角色脸部一致性参考 · 1499 张 CC0 人像">
 <meta property="og:description" content="让 AI 生成的角色保持同一张脸。面部与造型两个分区，可按发型筛选，CC0 免费商用。">
 <meta property="og:url" content="__SITE__/">
@@ -188,7 +188,7 @@ function writeHash(){
 
 const grid = $('#grid'), countEl = $('#count'), moreEl = $('#more'), emptyEl = $('#empty');
 function applyText(){
-  document.title = t('title');
+  document.title = (PL.lang === 'ja' ? 'ポートレート参考画像集' : '人像参考图库') + ' · photoai.life';
   $('#lb-dl').textContent = t('download'); $('#lb-full').textContent = t('openFull'); $('#lb-copy').textContent = t('copyLink');
   $('#lb-close').ariaLabel = t('close'); $('#lb-prev').ariaLabel = t('prev'); $('#lb-next').ariaLabel = t('next');
   $('#lb-hint').innerHTML = t('hint'); $('#sections').ariaLabel = t('secLabel'); $('#filters').ariaLabel = t('hairLabel');

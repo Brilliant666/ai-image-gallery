@@ -282,49 +282,59 @@ def updated(site_id):
     return s.get("updated") if s else None
 
 
-def static_intro(paras, facts, links, faq, more_href="browse/", more_label="全部分类与标签"):
-    """主画廊页底部的「关于本站」卡片：不依赖 JS，搜索引擎和 AI 直接可读。
-    视觉上收成一张卡：一句话介绍 + 数据小标签 + 浏览链接；完整介绍与 FAQ 收在折叠里。"""
+def static_intro(paras, facts, links, faq, more_href="browse/", more_label="全部分类与标签",
+                 title="关于本站", nav_note=None):
+    """静态介绍、快速浏览与授权提示；详细介绍和 FAQ 保留在原生折叠中。"""
+    def text(value):
+        return ui.bi(*value) if isinstance(value, tuple) else esc(value)
+
     lead, rest = (paras[0], paras[1:]) if paras else ("", [])
     return ('<section class="seo-intro" aria-label="关于本站"><div class="seo-card">'
-            + '<p class="seo-eyebrow">关于本站</p>'
-            + (f'<p class="seo-lead">{esc(lead)}</p>' if lead else "")
-            + ('<ul class="seo-facts">' + "".join(f"<li><span>{esc(k)}</span>{esc(v)}</li>" for k, v in facts) + "</ul>" if facts else "")
-            + ('<nav class="seo-links" aria-label="按分类浏览">' + "".join(
-                f'<a href="{esc(h)}">{esc(t)}</a>' for h, t in links)
-               + (f'<a class="seo-all" href="{esc(more_href)}">{esc(more_label)} →</a>' if more_href else "") + "</nav>" if links else "")
-            + '<details class="seo-more"><summary>更多介绍与常见问题</summary>'
-            + "".join(f"<p>{esc(p)}</p>" for p in rest)
-            + "<dl>" + "".join(f"<dt>{esc(q)}</dt><dd>{esc(a)}</dd>" for q, a in faq) + "</dl></details>"
+            + '<div class="seo-overview"><div class="seo-copy">'
+            + f'<h2 class="seo-title">{text(title)}</h2>'
+            + (f'<p class="seo-lead">{text(lead)}</p>' if lead else "")
+            + ('<ul class="seo-facts">' + "".join(
+                f"<li><span>{text(k)}</span><b>{text(v)}</b></li>" for k, v in facts) + "</ul>" if facts else "")
+            + '</div>'
+            + ('<nav class="seo-nav" aria-label="快速浏览"><h3>' + ui.bi("快速浏览", "カテゴリーから探す") + '</h3>'
+               + '<div class="seo-links">' + "".join(f'<a href="{esc(h)}">{text(t)}</a>' for h, t in links)
+               + (f'<a class="seo-all" href="{esc(more_href)}">{esc(more_label)}</a>' if more_href else "") + '</div>'
+               + (f'<p class="seo-nav-note">{text(nav_note)}</p>' if nav_note else "") + '</nav>' if links else "")
+            + '</div><p class="seo-license"><strong>' + ui.bi("使用与授权", "利用とライセンス") + '</strong>'
+            + ui.bi("各图库授权不同，请在使用前查看对应说明。", "利用条件はギャラリーごとに異なります。利用前に各説明をご確認ください。") + '</p>'
+            + '<details class="seo-more"><summary>' + ui.bi("详细介绍与常见问题", "詳しい紹介とよくある質問") + '</summary>'
+            + "".join(f"<p>{text(p)}</p>" for p in rest)
+            + "<dl>" + "".join(f"<dt>{text(q)}</dt><dd>{text(a)}</dd>" for q, a in faq) + "</dl></details>"
             + "</div></section>")
 
 
-# 各页面的主题变量名不同：姿势 / 服装 / 入口页用 --tx* / --line / --panel，人像集用 --fg / --muted / --paper。
-# 这里用 var(a, var(b, 兜底色)) 两套都兼容，深浅主题跟随页面。
+# 兼容各图库主题变量，静态内容不依赖 JavaScript。
 SEO_INTRO_CSS = (
     ".seo-intro{--si-tx:var(--tx,var(--fg,#16191f));--si-tx2:var(--tx2,var(--muted,#525b6a));"
-    "--si-tx3:var(--tx3,var(--muted,#8a93a3));--si-line:var(--line,#e3e7ed);"
-    "--si-bg:var(--panel,var(--paper,#fff));--si-ac:var(--ac,var(--fg,#2563eb));"
-    "max-width:var(--si-max,1180px);margin:0 auto;padding:0 clamp(16px,4vw,48px) 56px}"
+    "--si-line:var(--line,#e3e7ed);--si-bg:var(--bg2,var(--paper,#fff));--si-ac:var(--ac,#2563eb);"
+    "max-width:var(--si-max,1180px);margin:0 auto;padding:0 clamp(16px,4vw,48px) 48px}"
     ".seo-card{border:1px solid var(--si-line);border-radius:16px;background:var(--si-bg);"
-    "padding:22px clamp(18px,3vw,28px);font-size:13.5px;line-height:1.75;color:var(--si-tx2)}"
-    ".seo-eyebrow{margin:0 0 6px;font-size:11px;font-weight:600;letter-spacing:.14em;color:var(--si-tx3)}"
-    ".seo-lead{margin:0 0 14px;color:var(--si-tx);font-size:14.5px;max-width:880px}"
-    ".seo-facts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0;list-style:none}"
-    ".seo-facts li{border:1px solid var(--si-line);border-radius:999px;padding:3px 11px;font-size:12px;color:var(--si-tx)}"
-    ".seo-facts li span{color:var(--si-tx3);margin-right:6px}"
-    ".seo-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 4px;font-size:13px}"
-    ".seo-links a{color:var(--si-tx2);text-decoration:none;border-bottom:1px solid transparent}"
-    ".seo-links a:hover{color:var(--si-ac);border-bottom-color:currentColor}"
-    ".seo-links .seo-all{color:var(--si-ac);font-weight:600}"
-    ".seo-more{margin-top:12px;border-top:1px dashed var(--si-line);padding-top:10px}"
-    ".seo-more summary{cursor:pointer;color:var(--si-tx3);font-size:12.5px;list-style:none}"
+    "padding:28px clamp(20px,3vw,32px) 20px;font-size:13.5px;line-height:1.75;color:var(--si-tx2)}"
+    ".seo-overview{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(240px,1fr);gap:24px 40px;align-items:start}"
+    ".seo-title{margin:0 0 10px;font-size:19px;line-height:1.4;font-weight:700;color:var(--si-tx)}"
+    ".seo-lead{margin:0;max-width:64ch;font-size:14px}"
+    ".seo-facts{display:flex;flex-wrap:wrap;gap:6px 20px;margin:16px 0 0;padding:0;list-style:none;font-size:12.5px}"
+    ".seo-facts li{display:flex;gap:6px}.seo-facts b{font-weight:600;color:var(--si-tx)}"
+    ".seo-nav h3{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--si-tx)}"
+    ".seo-links{display:flex;flex-wrap:wrap;gap:2px 16px}"
+    ".seo-links a{display:inline-flex;align-items:center;min-height:40px;color:var(--si-tx);text-decoration:none;"
+    "text-underline-offset:5px}.seo-links a:hover{text-decoration:underline;color:var(--si-ac)}"
+    ".seo-links .seo-all{color:var(--si-ac)}.seo-nav-note{margin:4px 0 0;font-size:12px}"
+    ".seo-license{margin:22px 0 0;padding-top:16px;border-top:1px solid var(--si-line);font-size:12.5px}"
+    ".seo-license strong{margin-right:12px;color:var(--si-tx);font-weight:600}"
+    ".seo-more{margin-top:12px}.seo-more summary{display:flex;align-items:center;justify-content:space-between;"
+    "min-height:40px;cursor:pointer;color:var(--si-tx);font-size:13px;list-style:none}"
     ".seo-more summary::-webkit-details-marker{display:none}"
-    ".seo-more summary::before{content:'＋';margin-right:6px}.seo-more[open] summary::before{content:'－'}"
-    ".seo-more p{margin:10px 0 0;max-width:880px}"
-    ".seo-more dl{margin:6px 0 0;max-width:880px}.seo-more dt{margin-top:12px;color:var(--si-tx);font-weight:600}"
-    ".seo-more dd{margin:3px 0 0}"
-    "@media(max-width:600px){.seo-card{border-radius:12px;padding:18px 16px}}")
+    ".seo-more summary::after{content:'＋';margin-left:auto;padding-left:16px}.seo-more[open] summary::after{content:'－'}"
+    ".seo-more p{margin:12px 0 0;max-width:78ch}.seo-more dl{margin:8px 0 0;max-width:78ch}"
+    ".seo-more dt{margin-top:16px;color:var(--si-tx);font-weight:600}.seo-more dd{margin:4px 0 0}"
+    "@media(max-width:760px){.seo-overview{grid-template-columns:1fr;gap:20px}.seo-card{padding:22px 18px 16px}"
+    ".seo-title{font-size:18px}.seo-license strong{display:block;margin:0 0 4px}.seo-links{gap:2px 20px}}")
 
 
 def faq_ld_script(faq):
