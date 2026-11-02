@@ -87,7 +87,7 @@ def build():
     # Group keys used in metadata but not UI need not be sent to the browser.
     for group in payload['groups']:
         group.pop('k')
-    schema = {'@context': 'https://schema.org', '@type': 'ImageGallery', 'name': '二次元服装库 COSTUME-ANIME-DB',
+    schema = {'@context': 'https://schema.org', '@type': 'ImageGallery', '@id': site_url + '/#gallery', 'name': '二次元服装库 COSTUME-ANIME-DB',
               'url': site_url + '/', 'inLanguage': ['zh-CN', 'ja'], 'numberOfItems': 1320,
               'isAccessibleForFree': True, 'creditText': 'ギア / AI Costume Anime Gallery',
               'copyrightNotice': '图片及原始元数据按原站条件使用',
@@ -104,7 +104,7 @@ def build():
             raise ValueError(f'output parent must be a directory: {path.parent}')
     urls, intro = seo.build(root, site_url, items, CAT_ORDER)
     for key, value in {
-        '__SITE__': html.escape(site_url, quote=True), '__SHARE__': SOURCE + 'thumbs/SPR-0001.webp',
+        '__SITE__': html.escape(site_url, quote=True), '__SHARE__': html.escape(site_url + '/og-cover.jpg', quote=True),
         '__SCHEMA__': json_script(schema), '__UI_HEAD__': ui.head_script(), '__UI_CSS__': ui.head_css(),
         '__UI_BAR__': ui.bar('costume-anime'), '__UI_DIALOGS__': ui.dialogs(ui.COSTUME_KEYS), '__UI_JS__': ui.body_script(),
         '__SEO_CSS__': landing.SEO_INTRO_CSS, '__SEO_INTRO__': intro, '__FAQ_LD__': landing.faq_ld_script(seo.FAQ),

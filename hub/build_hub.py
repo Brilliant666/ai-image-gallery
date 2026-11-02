@@ -373,24 +373,23 @@ def main():
         return 1 if bad else 0
 
     shown = [s for s in cfg["sites"] if not s.get("mergedInto")]
-    by_id = {s["id"]: s for s in cfg["sites"]}
-    st = lambda sid, i=0: int(by_id[sid]["stats"][i]["v"])
     title = "photoai.life · AI 绘画参考：人像、姿势、服装、角色"
-    desc = (f"{len(shown)} 个 AI 绘画参考图库：{st('portrait'):,} 张 CC0 人像（角色脸部一致性）、"
-            f"{st('pose')} 个人体姿势的线稿与 ControlNet 深度图（各 {st('pose', 1):,} 张，五视角）、"
-            f"{st('costume'):,} 套服装、{st('shisei')} 个 CC0 姿势线稿、{st('character')} 个二次元角色基础条目、{st('costume-anime'):,} 套二次元服装。角色与二次元服装图片从原站加载。中日双语。")
+    desc = ("AI 绘画参考图库：人像、姿势线稿与 ControlNet 深度图、服装、二次元角色。"
+            "支持中日双语检索与标签筛选；含 CC0 素材，各库按原作者条件使用，部分图片由原站加载。")
     seo = hub_seo(cfg, base)
 
-    # 结构化数据：告诉搜索引擎/AI 引擎这是一组并列的子站点
+    # 区分整个网站与图库页面；父子引用使用同一组页面标识。
     ld = json.dumps({
         "@context": "https://schema.org",
         "@type": "CollectionPage",
+        "@id": base + "/#collection",
+        "isPartOf": {"@type": "WebSite", "@id": base + "/#website", "name": "photoai.life", "url": base + "/"},
         "name": title,
         "description": desc,
         "url": base + "/",
         "inLanguage": ["zh-CN", "ja"],
         "hasPart": [
-            {"@type": "WebSite", "name": s["name"]["zh"], "url": f"{base}/{s['id']}/"}
+            {"@type": "CollectionPage", "@id": f"{base}/{s['id']}/#gallery", "name": s["name"]["zh"], "url": f"{base}/{s['id']}/"}
             for s in shown
         ],
     }, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")

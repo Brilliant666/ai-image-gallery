@@ -83,7 +83,7 @@ python build.py
 
 ## English
 
-An independent static Chinese/Japanese index of 1,320 anime-style outfits, with 8 categories and 86 English tags. Search, combine tag filters and copy tags; images load from the original site. The 336 lingerie/sexy entries are hidden until age confirmation and excluded from SEO landing pages. Only public UI screenshots are bundled; gallery image assets, a batch downloader and an image-generation service are not included. Open `index.html`, or rebuild using Python 3.8+. Visit [photoai.life](https://photoai.life/) for the full reference collection. Original data and images remain subject to the source author's terms.
+An independent static Chinese/Japanese index of 1,320 anime-style outfits, with 8 categories and 86 English tags. Search, combine tag filters and copy tags; images load from the original site. The 336 lingerie/sexy entries are hidden until age confirmation and excluded from SEO landing pages. Only public UI screenshots and our original text-only social cover are bundled; source gallery image assets, a batch downloader and an image-generation service are not included. Open `index.html`, or rebuild using Python 3.8+. Visit [photoai.life](https://photoai.life/) for the full reference collection. Original data and images remain subject to the source author's terms.
 '''
 
 
@@ -102,9 +102,11 @@ def export(out):
     site = next(s for s in config['sites'] if s['id'] == SID)
     if site['imageMode'] != 'remote' or site['imageDirs'] or site['tiers']:
         raise ValueError('独立库只允许远程图片模式')
-    if any(p.suffix.lower() in ('.jpg', '.jpeg', '.png', '.webp', '.gif')
+    # The original text-only social cover is ours; source gallery assets remain forbidden.
+    cover = site_root / 'og-cover.jpg'
+    if any(p.suffix.lower() in ('.jpg', '.jpeg', '.png', '.webp', '.gif') and p != cover
            for p in site_root.rglob('*') if p.is_file()):
-        raise ValueError('源图库中存在图片文件，不允许打包')
+        raise ValueError('源图库中存在素材图片文件，不允许打包')
     files = ['ui.py', 'landing.py', 'adult.py', 'assets.py']
     for name in files:
         if not (ROOT / 'shared' / name).is_file():

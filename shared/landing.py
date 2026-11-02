@@ -173,6 +173,8 @@ def _page(site, *, slug, title, h1, description, crumbs, body, ld, depth):
 {share_size}
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{esc(title)}">
+<meta name="twitter:description" content="{esc(description)}">
 <meta name="twitter:image" content="{esc(share_image)}">
 <script type="application/ld+json">{_ld(ld)}</script>
 {ui.head_script()}
@@ -248,7 +250,7 @@ def facet_page(site, f, all_facets):
     crumbs = [(f"{up}../", "photoai.life"), (up, site.name), (f"{up}browse/", "分类与标签")] + ([(None, f.group)] if f.group else []) + [(None, f.h1)]
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "CollectionPage", "name": f.title, "description": f.description, "url": f"{site.site_url}/{f.slug}/",
-         "inLanguage": "zh-CN", "isPartOf": {"@type": "WebSite", "name": f"photoai.life · {site.name}", "url": f"{site.site_url}/"},
+         "inLanguage": "zh-CN", "isPartOf": {"@type": "CollectionPage", "@id": f"{site.site_url}/#gallery", "name": site.name, "url": f"{site.site_url}/"},
          "mainEntity": {"@type": "ImageGallery", "name": f.h1, "numberOfItems": len(f.items),
                         "image": [_img_ld(site, it) for it in shown[:12]]}},
         {"@type": "BreadcrumbList", "itemListElement": [
@@ -274,6 +276,7 @@ def index_page(site, facets):
     title = site.index_title or f"{site.name} · 全部分类与标签"
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "CollectionPage", "name": title, "url": f"{site.site_url}/browse/", "inLanguage": "zh-CN",
+         "isPartOf": {"@type": "CollectionPage", "@id": f"{site.site_url}/#gallery", "name": site.name, "url": f"{site.site_url}/"},
          "hasPart": [{"@type": "CollectionPage", "name": f.h1, "url": f"{site.site_url}/{f.slug}/"} for f in facets]},
         _faq_ld(site.faq)]}
     return _page(site, slug="browse", title=title, h1=title, description=site.index_intro[:150],

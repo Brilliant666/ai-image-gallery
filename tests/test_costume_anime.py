@@ -109,8 +109,9 @@ class CostumeAnime(unittest.TestCase):
             for tier, directory, extension in [('thumb','thumbs','webp'),('preview','img','webp'),('full','png','png')]:
                 self.assertEqual(row[tier+'_path'], f'{directory}/{row["id"]}.{extension}')
                 self.assertEqual(row[tier+'_url'], config['source'] + row[tier+'_path'])
-        self.assertFalse([p for p in SITE.rglob('*') if p.suffix.lower() in ('.png','.jpg','.jpeg','.webp','.gif','.avif')])
-        self.assertNotIn('og-cover.jpg', self.page)
+        self.assertEqual([p.relative_to(SITE).as_posix() for p in SITE.rglob('*')
+                          if p.suffix.lower() in ('.png','.jpg','.jpeg','.webp','.gif','.avif')], ['og-cover.jpg'])
+        self.assertIn('content="https://example.com/costume-anime/og-cover.jpg"', self.page)
         self.assertNotIn('new Image(', self.page)
         self.assertNotIn('IntersectionObserver', self.page)
 
@@ -130,8 +131,8 @@ class CostumeAnime(unittest.TestCase):
             thumbs=re.findall(r'<img src="([^"]+)"',page)
             self.assertTrue(set(thumbs)<=public_thumbs,slug)
             self.assertNotRegex(page,r'<figcaption>(?:LNG|SXY)-')
-            self.assertIn('content="'+self.db['source']+'thumbs/SPR-0001.webp"',page)
-            self.assertNotIn('og-cover.jpg',page)
+            self.assertIn('content="https://example.com/costume-anime/og-cover.jpg"',page)
+            self.assertNotIn('content="'+self.db['source']+'thumbs/SPR-0001.webp"',page)
             for text in re.findall(r'<script type="application/ld\+json">(.*?)</script>',page,re.S):
                 json.loads(text)
         self.assertNotIn('%E3%83%A9%E3%83%B3%E3%82%B8%E3%82%A7', (SITE/'sitemap.xml').read_text())
