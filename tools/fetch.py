@@ -52,7 +52,8 @@ def main():
         for t in tiers:
             workers = int(args.get("workers", TIER_WORKERS.get(t, 14)))
             failed = assets.download(sd, t, s["source"], workers,
-                                     log=lambda m: print("    " + m, flush=True))
+                                     log=lambda m: print("    " + m, flush=True),
+                                     allowed_hosts=assets.image_hosts(s))
             if failed:
                 any_failed = True
                 print(f"    ✗ {t} 失败 {len(failed)} 条，详见 sites/{sid}/failed_{t}.json")

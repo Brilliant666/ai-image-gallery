@@ -8,7 +8,7 @@
 
 下载幂等：已存在且大于 1 KB 的文件跳过；先写 .part 再改名，中断不会留下半个文件。
 """
-import json, os, struct, threading, time, urllib.request
+import json, ntpath, os, struct, threading, time, urllib.parse, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -17,8 +17,54 @@ MIN_BYTES = 1024
 RETRIES = 4
 
 
+def safe_under(root, rel):
+    """只接受根目录内的相对路径，兼容两种分隔符并检查现有符号链接。"""
+    if not isinstance(rel, str) or not rel or ntpath.splitdrive(rel)[0]:
+        raise ValueError("不安全的相对路径: %r" % (rel,))
+    parts = rel.replace("\\", "/").split("/")
+    if any(p in ("", ".", "..") or p.endswith((" ", "."))
+           or any(ord(c) < 32 or c in ':<>"|?*' for c in p) for p in parts):
+        raise ValueError("不安全的相对路径: %r" % rel)
+    base = os.path.realpath(root)
+    path = os.path.realpath(os.path.join(base, *parts))
+    if (os.path.normcase(path) == os.path.normcase(base)
+            or os.path.normcase(os.path.commonpath([base, path])) != os.path.normcase(base)):
+        raise ValueError("路径超出站点目录: %r" % rel)
+    return path
+
+
+def require_image_url(url, allowed_hosts):
+    """初始地址与每次重定向都必须使用配置授权的 HTTPS 主机。"""
+    if not isinstance(url, str) or any(c.isspace() or ord(c) < 32 for c in url) or "\\" in url:
+        raise ValueError("不安全的图片 URL")
+    parts = urllib.parse.urlsplit(url)
+    if (parts.scheme != "https" or not parts.hostname or parts.hostname not in allowed_hosts
+            or parts.username is not None or parts.password is not None or parts.port not in (None, 443)):
+        raise ValueError("图片 URL 必须使用授权主机的 HTTPS 地址: %r" % url)
+    return url
+
+
+def image_hosts(site):
+    """白名单只来自受信任的站点配置，不从 manifest 中推导。"""
+    hosts = set()
+    for url in [site["source"]] + ([site["imageBase"]] if site.get("imageBase") else []):
+        host = urllib.parse.urlsplit(url).hostname
+        require_image_url(url, {host})
+        hosts.add(host)
+    return hosts
+
+
+class ImageRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def __init__(self, allowed_hosts):
+        self.allowed_hosts = frozenset(allowed_hosts)
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        require_image_url(newurl, self.allowed_hosts)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
 def load_manifest(site_dir):
-    with open(os.path.join(site_dir, "manifest.json"), encoding="utf-8") as f:
+    with open(safe_under(site_dir, "manifest.json"), encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -36,10 +82,17 @@ def rel_path(p):
 
 # ── 下载 ────────────────────────────────────────────
 
-def download(site_dir, tier, referer, workers=12, log=print):
-    """下载一档图片，返回失败列表 [(id, 原因)]。"""
+def download(site_dir, tier, referer, workers=12, log=print, *, allowed_hosts):
+    """下载一档图片；整档路径与来源验证通过后才开始读写。"""
     rows = load_manifest(site_dir)
     url_key, path_key = tier_keys(rows, tier)
+    allowed_hosts = frozenset(allowed_hosts)
+    failed_path = safe_under(site_dir, "failed_%s.json" % tier)
+    for row in rows:
+        safe_under(site_dir, row[path_key])
+        safe_under(site_dir, row[path_key] + ".part")
+        require_image_url(row[url_key], allowed_hosts)
+    opener = urllib.request.build_opener(ImageRedirectHandler(allowed_hosts))
     total = len(rows)
     lock = threading.Lock()
     state = {"done": 0, "bytes": 0}
@@ -56,17 +109,17 @@ def download(site_dir, tier, referer, workers=12, log=print):
             log("  %d/%d  %.1f MB  %.1f files/s" % (n, total, state["bytes"] / 1048576, n / el))
 
     def fetch(r):
-        dst = os.path.join(site_dir, rel_path(r[path_key]))
+        dst = safe_under(site_dir, r[path_key])
         if os.path.exists(dst) and os.path.getsize(dst) > MIN_BYTES:
             tick(os.path.getsize(dst))
             return
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        tmp = dst + ".part"
+        tmp = safe_under(site_dir, r[path_key] + ".part")
         last = None
         for attempt in range(RETRIES):
             try:
                 req = urllib.request.Request(r[url_key], headers={"User-Agent": UA, "Referer": referer})
-                with urllib.request.urlopen(req, timeout=60) as resp:
+                with opener.open(req, timeout=60) as resp:
                     blob = resp.read()
                 if len(blob) < MIN_BYTES // 2:
                     raise IOError("响应过小: %d bytes" % len(blob))
@@ -89,7 +142,7 @@ def download(site_dir, tier, referer, workers=12, log=print):
         list(ex.map(fetch, rows))
     log("完成 %d/%d, %.1f MB, 用时 %.0fs" % (state["done"], total, state["bytes"] / 1048576, time.time() - t0))
     if failed:
-        with open(os.path.join(site_dir, "failed_%s.json" % tier), "w", encoding="utf-8") as f:
+        with open(failed_path, "w", encoding="utf-8") as f:
             json.dump(failed, f, ensure_ascii=False, indent=1)
     return failed
 
@@ -150,7 +203,7 @@ def verify(site_dir, tiers):
         t = {"ok": 0, "bytes": 0, "dims": {}, "missing": [], "broken": []}
         for r in rows:
             rel = rel_path(r[path_key])
-            p = os.path.join(site_dir, rel)
+            p = safe_under(site_dir, rel)
             if not os.path.exists(p):
                 t["missing"].append(rel); continue
             sz = os.path.getsize(p)

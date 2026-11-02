@@ -764,5 +764,10 @@ class Docs(unittest.TestCase):
 from test_character import Character  # noqa: E402,F401 — 原生角色库专用检查也由 CI 入口运行
 
 
+def load_tests(loader, tests, pattern):
+    tests.addTests(loader.discover(os.path.dirname(__file__), pattern="test_security_*.py"))
+    return tests
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
