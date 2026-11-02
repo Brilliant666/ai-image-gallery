@@ -239,6 +239,8 @@ class Landing(unittest.TestCase):
                 target = os.path.normpath(os.path.join(base, html.unescape(href)))
                 if target == sites_dir:
                     target = os.path.join(ROOT, "hub")
+                elif os.path.dirname(target) == sites_dir and not os.path.isdir(target):
+                    target = os.path.join(ROOT, "hub", os.path.basename(target))
                 if href.endswith("/"):
                     target = os.path.join(target, "index.html")
                 if not os.path.exists(target):
@@ -468,6 +470,9 @@ class Landing(unittest.TestCase):
             self.assertIn(f"https://example.com/{s}/", t)
         self.assertIn("CC0", t)
         self.assertIn("禁止再分发", t)
+        for rel in ["hub/index.html"] + [f"sites/{s}/index.html" for s in SITES] + self.pages:
+            body = re.sub(r"<script.*?</script>|<style.*?</style>", "", read(rel), flags=re.S)
+            self.assertRegex(body, r'<a\b[^>]*href="[^\"]*llms\.txt"[^>]*>.*?llms\.txt', rel)
 
     def test_static_intro_on_gallery_pages(self):
         # 主画廊页在不执行 JS 时也要有可读内容和 FAQ 结构化数据

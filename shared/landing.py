@@ -152,6 +152,7 @@ def _page(site, *, slug, title, h1, description, crumbs, body, ld, depth):
     share_size = '' if site.share_image else '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">'
     nav = ' <span>/</span> '.join(
         f'<a href="{esc(href)}">{esc(label)}</a>' if href else esc(label) for href, label in crumbs)
+    notes_url = up + '../llms.txt' if len(ui.sites()) > 1 else 'https://photoai.life/llms.txt'
     return f"""<!doctype html>
 <html lang="zh-CN" data-theme="light" data-lang="zh">
 <head>
@@ -192,6 +193,7 @@ def _page(site, *, slug, title, h1, description, crumbs, body, ld, depth):
 <p>{esc(site.name)} · {esc(site.tagline)}</p>
 <p>{esc(site.license_note)} 素材作者：<a href="{esc(site.author_url)}" rel="noopener">{esc(site.author)}</a> · 原站：<a href="{esc(site.source)}" rel="noopener">{esc(site.source)}</a></p>
 <p><a href="{up}">返回{esc(site.name)}画廊</a> · <a href="{up}browse/">全部分类与标签</a> · <a href="{up}../">photoai.life 全部 {len(ui.nav_sites())} 个参考图库</a></p>
+<p><a href="{esc(notes_url)}" type="text/plain">{ui.bi('站点说明与素材来源（llms.txt）', 'サイト案内・素材の出典（llms.txt）')}</a></p>
 </footer>
 {ui.dialogs(ui.HUB_KEYS)}
 {ui.body_script()}
@@ -360,12 +362,14 @@ def updated(site_id):
 
 
 def static_intro(paras, facts, links, faq, more_href="browse/", more_label="全部分类与标签",
-                 title="关于本站", nav_note=None):
+                 title="关于本站", nav_note=None, notes_href="../llms.txt"):
     """静态介绍、快速浏览与授权提示；详细介绍和 FAQ 保留在原生折叠中。"""
     def text(value):
         return ui.bi(*value) if isinstance(value, tuple) else esc(value)
 
     lead, rest = (paras[0], paras[1:]) if paras else ("", [])
+    if notes_href and len(ui.sites()) == 1:
+        notes_href = 'https://photoai.life/llms.txt'
     return ('<section class="seo-intro" aria-label="关于本站"><div class="seo-card">'
             + '<div class="seo-overview"><div class="seo-copy">'
             + f'<h2 class="seo-title">{text(title)}</h2>'
@@ -382,6 +386,8 @@ def static_intro(paras, facts, links, faq, more_href="browse/", more_label="全�
             + '<details class="seo-more"><summary>' + ui.bi("详细介绍与常见问题", "詳しい紹介とよくある質問") + '</summary>'
             + "".join(f"<p>{text(p)}</p>" for p in rest)
             + "<dl>" + "".join(f"<dt>{text(q)}</dt><dd>{text(a)}</dd>" for q, a in faq) + "</dl></details>"
+            + (f'<p class="seo-notes"><a href="{esc(notes_href)}" type="text/plain">'
+               + ui.bi('站点说明与素材来源（llms.txt）', 'サイト案内・素材の出典（llms.txt）') + '</a></p>' if notes_href else '')
             + "</div></section>")
 
 
@@ -404,6 +410,7 @@ SEO_INTRO_CSS = (
     ".seo-links .seo-all{color:var(--si-ac)}.seo-nav-note{margin:4px 0 0;font-size:12px}"
     ".seo-license{margin:22px 0 0;padding-top:16px;border-top:1px solid var(--si-line);font-size:12.5px}"
     ".seo-license strong{margin-right:12px;color:var(--si-tx);font-weight:600}"
+    ".seo-notes{margin:16px 0 0;font-size:12px}.seo-notes a{color:var(--si-tx2);text-underline-offset:3px}"
     ".seo-more{margin-top:12px}.seo-more summary{display:flex;align-items:center;justify-content:space-between;"
     "min-height:40px;cursor:pointer;color:var(--si-tx);font-size:13px;list-style:none}"
     ".seo-more summary::-webkit-details-marker{display:none}"

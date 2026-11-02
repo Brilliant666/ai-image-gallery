@@ -22,6 +22,8 @@ python tools/render_share_covers.py --font /path/to/cjk-font.ttc
 
 ## 站点说明与缓存
 
+首页页脚、七站静态介绍、全部公开分类／标签与 browse 页脚均提供 `llms.txt` 可见链接，三语 README 也提供入口。主站使用相对路径；独立导出库链接至 photoai.life 的站点说明，避免指向导出包中不存在的文件。
+
 `/llms.txt` 提供来源、许可边界和公开索引。它是辅助说明，不是访问控制规则，不代替 robots.txt、sitemap 或正常 HTML 内链，也不保证任何 AI 服务读取或收录。
 
 HTML 当前采用 `no-cache, must-revalidate`，允许缓存并在复用前验证。本批不调整缓存策略。`deploy/nginx.conf` 仅为部署参考模板，不能覆盖现有生产配置；HTTPS 的 www 归一化应由独立重定向服务处理，并保留路径与查询参数。

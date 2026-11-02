@@ -169,6 +169,7 @@ __UI_BAR__
   </section>
   <div class="hub-seo">__SEO_INTRO__</div>
 </main>
+<footer class="foot"><p><a href="./llms.txt" type="text/plain"><span class="zh">站点说明与素材来源（llms.txt）</span><span class="ja">サイト案内・素材の出典（llms.txt）</span></a> · <a href="./sitemap.xml"><span class="zh">站点地图</span><span class="ja">サイトマップ</span></a></p></footer>
 __UI_DIALOGS__
 __UI_JS__
 </body>
@@ -315,7 +316,7 @@ def hub_seo(cfg, base):
          f"服装集 {stat('costume', 0)} 套服装、{stat('costume', 2)} 个标签，标签保留英文关键词，可直接作提示词；"
          f"CC0 姿势线稿 {stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张，可商用、可再分发。", character_note, anime_note],
         [(("图库", "ギャラリー"), str(K)), (("本地图片文件", "ローカル画像ファイル"), N), (("语言", "言語"), "中文 / 日本語")],
-        links, faq, more_href=None, title=("关于 photoai.life", "photoai.life について"),
+        links, faq, more_href=None, notes_href=None, title=("关于 photoai.life", "photoai.life について"),
         nav_note=("深度图与姿势线稿属于同一图库。文件总数含不同尺寸，并非独立画面数；角色与二次元服装库远程图片不计入。",
                   "デプスマップとポーズ線画は同じギャラリーです。ファイル数はサイズ違いを含み、キャラ・アニメ衣装のリモート画像は含みません。"))
 
