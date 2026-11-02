@@ -33,6 +33,19 @@ def safe_under(root, rel):
     return path
 
 
+def asset_path(root, rel, allowed_dirs):
+    """图片只能位于配置的图片目录内，不能借站点内链接覆盖源码。"""
+    safe_under(root, rel)
+    parts = rel_path(rel).split("/")
+    if len(parts) < 2 or parts[0] not in allowed_dirs:
+        raise ValueError("图片路径不在允许的图片目录: %r" % rel)
+    logical = os.path.join(os.path.realpath(root), parts[0])
+    image_root = safe_under(root, parts[0])
+    if os.path.normcase(image_root) != os.path.normcase(os.path.abspath(logical)):
+        raise ValueError("图片目录不能通过链接重定向: %r" % rel)
+    return safe_under(image_root, "/".join(parts[1:]))
+
+
 def require_image_url(url, allowed_hosts):
     """初始地址与每次重定向都必须使用配置授权的 HTTPS 主机。"""
     if not isinstance(url, str) or any(c.isspace() or ord(c) < 32 for c in url) or "\\" in url:
@@ -82,15 +95,16 @@ def rel_path(p):
 
 # ── 下载 ────────────────────────────────────────────
 
-def download(site_dir, tier, referer, workers=12, log=print, *, allowed_hosts):
+def download(site_dir, tier, referer, workers=12, log=print, *, allowed_hosts, allowed_dirs):
     """下载一档图片；整档路径与来源验证通过后才开始读写。"""
     rows = load_manifest(site_dir)
     url_key, path_key = tier_keys(rows, tier)
     allowed_hosts = frozenset(allowed_hosts)
+    allowed_dirs = frozenset(allowed_dirs)
     failed_path = safe_under(site_dir, "failed_%s.json" % tier)
     for row in rows:
-        safe_under(site_dir, row[path_key])
-        safe_under(site_dir, row[path_key] + ".part")
+        asset_path(site_dir, row[path_key], allowed_dirs)
+        asset_path(site_dir, row[path_key] + ".part", allowed_dirs)
         require_image_url(row[url_key], allowed_hosts)
     opener = urllib.request.build_opener(ImageRedirectHandler(allowed_hosts))
     total = len(rows)
@@ -109,12 +123,12 @@ def download(site_dir, tier, referer, workers=12, log=print, *, allowed_hosts):
             log("  %d/%d  %.1f MB  %.1f files/s" % (n, total, state["bytes"] / 1048576, n / el))
 
     def fetch(r):
-        dst = safe_under(site_dir, r[path_key])
+        dst = asset_path(site_dir, r[path_key], allowed_dirs)
         if os.path.exists(dst) and os.path.getsize(dst) > MIN_BYTES:
             tick(os.path.getsize(dst))
             return
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        tmp = safe_under(site_dir, r[path_key] + ".part")
+        tmp = asset_path(site_dir, r[path_key] + ".part", allowed_dirs)
         last = None
         for attempt in range(RETRIES):
             try:
@@ -194,7 +208,7 @@ def image_dims(path):
     return None
 
 
-def verify(site_dir, tiers):
+def verify(site_dir, tiers, *, allowed_dirs):
     """逐档检查存在、体积、可读宽高。返回 {tier: {ok, bytes, dims, missing, broken}}。"""
     rows = load_manifest(site_dir)
     report = {}
@@ -203,7 +217,7 @@ def verify(site_dir, tiers):
         t = {"ok": 0, "bytes": 0, "dims": {}, "missing": [], "broken": []}
         for r in rows:
             rel = rel_path(r[path_key])
-            p = safe_under(site_dir, rel)
+            p = asset_path(site_dir, rel, allowed_dirs)
             if not os.path.exists(p):
                 t["missing"].append(rel); continue
             sz = os.path.getsize(p)

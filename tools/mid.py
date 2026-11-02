@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import ROOT, load_cfg, select, site_dir, dir_size, human, parse_args
 
 sys.path.insert(0, os.path.join(ROOT, "shared"))
-from assets import safe_under
+from assets import safe_under, asset_path
 
 MAX_EDGE = 1600
 QUALITY = 82
@@ -37,10 +37,10 @@ def mid_rel(full_rel):
     return "mid/" + os.path.splitext(p)[0] + ".webp"
 
 
-def mid_paths(root, full_rel):
-    src = safe_under(root, full_rel)
+def mid_paths(root, full_rel, image_dirs=("img", "mid")):
+    src = asset_path(root, full_rel, image_dirs)
     rel = mid_rel(full_rel)
-    return src, safe_under(root, rel), safe_under(root, rel + ".tmp")
+    return src, asset_path(root, rel, ("mid",)), asset_path(root, rel + ".tmp", ("mid",))
 
 
 def convert(job):
@@ -80,13 +80,13 @@ def main():
 
         jobs, missing = [], 0
         for r in rows:
-            src, dst, _ = mid_paths(sd, r["full_path"])
+            src, dst, _ = mid_paths(sd, r["full_path"], s["imageDirs"])
             if not os.path.exists(src):
                 missing += 1
                 continue
             if os.path.exists(dst) and os.path.getmtime(dst) >= os.path.getmtime(src):
                 continue
-            jobs.append((sd, r["full_path"]))
+            jobs.append((sd, r["full_path"], s["imageDirs"]))
 
         print(f"  [{sid}] {len(rows)} 张 · 待生成 {len(jobs)}"
               + (f" · 原图缺失 {missing}" if missing else ""))

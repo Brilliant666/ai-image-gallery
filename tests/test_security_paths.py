@@ -76,6 +76,9 @@ class SecurityPaths(unittest.TestCase):
             root.mkdir()
             valid = {"id": "good", "thumb_path": "thumbs/good.webp", "thumb_url": "https://source.example/good.webp"}
             for overrides in ({"thumb_path": "../escape.webp"},
+                              {"thumb_path": "scripts/build_gallery.py"},
+                              {"thumb_path": "data/catalog.json"},
+                              {"thumb_path": "index.html"},
                               {"thumb_url": "file:///etc/passwd"},
                               {"thumb_url": "http://source.example/a"},
                               {"thumb_url": "https://source.example.evil/a"},
@@ -83,10 +86,25 @@ class SecurityPaths(unittest.TestCase):
                 self.write_manifest(root, [valid, dict(valid, **overrides)])
                 with self.subTest(overrides=overrides), patch.object(assets.urllib.request, "build_opener") as opened:
                     with self.assertRaises(ValueError):
-                        assets.download(root, "thumb", "https://source.example/", allowed_hosts={"source.example"})
+                        assets.download(root, "thumb", "https://source.example/", allowed_hosts={"source.example"}, allowed_dirs={"thumbs"})
                     opened.assert_not_called()
                     self.assertFalse((root / "thumbs").exists())
             self.assertFalse((Path(tmp) / "escape.webp").exists())
+
+    def test_image_links_cannot_redirect_into_site_source(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "scripts").mkdir()
+            script = root / "scripts/build_gallery.py"
+            script.write_text("keep")
+            self.link(root / "thumbs", root / "scripts", True)
+            with self.assertRaises(ValueError):
+                assets.asset_path(root, "thumbs/build_gallery.py", {"thumbs"})
+            (root / "img").mkdir()
+            self.link(root / "img/nested", root / "scripts", True)
+            with self.assertRaises(ValueError):
+                assets.asset_path(root, "img/nested/build_gallery.py", {"img"})
+            self.assertEqual(script.read_text(), "keep")
 
     def test_download_rejects_part_symlink_before_touching_target(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -97,7 +115,7 @@ class SecurityPaths(unittest.TestCase):
             self.link(root / "thumbs/a.webp.part", outside)
             self.write_manifest(root, [{"thumb_path": "thumbs/a.webp", "thumb_url": "https://source.example/a"}])
             with patch.object(assets.urllib.request, "build_opener") as opened, self.assertRaises(ValueError):
-                assets.download(root, "thumb", "https://source.example/", allowed_hosts={"source.example"})
+                assets.download(root, "thumb", "https://source.example/", allowed_hosts={"source.example"}, allowed_dirs={"thumbs"})
             opened.assert_not_called()
             self.assertEqual(outside.read_bytes(), b"keep")
 
@@ -106,7 +124,7 @@ class SecurityPaths(unittest.TestCase):
             root = Path(tmp)
             self.write_manifest(root, [{"thumb_path": "../outside", "thumb_url": "https://source.example/a"}])
             with patch.object(assets, "image_dims") as image_read, self.assertRaises(ValueError):
-                assets.verify(root, ["thumb"])
+                assets.verify(root, ["thumb"], allowed_dirs={"thumbs"})
             image_read.assert_not_called()
 
     def test_mid_source_destination_and_temporary_path_boundaries(self):
@@ -157,7 +175,7 @@ class SecurityDownloadURLs(unittest.TestCase):
             for row in rows:
                 for tier in site["tiers"]:
                     assets.require_image_url(row[tier + "_url"], hosts)
-                    assets.safe_under(ROOT / "sites" / site["id"], row[tier + "_path"])
+                    assets.asset_path(ROOT / "sites" / site["id"], row[tier + "_path"], site["imageDirs"])
         with self.assertRaises(ValueError):
             assets.image_hosts({"source": "http://source.example/"})
 
@@ -202,7 +220,7 @@ class SecurityDownloadURLs(unittest.TestCase):
                                   "https://source.example/image": (200, None, blob)}, seen)
             with patch.object(assets.urllib.request, "build_opener", return_value=opener):
                 self.assertEqual(assets.download(root, "thumb", "https://source.example/", workers=1,
-                                                allowed_hosts={"source.example"}, log=lambda _: None), [])
+                                                allowed_hosts={"source.example"}, allowed_dirs={"thumbs"}, log=lambda _: None), [])
             self.assertEqual((root / row["thumb_path"]).read_bytes(), blob)
             self.assertFalse((root / (row["thumb_path"] + ".part")).exists())
             self.assertEqual(seen, [row["thumb_url"], "https://source.example/image"])
