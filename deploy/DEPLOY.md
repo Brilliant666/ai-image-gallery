@@ -104,6 +104,16 @@ nginx -t
 
 **`nginx -t` 必须通过再 reload。**
 
+模板引用的 `/etc/nginx/snippets/refsite-static.conf` 由部署者提供，未随仓库分发。新环境应在该 snippet 中明确设置以下响应头，并使用 `always` 覆盖错误响应：
+
+```nginx
+add_header X-Content-Type-Options nosniff always;
+add_header X-Frame-Options SAMEORIGIN always;
+add_header Referrer-Policy strict-origin-when-cross-origin always;
+```
+
+若某个 `location` 自己使用了 `add_header`（例如图片缓存），nginx 默认不会继承上层的 `add_header`，该层也要包含以上安全头。上线验收应同时检查 HTML、图片与不存在路径的 404 响应。此处是配置要求，不代表已核验或修改现有服务器；已有环境仍按先备份、`nginx -t`、再 reload 的流程操作。
+
 ### 2.3 迁移旧子域名
 
 服务器上原有的 `pose.photoai.life` / `costume.photoai.life` 已在运行，
