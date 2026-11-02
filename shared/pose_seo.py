@@ -14,6 +14,11 @@ from pose_i18n import SERIES_ZH, CAT_ZH, ANG_ZH
 
 def build(root, site_url, cfg, data, series_list, cats, adult=frozenset(), thumb_of=None):
     """adult = 成人向姿势的 (系列, 分類, 编号) 集合；thumb_of(p, v) = 缩略图路径（页面数据不逐张写路径时由生成器提供）"""
+    for name in list(series_list) + list(cats):
+        landing.validate_segment(name)
+    for p in data:
+        landing.validate_segment(p["s"])
+        landing.validate_segment(p["c"])
     thumb_of = thumb_of or (lambda p, v: v["t"])
     sp = cfg["seoPages"]                       # 各站文案
     kind = sp["kind"]                          # 例如「姿势参考图」「姿势深度图」

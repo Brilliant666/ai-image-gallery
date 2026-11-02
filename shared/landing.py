@@ -16,15 +16,52 @@
 页面只用站点已有的缩略图档（thumbs/），不额外暴露中图或原图。
 外观、顶部栏、深浅色与语言偏好来自 shared/ui.py（与画廊同一套）；正文只有中文。
 """
-import html, json, os, shutil, sys, urllib.parse
+import html, json, os, shutil, stat, sys, urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ui  # noqa: E402
+from assets import safe_under
 from dataclasses import dataclass, field
 from typing import List, Optional
 
 MIN_ITEMS = 6       # 少于这么多张图的分面不单独成页：内容太薄
 GRID_MAX = 60       # 每页最多展示的缩略图
+
+# Landing pages must never replace source files, metadata, or image directories.
+PROTECTED_TOPS = frozenset({
+    "data", "thumb", "thumbs", "mid", "img", "png", "raw", "line", "full",
+    "scripts", "shared", "tools", "tests", "sites", "hub", "deploy", "docs",
+    "index.html", "404.html", "robots.txt", "sitemap.xml", "og-cover.jpg",
+    "manifest.json", "manifest.csv", "config.py", "readme.md", "notice.md",
+})
+
+
+def validate_segment(value):
+    """Accept one portable filename component, never a path supplied as a name."""
+    if (not isinstance(value, str) or not value or value in (".", "..")
+            or value.endswith((".", " "))
+            or any(c in '/\\\\<>:"|?*' or ord(c) < 32 or ord(c) == 127 for c in value)):
+        raise ValueError(f"不安全的路径名称: {value!r}")
+    return value
+
+
+def validate_landing_dir(value):
+    validate_segment(value)
+    if value.startswith(".") or value.casefold() in PROTECTED_TOPS:
+        raise ValueError(f"落地页目录与站点文件冲突: {value!r}")
+    return value
+
+
+def validate_slug(slug):
+    if not isinstance(slug, str):
+        raise ValueError(f"不安全的分面 slug: {slug!r}")
+    parts = slug.split("/")
+    for part in parts:
+        validate_segment(part)
+    validate_landing_dir(parts[0])
+    if slug.casefold() == "browse":
+        raise ValueError("browse 保留给落地页索引")
+    return slug
 
 
 @dataclass
@@ -246,23 +283,40 @@ def index_page(site, facets):
 def write_site(site, facets):
     """写出全部分面页与索引页，返回绝对 URL 列表（不含站点首页）。
     先清掉上次生成的分面目录，避免改名后留下孤儿页。"""
+    # Validate even thin facets and every output before removing any old pages.
+    facets = list(facets)
+    for f in facets:
+        validate_slug(f.slug)
+        safe_under(site.root, f.slug + "/index.html")
+    all_tops = {f.slug.split("/")[0] for f in facets} | {"browse"}
+    for top in all_tops:
+        safe_under(site.root, top)
+        logical = os.path.join(site.root, top)
+        if os.path.islink(logical) or (os.path.lexists(logical) and
+                getattr(os.lstat(logical), "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT):
+            raise ValueError(f"落地页目录不能是链接: {logical}")
+    safe_under(site.root, "browse/index.html")
+    safe_under(site.root, "data/landing.json")
     keep = [f for f in facets if len(f.items) >= MIN_ITEMS]
     slugs = [f.slug for f in keep]
-    assert len(slugs) == len(set(slugs)), "分面 slug 重复"
+    if len(slugs) != len(set(slugs)):
+        raise ValueError("分面 slug 重复")
     tops = {s.split("/")[0] for s in slugs} | {"browse"}
     for top in tops:
+        safe_under(site.root, top)
+        # Delete the logical path, not a resolved symlink target.
         shutil.rmtree(os.path.join(site.root, top), ignore_errors=True)
     for f in keep:
-        out = os.path.join(site.root, *f.slug.split("/"), "index.html")
+        out = safe_under(site.root, f.slug + "/index.html")
         os.makedirs(os.path.dirname(out), exist_ok=True)
-        with open(out, "w", encoding="utf-8", newline="\n") as fh:
+        with open(safe_under(site.root, f.slug + "/index.html"), "w", encoding="utf-8", newline="\n") as fh:
             fh.write(facet_page(site, f, keep))
-    out = os.path.join(site.root, "browse", "index.html")
+    out = safe_under(site.root, "browse/index.html")
     os.makedirs(os.path.dirname(out), exist_ok=True)
-    with open(out, "w", encoding="utf-8", newline="\n") as fh:
+    with open(safe_under(site.root, "browse/index.html"), "w", encoding="utf-8", newline="\n") as fh:
         fh.write(index_page(site, keep))
     # 记录生成了哪些目录，release.py 据此复制
-    with open(os.path.join(site.root, "data", "landing.json"), "w", encoding="utf-8", newline="\n") as fh:
+    with open(safe_under(site.root, "data/landing.json"), "w", encoding="utf-8", newline="\n") as fh:
         json.dump({"dirs": sorted(tops), "pages": ["browse"] + slugs}, fh, ensure_ascii=False, indent=1)
     print(f"landing: {len(keep)} 个分面页 + 1 个索引页（跳过 {len(facets) - len(keep)} 个不足 {MIN_ITEMS} 张的分面）")
     return [f"{site.site_url}/browse/"] + [f"{site.site_url}/{s}/" for s in slugs]

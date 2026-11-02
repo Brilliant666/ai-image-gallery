@@ -22,10 +22,13 @@
   图片使用硬链接（同文件系统），不复制、不额外占盘。若跨文件系统则退化为复制。
   站点文件（html/json/csv/og-cover）每次覆盖。
 """
-import json, os, shutil, sys
+import json, os, shutil, stat, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import ROOT, load_cfg, select, site_dir, dir_size, human, parse_args
+sys.path.insert(0, os.path.join(ROOT, "shared"))
+from assets import safe_under
+from landing import validate_segment, validate_landing_dir
 
 # 站点根目录下的文件（不递归）
 SITE_FILES = ["index.html", "robots.txt", "sitemap.xml", "404.html", "og-cover.jpg",
@@ -34,13 +37,96 @@ SITE_FILES = ["index.html", "robots.txt", "sitemap.xml", "404.html", "og-cover.j
 SITE_DIRS = ["data"]
 
 
-def landing_dirs(sd):
-    """shared/landing.py 生成的静态落地页目录（browse/、tag/、category/ …），记录在 data/landing.json"""
-    p = os.path.join(sd, "data", "landing.json")
+def landing_dirs(sd, protected=()):
+    """Read and validate landing directory names before any release deletion."""
+    p = safe_under(sd, "data/landing.json")
     if not os.path.exists(p):
         return []
     with open(p, encoding="utf-8") as f:
-        return json.load(f)["dirs"]
+        dirs = json.load(f)["dirs"]
+    if not isinstance(dirs, list):
+        raise ValueError("landing.json dirs 必须是目录名称列表")
+    reserved = {name.casefold() for name in SITE_FILES + SITE_DIRS + list(protected)}
+    seen = set()
+    for dn in dirs:
+        validate_landing_dir(dn)
+        key = dn.casefold()
+        if key in reserved or key in seen:
+            raise ValueError(f"landing.json 目录重复或与站点文件冲突: {dn!r}")
+        seen.add(key)
+        safe_under(sd, dn)
+    return dirs
+
+
+def _is_link(path):
+    return os.path.islink(path) or (os.path.lexists(path) and
+        bool(getattr(os.lstat(path), "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT))
+
+
+def _check_tree(root, rel):
+    """Check containment and reject symlinks before copytree can follow them."""
+    path = safe_under(root, rel)
+    logical = os.path.join(root, rel)
+    if _is_link(logical):
+        raise ValueError(f"发布路径不能是链接: {logical}")
+    if os.path.isdir(path):
+        for dp, dns, fns in os.walk(path):
+            for name in dns + fns:
+                child = os.path.join(dp, name)
+                safe_under(root, os.path.relpath(child, os.path.realpath(root)))
+                if _is_link(child):
+                    raise ValueError(f"发布路径不能包含链接: {child}")
+    return path
+
+
+def _overlap(a, b):
+    a, b = os.path.realpath(a), os.path.realpath(b)
+    try:
+        return os.path.commonpath([a, b]) in (a, b)
+    except ValueError:  # Different Windows drives.
+        return False
+
+
+def _preflight(sites, out, with_images, with_hub):
+    """Validate every selected source/destination before clearing the first site."""
+    repo = os.path.realpath(ROOT)
+    if _overlap(out, repo) and os.path.commonpath([os.path.realpath(out), repo]) == os.path.realpath(out):
+        raise ValueError("发布目录不能是仓库根目录或其上级目录")
+    for name in ("sites", "hub", "shared", "tools", "tests", ".git"):
+        if _overlap(out, os.path.join(ROOT, name)):
+            raise ValueError(f"发布目录与源码目录冲突: {out}")
+    plans = []
+    for s in sites:
+        sid = validate_segment(s["id"])
+        sd = site_dir(sid)
+        dst = safe_under(out, sid)
+        if _overlap(sd, dst):
+            raise ValueError(f"发布目录与源站点重叠: {sid}")
+        if _is_link(sd):
+            raise ValueError(f"源站点目录不能是链接: {sd}")
+        _check_tree(out, sid)
+        image_dirs = s.get("imageDirs", [])
+        for dn in image_dirs:
+            validate_segment(dn)
+        dirs = SITE_DIRS + landing_dirs(sd, image_dirs)
+        for rel in SITE_FILES + dirs:
+            _check_tree(sd, rel)
+            safe_under(out, sid + "/" + rel)
+        if with_images and s.get("imageMode") != "remote":
+            for dn in image_dirs:
+                _check_tree(sd, dn)
+                safe_under(out, sid + "/" + dn)
+        plans.append((s, sd, dst, dirs))
+    # A destination must not overlap any other selected source either.
+    for _, _, dst, _ in plans:
+        for _, sd, _, _ in plans:
+            if _overlap(dst, sd):
+                raise ValueError(f"发布目录与源站点重叠: {dst}")
+    if with_hub:
+        for fn in HUB_FILES:
+            _check_tree(os.path.join(ROOT, "hub"), fn)
+            safe_under(out, fn)
+    return plans
 
 # 入口页与根级文件（sitemap / robots / 社交分享图）
 HUB_FILES = ["index.html", "404.html", "sitemap.xml", "robots.txt", "og-cover.jpg", "llms.txt",
@@ -84,6 +170,7 @@ def main():
     sites = select(cfg, args.get("site"))
     out = os.path.abspath(args.get("out", os.path.join(ROOT, "dist")))
     with_images = not args.get("no-images")
+    plans = _preflight(sites, out, with_images, not args.get("site"))
 
     print(f"发布 · {len(sites)} 个站点 → {out}\n")
 
@@ -106,29 +193,29 @@ def main():
 
     total_link = total_copy = 0
 
-    for s in sites:
+    for s, sd, dst, dirs in plans:
         sid = s["id"]
-        sd = site_dir(sid)
-        dst = os.path.join(out, sid)
 
-        if not os.path.exists(os.path.join(sd, "index.html")):
+        if not os.path.exists(safe_under(sd, "index.html")):
             print(f"  ✗ {sid}: 尚未构建，请先运行 python tools/build.py")
             continue
 
         # 站点文件
-        shutil.rmtree(dst, ignore_errors=True)
+        _check_tree(out, sid)
+        shutil.rmtree(os.path.join(out, sid), ignore_errors=True)
+        dst = safe_under(out, sid)
         os.makedirs(dst, exist_ok=True)
 
         n_files = 0
         for fn in SITE_FILES:
-            src = os.path.join(sd, fn)
+            src = safe_under(sd, fn)
             if os.path.exists(src):
-                shutil.copy2(src, os.path.join(dst, fn))
+                shutil.copy2(src, safe_under(dst, fn))
                 n_files += 1
-        for dn in SITE_DIRS + landing_dirs(sd):
-            src = os.path.join(sd, dn)
+        for dn in dirs:
+            src = safe_under(sd, dn)
             if os.path.isdir(src):
-                shutil.copytree(src, os.path.join(dst, dn))
+                shutil.copytree(src, safe_under(dst, dn))
                 n_files += sum(len(f) for _, _, f in os.walk(src))
 
         # 图片
@@ -138,9 +225,9 @@ def main():
         elif with_images:
             nl = nc = 0
             for dn in s.get("imageDirs", []):
-                src = os.path.join(sd, dn)
+                src = safe_under(sd, dn)
                 if os.path.isdir(src):
-                    a, b = copy_tree_links(src, os.path.join(dst, dn))
+                    a, b = copy_tree_links(src, safe_under(dst, dn))
                     nl += a
                     nc += b
             total_link += nl
@@ -156,9 +243,9 @@ def main():
     if not args.get("site"):
         n = 0
         for fn in HUB_FILES:
-            src = os.path.join(ROOT, "hub", fn)
+            src = safe_under(os.path.join(ROOT, "hub"), fn)
             if os.path.exists(src):
-                shutil.copy2(src, os.path.join(out, fn))
+                shutil.copy2(src, safe_under(out, fn))
                 n += 1
         if n:
             print(f"\n  [hub] {n} 个根级文件已复制（{', '.join(HUB_FILES)}）")
