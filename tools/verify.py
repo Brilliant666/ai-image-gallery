@@ -17,7 +17,7 @@ from _common import ROOT, load_cfg, select, site_dir, parse_args
 
 sys.path.insert(0, os.path.join(ROOT, "shared"))
 import assets  # noqa: E402
-from mid import mid_rel  # noqa: E402
+from mid import mid_rel, mid_paths  # noqa: E402
 
 
 def remote_metadata_errors(s, rows):
@@ -77,7 +77,7 @@ def check_site(s, only_tier=None, log=print):
     tiers = s.get("tiers", ["thumb"])
     if only_tier:
         tiers = [t for t in tiers if t == only_tier]
-    total, report = assets.verify(sd, tiers)
+    total, report = assets.verify(sd, tiers, allowed_dirs=s["imageDirs"])
     missing = broken = 0
     for tier, t in report.items():
         log("    [%-5s] 完好 %d / %d  |  %.1f MB" % (tier, t["ok"], total, t["bytes"] / 1048576))
@@ -93,7 +93,7 @@ def check_site(s, only_tier=None, log=print):
     if "mid" in s.get("imageDirs", []) and only_tier in (None, "mid"):
         rows = assets.load_manifest(sd)
         lost = [mid_rel(r["full_path"]) for r in rows
-                if not os.path.exists(os.path.join(sd, mid_rel(r["full_path"])))]
+                if not os.path.exists(mid_paths(sd, r["full_path"], s["imageDirs"])[1])]
         log("    [mid  ] 完好 %d / %d" % (len(rows) - len(lost), len(rows)))
         if lost:
             log("            缺失 %d，前 3：%s（运行 python tools/mid.py 补齐）" % (len(lost), lost[:3]))

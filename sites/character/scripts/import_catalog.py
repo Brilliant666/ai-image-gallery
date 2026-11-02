@@ -14,6 +14,16 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = 'https://charadb-2fi.pages.dev/'
 
 
+def validate_id(value):
+    if not isinstance(value, str) or not re.fullmatch(r'[HOP]\d{3}(?:-(?:s|black|blonde|pink|silver))?', value):
+        raise ValueError('未知条目 ID')
+
+
+def validate_category(value):
+    if not isinstance(value, str) or not value or '/' in value or '\\' in value or '..' in value:
+        raise ValueError('无效分类路径')
+
+
 def parse(raw):
     text = raw.decode('utf-8-sig').strip()
     match = re.fullmatch(r'window\.DB\s*=\s*(\{.*\})\s*;?', text, re.S)
@@ -27,8 +37,8 @@ def parse(raw):
         item = {k: source[k] for k in ('id', 'set', 'cat', 'jp', 'tags')}
         if source.get('tier') != 'public' or item['set'] not in ('hair', 'outfit', 'pose'):
             raise ValueError('非公开条目或未知分区')
-        if not re.fullmatch(r'[HOP]\d{3}(?:-(?:s|black|blonde|pink|silver))?', item['id']):
-            raise ValueError('未知条目 ID')
+        validate_id(item['id'])
+        validate_category(item['cat'])
         if item['id'] in seen or any(not isinstance(v, str) for v in item.values()):
             raise ValueError('重复 ID 或非文本字段')
         seen.add(item['id'])

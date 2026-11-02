@@ -33,6 +33,12 @@ def faq(n_items):
 def build(root, site_url, items, cats, adult_ids=frozenset()):
     """adult_ids = 成人向服装的编号（sites.json 的 adult 规则）：这些服装不进任何落地页，
     内衣、性感两个分类也不单独成页。标签页只用其余服装，剩下不足 MIN_ITEMS 套的标签不生成。"""
+    for c in cats:
+        landing.validate_segment(c)
+    for x in items:
+        landing.validate_segment(x["c"])
+        for tag in x["t"]:
+            landing.validate_segment(tag)
     n_files = len(items) * 3
     FAQ = faq(len(items))
     pub = [x for x in items if x["i"] not in adult_ids]

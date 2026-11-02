@@ -530,10 +530,10 @@ function drawFilters(){
 }
 function card({item,key}){
   const colors=item.cat==='髪型'?'<div class="ch-swatches" role="group" aria-label="'+escape(t('单独换色：','個別の色：')+label(items.get(hairBase(item))))+'">'+Object.entries(colorNames).map(([value,names])=>'<button type="button" class="ch-swatch ch-'+value+'" data-color="'+value+'" aria-pressed="'+(itemColor(item)===value)+'" aria-label="'+escape(t(...names))+'" title="'+escape(t(...names))+'"></button>').join('')+'</div>':'';
-  return '<li class="ch-card" data-key="'+key+'" data-id="'+item.id+'">'+
-    '<button class="ch-open" type="button" data-open="'+item.id+'" aria-label="'+escape(t('放大：','拡大：')+label(item))+'"><img src="'+image(item)+'" alt="'+escape(label(item))+'" loading="lazy" decoding="async"><span class="ch-img-error" hidden>'+t('图片未能加载<br>点击查看详情','画像を読み込めません<br>クリックで詳細')+'</span></button>'+
-    '<div class="ch-card-body"><h3><small>'+item.id+'</small>'+escape(label(item))+'</h3><p class="ch-tags" title="'+escape(item.tags)+'">'+escape(item.tags)+'</p>'+colors+
-    '<div class="ch-card-actions"><button class="btn ghost ch-copy" type="button" data-copy="'+item.id+'">'+t('复制标签','タグをコピー')+'</button><button class="btn ghost" type="button" data-fav="'+item.id+'" aria-pressed="'+favorites.has(item.id)+'" aria-label="'+escape(t('收藏：','お気に入り：')+label(item))+'">'+(favorites.has(item.id)?'★':'☆')+'</button></div></div></li>';
+  return '<li class="ch-card" data-key="'+escape(key)+'" data-id="'+escape(item.id)+'">'+
+    '<button class="ch-open" type="button" data-open="'+escape(item.id)+'" aria-label="'+escape(t('放大：','拡大：')+label(item))+'"><img src="'+escape(image(item))+'" alt="'+escape(label(item))+'" loading="lazy" decoding="async"><span class="ch-img-error" hidden>'+t('图片未能加载<br>点击查看详情','画像を読み込めません<br>クリックで詳細')+'</span></button>'+
+    '<div class="ch-card-body"><h3><small>'+escape(item.id)+'</small>'+escape(label(item))+'</h3><p class="ch-tags" title="'+escape(item.tags)+'">'+escape(item.tags)+'</p>'+colors+
+    '<div class="ch-card-actions"><button class="btn ghost ch-copy" type="button" data-copy="'+escape(item.id)+'">'+t('复制标签','タグをコピー')+'</button><button class="btn ghost" type="button" data-fav="'+escape(item.id)+'" aria-pressed="'+favorites.has(item.id)+'" aria-label="'+escape(t('收藏：','お気に入り：')+label(item))+'">'+(favorites.has(item.id)?'★':'☆')+'</button></div></div></li>';
 }
 function draw(){
   const focused = grid.contains(document.activeElement) ? document.activeElement : null;

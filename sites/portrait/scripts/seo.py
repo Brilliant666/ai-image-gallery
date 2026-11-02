@@ -26,6 +26,11 @@ FAQ = [
 
 
 def build(root, site_url, items):
+    for x in items:
+        landing.validate_segment(x["s"])
+        landing.validate_segment(x["hj"])
+        if x.get("sj"):
+            landing.validate_segment(x["sj"])
     n = len(items)
     n_face = sum(1 for x in items if x["s"] == "face")
     site = landing.Site(

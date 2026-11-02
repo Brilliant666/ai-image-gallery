@@ -20,7 +20,10 @@ import json, os, sys
 from concurrent.futures import ProcessPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import load_cfg, select, site_dir, dir_size, human, parse_args
+from _common import ROOT, load_cfg, select, site_dir, dir_size, human, parse_args
+
+sys.path.insert(0, os.path.join(ROOT, "shared"))
+from assets import safe_under, asset_path
 
 MAX_EDGE = 1600
 QUALITY = 82
@@ -34,8 +37,14 @@ def mid_rel(full_rel):
     return "mid/" + os.path.splitext(p)[0] + ".webp"
 
 
+def mid_paths(root, full_rel, image_dirs=("img", "mid")):
+    src = asset_path(root, full_rel, image_dirs)
+    rel = mid_rel(full_rel)
+    return src, asset_path(root, rel, ("mid",)), asset_path(root, rel + ".tmp", ("mid",))
+
+
 def convert(job):
-    src, dst = job
+    src, dst, tmp = mid_paths(*job)
     from PIL import Image
     with Image.open(src) as im:
         if im.mode not in ("RGB", "L"):
@@ -44,7 +53,6 @@ def convert(job):
         if s < 1:
             im = im.resize((round(im.width * s), round(im.height * s)), Image.LANCZOS)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        tmp = dst + ".tmp"
         im.save(tmp, "WEBP", quality=QUALITY, method=6)
     os.replace(tmp, dst)
 
@@ -67,18 +75,18 @@ def main():
     for s in sites:
         sid = s["id"]
         sd = site_dir(sid)
-        rows = json.load(open(os.path.join(sd, "manifest.json"), encoding="utf-8"))
+        with open(safe_under(sd, "manifest.json"), encoding="utf-8") as f:
+            rows = json.load(f)
 
         jobs, missing = [], 0
         for r in rows:
-            src = os.path.join(sd, r["full_path"])
-            dst = os.path.join(sd, mid_rel(r["full_path"]))
+            src, dst, _ = mid_paths(sd, r["full_path"], s["imageDirs"])
             if not os.path.exists(src):
                 missing += 1
                 continue
             if os.path.exists(dst) and os.path.getmtime(dst) >= os.path.getmtime(src):
                 continue
-            jobs.append((src, dst))
+            jobs.append((sd, r["full_path"], s["imageDirs"]))
 
         print(f"  [{sid}] {len(rows)} 张 · 待生成 {len(jobs)}"
               + (f" · 原图缺失 {missing}" if missing else ""))

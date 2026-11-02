@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT.parents[1] / 'shared'))
 import landing
 import ui
 from translations import CATEGORIES, chinese
+from import_catalog import validate_category, validate_id
 
 SOURCE = 'https://charadb-2fi.pages.dev/'
 LICENSE = '可免费用于作品制作、商用、加工与参考；禁止再分发、转载或转售图片本身（包括加工后的图片）。不得用于表现真实人物或未成年人。'
@@ -34,6 +35,11 @@ DESCRIPTION = '二次元角色参考图库：公开版 843 个基础条目、184
 def build():
     catalog = json.loads((ROOT / 'data/catalog.json').read_text(encoding='utf-8'))
     assert catalog['tier'] == 'public'
+    # catalog.json may be edited after import. Check every raw row before writing
+    # output or filtering out variants/adult entries from landing pages.
+    for raw in catalog['items']:
+        validate_id(raw['id'])
+        validate_category(raw['cat'])
     cats = list(dict.fromkeys(r['cat'] for r in catalog['items']))
     rows, inline, variants = [], [], []
     for raw in catalog['items']:
