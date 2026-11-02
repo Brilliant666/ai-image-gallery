@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://example.com/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/</loc><lastmod>2026-11-02</lastmod></url>
   <url><loc>https://example.com/portrait/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://example.com/portrait/browse/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://example.com/portrait/section/face/</loc><lastmod>2026-10-31</lastmod></url>
@@ -213,4 +213,90 @@
   <url><loc>https://example.com/character/cat/%E5%8B%95%E3%81%8D/</loc><lastmod>2026-11-01</lastmod></url>
   <url><loc>https://example.com/character/cat/2%E4%BA%BA/</loc><lastmod>2026-11-01</lastmod></url>
   <url><loc>https://example.com/character/cat/%E6%97%A5%E5%B8%B8%E3%81%AE%E5%8B%95%E4%BD%9C/</loc><lastmod>2026-11-01</lastmod></url>
+  <url><loc>https://example.com/costume-anime/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/browse/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/category/%E6%98%A5/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/category/%E5%A4%8F/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/category/%E7%A7%8B/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/category/%E5%86%AC/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/category/%E6%B0%B4%E7%9D%80/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/category/%E3%83%91%E3%83%BC%E3%83%86%E3%82%A3/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/bag/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/mini/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/black/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/knit/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/skirt/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/boots/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/sandals/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/socks/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/dress/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/leather/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/ribbon/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/white/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/brown/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/tights/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/cardigan/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/necklace/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/pants/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/lace/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/jacket/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/ivory/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/grey/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/denim/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/camisole/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/shirt/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/beige/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/gold/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/pleated/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/fur/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/blue/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/midi/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/coat/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/silver/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/navy/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/sneakers/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/tote/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/suede/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/green/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/blouse/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/red/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/loafers/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/shorts/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/wool/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/cream/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/jeans/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/mint/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/hat/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/satin/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/frill/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/pink/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/sunglasses/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/pumps/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/yellow/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/belt/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/floral/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/choker/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/turtleneck/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/heels/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/khaki/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/burgundy/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/orange/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/corduroy/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/velvet/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/scarf/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/swimsuit/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/chiffon/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/sweater/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/olive/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/beret/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/vest/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/polka-dot/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/gloves/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/hoodie/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/tulle/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/maxi/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/beanie/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/mesh/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/corset/</loc><lastmod>2026-11-02</lastmod></url>
+  <url><loc>https://example.com/costume-anime/tag/stockings/</loc><lastmod>2026-11-02</lastmod></url>
 </urlset>

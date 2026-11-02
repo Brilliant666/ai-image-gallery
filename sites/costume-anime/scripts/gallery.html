@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>二次元服装库：1320 套与标签筛选 · photoai.life</title>
+<meta name="description" content="二次元服装库：1320 套不含人物的动漫风服装，8 个分类、86 个中日双语标签，按颜色、单品、鞋袜、配饰、材质和长度组合筛选，保留英文关键词供复制。图片从原站远程加载，需要联网。">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="__SITE__/">
+<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website"><meta property="og:site_name" content="photoai.life">
+<meta property="og:title" content="二次元服装库 · 1320 套 / 86 个标签">
+<meta property="og:description" content="8 个分类、86 个中日标签组合筛选，图片从原站加载，需要联网。">
+<meta property="og:url" content="__SITE__/"><meta property="og:image" content="__SHARE__">
+<meta property="og:locale" content="zh_CN"><meta property="og:locale:alternate" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="__SHARE__">
+<script type="application/ld+json">__SCHEMA__</script>
+__UI_HEAD____UI_CSS__
+<style>
+.ph{aspect-ratio:2/3}.fpanel{display:none;margin:2px 0 0;padding:14px 16px;border-radius:18px;background:var(--sf);max-height:min(56vh,560px);overflow:auto}.fpanel.open{display:block}
+.fp-top{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}.fp-top .btn{margin-left:auto}.tgrp{margin-bottom:12px}.tgrp h4{margin:0 0 8px;font-size:12px;color:var(--mu)}.tgrp .chips{flex-wrap:wrap;overflow:visible}
+.fpanel .chip{background:var(--bg2);height:32px;font-size:13px;padding:0 12px}.fpanel .chip[aria-pressed="true"],.fbtn[aria-expanded="true"]{background:var(--sel);color:var(--on-sel)}.fbtn b:empty{display:none}.fbtn b{margin-left:5px}
+.mtags{display:flex;flex-wrap:wrap;gap:6px}.mtags button{min-height:36px;padding:0 12px;border:0;border-radius:999px;background:var(--sf);color:var(--tx);cursor:pointer}.mtags button:hover{background:var(--sf2)}.source-note{font-size:12px;color:var(--mu);line-height:1.7}.seo-intro{--si-max:var(--w)}
+@media(max-width:640px){.fpanel{max-height:60vh;padding:12px}.fpanel .chip{height:36px}}
+__SEO_CSS__
+</style>
+__FAQ_LD__
+</head>
+<body>
+__UI_BAR__
+<section class="wrap phead"><p class="eyebrow">__EYEBROW__</p><h1>__H1__</h1><p class="lead">__LEAD__</p><ul class="stats">__STATS__</ul><p class="source-note">__TERMS__</p></section>
+<div class="tools" id="tools"><div class="tools-in">
+<div class="chips" id="tabs" role="tablist" aria-label="__TABS_LABEL__"></div>
+<div class="trow"><label class="search">__SEARCH_ICON__<input id="q" type="search" autocomplete="off" data-pl-search></label><button type="button" class="btn fbtn" id="ftog" aria-expanded="false" aria-controls="fpanel"><span id="ftogT"></span><b id="fn"></b></button><span class="count" id="count" aria-live="polite"></span></div>
+<div class="fpanel" id="fpanel"><div class="fp-top"><select class="sel" id="sort"><option value="cat"></option><option value="id"></option><option value="tag"></option></select><button type="button" class="btn ghost" id="clearTags"></button></div><div id="tgrps"></div></div>
+</div></div>
+<main><div class="grid" id="grid" tabindex="-1"></div><button type="button" class="btn loadmore" id="more" hidden></button></main>
+<footer class="foot">__FOOTER__</footer>__SEO_INTRO__
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mid">
+<div class="mbox"><button type="button" class="mclose" id="mclose">×</button><div class="mimg"><div class="mstage" id="mstage"><img id="mimgLo" class="lo" alt="" aria-hidden="true"><img id="mimg" class="hi" alt=""></div><button type="button" class="mnav l" id="mprev">‹</button><button type="button" class="mnav r" id="mnext">›</button></div>
+<div class="mside"><h2 id="mid"></h2><dl class="mkv" id="mkv"></dl><div class="mtags" id="mtags"></div><div class="macts"><a id="mfull" class="btn pri" href="#" target="_blank" rel="noopener noreferrer"></a><button type="button" id="mcopy" class="btn"></button><button type="button" id="mlink" class="btn ghost"></button></div><p class="hint" id="mhint"></p><p class="source-note">__TERMS__</p></div></div>
+</div>
+__UI_DIALOGS____UI_JS__
+<script>
+(function(){
+const DB = __PAYLOAD__;
+const ITEMS=DB.items, CATS=DB.cats, GROUPS=DB.groups, CZ=DB.catZh, TZ=DB.tagZh, TJ=DB.tagJa, UI=DB.ui;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const t=k=>UI[PL.lang][k]||UI.zh[k]||k, nC=c=>PL.lang==='zh'?(CZ[c]||c):c, nT=z=>PL.lang==='zh'?(TZ[z]||z):(TJ[z]||z);
+/*PATHS*/
+const TH=x=>DB.source+'thumbs/'+x.i+'.webp';
+const IM=x=>DB.source+'img/'+x.i+'.webp';
+const PG=x=>DB.source+'png/'+x.i+'.png';
+const pathOf=x=>[TH(x),IM(x),PG(x)];
+/*END PATHS*/
+const PAGE=60, S={cat:null,tags:new Set(),q:'',sort:'cat',n:PAGE};
+const h=new URLSearchParams(location.hash.slice(1));
+if(CATS.includes(h.get('cat')))S.cat=h.get('cat');
+const allTags=new Set(GROUPS.flatMap(g=>g.tags));
+(h.get('tag')||'').split(',').filter(z=>allTags.has(z)).forEach(z=>S.tags.add(z));
+const visible=()=>PL.adult ? ITEMS : ITEMS.filter(x => !x.x);
+const visCats=()=>CATS.filter(c=>visible().some(x=>x.c===c));
+const grid=$('#grid'), more=$('#more'), modal=$('#modal'), hi=$('#mimg'), lo=$('#mimgLo'), stage=$('#mstage'), wrap=document.querySelector('.mimg');
+let VIEW=[], MI=0, loadVersion=0;
+function applyText(){
+ document.title=t('title');$('#q').placeholder=t('search');$('#q').ariaLabel=t('search');$('#tabs').ariaLabel=t('kCat');$('#ftogT').textContent=t('filter');
+ ['sortCat','sortId','sortTag'].forEach((k,i)=>$('#sort').options[i].textContent=t(k));$('#sort').ariaLabel=t('sortLabel');$('#clearTags').textContent=t('clearTags');
+ $('#mfull').textContent=t('openFull');$('#mcopy').textContent=t('copyTags');$('#mlink').textContent=t('copyLink');$('#mhint').textContent=t('hint');
+ $('#mclose').ariaLabel=t('close');$('#mprev').ariaLabel=t('prev');$('#mnext').ariaLabel=t('next');
+}
+function drawTabs(){const vis=visible();const button=(c,label,n)=>'<button type="button" class="chip" role="tab" data-c="'+esc(c||'')+'" aria-selected="'+(S.cat===c)+'">'+esc(label)+'<small>'+n+'</small></button>';$('#tabs').innerHTML=button(null,t('all'),vis.length)+visCats().map(c=>button(c,nC(c),vis.filter(x=>x.c===c).length)).join('');}
+function drawTags(){const vis=visible();$('#tgrps').innerHTML=GROUPS.map(g=>{const tags=g.tags.filter(z=>vis.some(x=>x.t.includes(z)));return tags.length?'<div class="tgrp"><h4>'+esc(PL.lang==='zh'?g.zh:g.ja)+'</h4><div class="chips">'+tags.map(z=>'<button type="button" class="chip" data-t="'+esc(z)+'" title="'+esc(z)+'" aria-pressed="'+S.tags.has(z)+'">'+esc(nT(z))+'<small>'+vis.filter(x=>x.t.includes(z)).length+'</small></button>').join('')+'</div></div>':'';}).join('');}
+function hit(x){return (!S.cat||x.c===S.cat)&&[...S.tags].every(z=>x.t.includes(z))&&(!S.q||(x.i+' '+x.c+' '+(CZ[x.c]||'')+' '+x.t.map(z=>z+' '+(TZ[z]||'')+' '+(TJ[z]||'')).join(' ')).toLowerCase().includes(S.q));}
+const SORTERS={cat:(a,b)=>CATS.indexOf(a.c)-CATS.indexOf(b.c)||a.i.localeCompare(b.i),id:(a,b)=>a.i.localeCompare(b.i),tag:(a,b)=>b.t.length-a.t.length||a.i.localeCompare(b.i)};
+function card(x,i){return '<article class="card" tabindex="0" data-i="'+i+'" aria-label="'+esc(x.i+' '+nC(x.c))+'"><div class="ph"><img loading="lazy" decoding="async" src="'+esc(TH(x))+'" alt="'+esc(x.i+' '+nC(x.c)+' '+x.t.slice(0,3).map(nT).join('、'))+'"></div><div class="info"><h3>'+esc(x.i)+'</h3><div class="sub">'+esc(nC(x.c)+' · '+x.t.length+' '+t('tagUnit'))+'</div></div></article>';}
+function syncMore(){more.hidden=S.n>=VIEW.length;more.textContent=t('more').replace('{n}',Math.max(0,VIEW.length-S.n));}
+function markLoaded(im){im.classList.add('ld');const ph=im.closest('.ph');if(ph)ph.classList.add('done');}
+function sweep(){grid.querySelectorAll('img').forEach(im=>{if(im.complete&&im.naturalWidth)markLoaded(im);});}
+function draw(){VIEW=visible().filter(hit).sort(SORTERS[S.sort]);S.n=PAGE;$('#count').innerHTML=(S.tags.size?t('count'):t('countNoTag')).replace('{n}',VIEW.length).replace('{t}',S.tags.size);$('#fn').textContent=S.tags.size||'';
+ if(VIEW.length)grid.innerHTML=VIEW.slice(0,S.n).map(card).join('');else{const adultOnly=!PL.adult&&ITEMS.some(x=>x.x&&hit(x));grid.innerHTML='<div class="empty"><b>'+esc(t(adultOnly?'adultEmptyTitle':'emptyTitle'))+'</b>'+esc(t(adultOnly?'adultEmptyDesc':'emptyDesc'))+(adultOnly?'<br><button type="button" class="btn pri" data-adult-go>'+esc(t('adultEmptyGo'))+'</button>':'')+'</div>';}
+ syncMore();sweep();}
+function addMore(){const start=S.n;S.n=Math.min(S.n+PAGE,VIEW.length);grid.insertAdjacentHTML('beforeend',VIEW.slice(start,S.n).map((x,i)=>card(x,start+i)).join(''));syncMore();sweep();}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(!b)return;S.cat=b.dataset.c||null;drawTabs();draw();});
+$('#tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;const tabs=[...$('#tabs').querySelectorAll('[data-c]')],i=tabs.indexOf(e.target);if(i<0)return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].click();$('#tabs').querySelectorAll('[data-c]')[next].focus();});
+$('#tgrps').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;const z=b.dataset.t;S.tags.has(z)?S.tags.delete(z):S.tags.add(z);b.setAttribute('aria-pressed',String(S.tags.has(z)));draw();});
+$('#ftog').addEventListener('click',()=>$('#ftog').setAttribute('aria-expanded',String($('#fpanel').classList.toggle('open'))));
+$('#clearTags').addEventListener('click',()=>{S.tags.clear();drawTags();draw();});$('#sort').addEventListener('change',e=>{S.sort=e.target.value;draw();});
+let timer;$('#q').addEventListener('input',e=>{clearTimeout(timer);timer=setTimeout(()=>{S.q=e.target.value.trim().toLowerCase();draw();},130);});more.onclick=addMore;
+grid.addEventListener('load',e=>{if(e.target.tagName==='IMG')markLoaded(e.target);},true);grid.addEventListener('error',e=>{if(e.target.tagName==='IMG')markLoaded(e.target);},true);
+grid.addEventListener('click',e=>{const c=e.target.closest('.card');if(c)openM(+c.dataset.i,c);});grid.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('card')){e.preventDefault();openM(+e.target.dataset.i,e.target);}});
+function fitStage(){const w=lo.naturalWidth||360,h=lo.naturalHeight||540,s=Math.min(wrap.clientWidth/w,wrap.clientHeight/h);if(s>0){stage.style.width=Math.round(w*s)+'px';stage.style.height=Math.round(h*s)+'px';}}
+function openM(i,opener){MI=i;PL.openDialog(modal,opener,()=>grid.querySelector('.card[data-i="'+MI+'"]')||grid);showM();}
+function showM(){const x=VIEW[MI];if(!x)return;const version=++loadVersion;hi.onload=null;hi.classList.remove('rd');lo.style.opacity='1';lo.onload=fitStage;lo.src=TH(x);fitStage();hi.alt=x.i+' '+nC(x.c);
+ hi.onload=()=>{if(version===loadVersion){hi.classList.add('rd');lo.style.opacity='0';}};hi.src=IM(x);if(hi.complete&&hi.naturalWidth)hi.onload();
+ $('#mid').textContent=x.i+' · '+nC(x.c);$('#mfull').href=PG(x);$('#mkv').innerHTML=[[t('kCat'),nC(x.c)],[t('kId'),x.i],[t('kTagN'),x.t.length+' '+t('tagUnit')]].map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('');
+ $('#mtags').innerHTML=x.t.map(z=>'<button type="button" data-t="'+esc(z)+'" title="'+esc(z)+'">'+esc(nT(z))+' · '+esc(z)+'</button>').join('');$('#mprev').disabled=MI===0;$('#mnext').disabled=MI===VIEW.length-1;}
+function step(n){const next=MI+n;if(next<0||next>=VIEW.length)return;MI=next;if(MI>=S.n)addMore();showM();}
+$('#mprev').onclick=()=>step(-1);$('#mnext').onclick=()=>step(1);$('#mclose').onclick=()=>PL.closeDialog(modal);modal.addEventListener('click',e=>{if(e.target===modal)PL.closeDialog(modal);});
+modal.addEventListener('pl:close',()=>{++loadVersion;hi.onload=null;lo.onload=null;hi.removeAttribute('src');lo.removeAttribute('src');});
+$('#mtags').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b){PL.closeDialog(modal);S.tags.add(b.dataset.t);drawTags();draw();}});
+document.addEventListener('keydown',e=>{if(PL.top()===modal&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){e.preventDefault();step(e.key==='ArrowRight'?1:-1);}});
+let touch=null;wrap.addEventListener('touchstart',e=>{touch=e.touches[0].clientX;},{passive:true});wrap.addEventListener('touchend',e=>{if(touch!==null){const dx=e.changedTouches[0].clientX-touch;if(Math.abs(dx)>40)step(dx<0?1:-1);}touch=null;},{passive:true});
+addEventListener('resize',()=>{if(modal.classList.contains('open'))fitStage();});
+async function copyText(text){try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(text);return true;}}catch(_){}const el=document.createElement('textarea');el.value=text;el.style.cssText='position:fixed;opacity:0;pointer-events:none';(PL.top()||document.body).appendChild(el);const previous=document.activeElement;el.select();let ok=false;try{ok=document.execCommand('copy');}catch(_){}el.remove();if(previous&&previous.focus)previous.focus();return ok;}
+function copy(button,key,value){copyText(value).then(ok=>{button.textContent=t(ok?'copied':'copyFail');setTimeout(()=>button.textContent=t(key),1400);});}
+$('#mcopy').onclick=function(){const x=VIEW[MI];if(x)copy(this,'copyTags',x.t.join(' '));};$('#mlink').onclick=function(){const x=VIEW[MI];if(x)copy(this,'copyLink',PG(x));};
+addEventListener('pl:lang',()=>{const n=S.n;applyText();drawTabs();drawTags();draw();while(S.n<n&&S.n<VIEW.length)addMore();if(modal.classList.contains('open'))showM();});
+addEventListener('pl:adult',()=>{if(modal.classList.contains('open'))PL.closeDialog(modal);const vis=visible();if(S.cat&&!vis.some(x=>x.c===S.cat))S.cat=null;S.tags=new Set([...S.tags].filter(z=>vis.some(x=>x.t.includes(z))));drawTabs();drawTags();draw();});
+applyText();drawTabs();drawTags();draw();
+})();
+</script>
+</body>
+</html>

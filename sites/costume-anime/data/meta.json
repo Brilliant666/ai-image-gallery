@@ -1,0 +1,22 @@
+{
+ "site": "COSTUME-ANIME-DB",
+ "source": "https://ai-costume-anime-gallery.pages.dev/",
+ "author": "ギア",
+ "imageMode": "remote",
+ "items": 1320,
+ "public": 984,
+ "adult": 336,
+ "tags": 86,
+ "categories": {
+  "春": 197,
+  "夏": 237,
+  "秋": 230,
+  "冬": 232,
+  "ランジェリー": 197,
+  "パーティ": 36,
+  "水着": 52,
+  "セクシー": 139
+ },
+ "source_sha256": "9d6877b0dbcb37a0c2c85fd758c4e942e675b41e92a56043bc5d38e79e3bc4a0",
+ "metadata_terms": "Original metadata and images retain source terms; translations/code only are original work."
+}
