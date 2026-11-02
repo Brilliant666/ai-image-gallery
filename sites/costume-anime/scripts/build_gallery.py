@@ -130,7 +130,7 @@ def build():
         'source_sha256': catalog['sha256'], 'metadata_terms': 'Original metadata and images retain source terms; translations/code only are original work.'})]:
         write(paths[name], json.dumps(obj, ensure_ascii=False, indent=1) + '\n')
     table = io.StringIO(newline='')
-    writer = csv.writer(table)
+    writer = csv.writer(table, lineterminator='\n')
     writer.writerow(['字段', '原文', '日文', '中文'])
     writer.writerows(['カテゴリ', c, c, CAT_ZH[c]] for c in CAT_ORDER)
     writer.writerows(['キーワード', t, TAG_JA[t], TAG_ZH[t]] for t in TAG_ZH)

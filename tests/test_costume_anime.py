@@ -213,6 +213,11 @@ class CostumeAnime(unittest.TestCase):
             shutil.copyfile(SITE/'manifest.json',root/'manifest.json')
             with patch.object(self.builder,'ROOT',root),patch.dict('os.environ',{'SITE_URL':'https://example.com/costume-anime'}),contextlib.redirect_stdout(io.StringIO()):
                 self.builder.build()
+            # Match .gitattributes: Git stores CSV as LF on every platform.
+            # Local CRLF output used to pass on Windows but fail Linux CI.
+            csv_bytes = (root/'data/translations.csv').read_bytes()
+            self.assertTrue(csv_bytes.startswith(b'\xef\xbb\xbf'))
+            self.assertNotIn(b'\r', csv_bytes)
             for path in root.rglob('*'):
                 if path.is_file():
                     self.assertEqual(path.read_bytes(),(SITE/path.relative_to(root)).read_bytes(),str(path.relative_to(root)))
