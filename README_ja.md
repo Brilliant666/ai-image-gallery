@@ -6,7 +6,7 @@
 
 ポートレート · ポーズ（線画とデプス） · 衣装 · CC0 ポーズ線画 · キャラ参考画像集 · アニメ衣装集 · 中国語 / 日本語 · ライト / ダーク
 
-ローカル画像ファイル 15,241 個（サイズ違いを含む）。キャラDB は基本 843 件と髪色違い 184 件を別に収録し、リモート画像はファイル総数に含めません。
+ローカル画像ファイル 15,241 個（サイズ違いを含む）。キャラDB は基本 843 件と髪色違い 184 件、アニメ衣装集は 1,320 着（初期表示 984 着）を別に収録。両リモートギャラリーの画像はファイル総数に含めません。
 
 [![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
@@ -26,7 +26,7 @@
 ![トップページ](docs/screenshots/hub-light.jpg)
 
 <details>
-<summary>📷 その他のスクリーンショット：ポートレート・ポーズ・デプス・衣装</summary>
+<summary>📷 全ギャラリー：ポートレート・ポーズ・デプス・衣装・Shisei・キャラDB・アニメ衣装</summary>
 
 ![ポートレート一覧](docs/screenshots/portrait-grid.jpg)
 
@@ -42,7 +42,15 @@
 
 ![衣装 ライトボックス](docs/screenshots/costume-lightbox.jpg)
 
-スクリーンショットは UI 説明のため公開サイトから撮影したものです。素材の著作権は各原作者に帰属します。スクリーンショットから素材を切り出して利用しないでください。
+![Shisei CC0 線画](docs/screenshots/shisei-grid.jpg)
+
+![キャラDB の髪型とカードごとの髪色](docs/screenshots/character-grid.jpg)
+
+![アニメ衣装集の一般公開目録](docs/screenshots/costume-anime-grid.jpg)
+
+<img src="docs/screenshots/costume-anime-mobile.jpg" alt="アニメ衣装集のモバイル表示" width="390">
+
+2026-11-02 にローカルビルドのプレビューから撮影。18+ を無効にした一般公開内容を表示し、追加のぼかしは施していません。公開サイトのデプロイ状況を示すものではありません。素材の著作権は各原作者に帰属します。スクリーンショットから素材を切り出して利用しないでください。範囲と更新方法は [スクリーンショット説明](docs/screenshots/README.md) を参照してください。
 
 </details>
 
@@ -79,11 +87,11 @@
 
 別の出典から 1,320 着、8 カテゴリ・86 タグを収録。同じ番号でも既存の衣装集 1,407 着とは異なる目録です。ランジェリー・セクシーの分類は年齢確認後に表示し、静的ページには掲載しません。画像は元サイトから読み込み、一括取得・ミラーは行いません。
 
-[独立公開リポジトリ](https://github.com/Brilliant666/ai-costume-anime-gallery-cn) に静的ギャラリー、ソース、本サイトへのリンクを用意します。[出典条件](sites/costume-anime/NOTICE.md) と [エクスポート手順](docs/COSTUME_ANIME_STANDALONE.md) を参照してください。新入口はこの PR のマージ後、別途デプロイして公開します。
+[独立公開リポジトリ](https://github.com/Brilliant666/ai-costume-anime-gallery-cn) に静的ギャラリー、ソース、本サイトへのリンクを用意します。[出典条件](sites/costume-anime/NOTICE.md) と [エクスポート手順](docs/COSTUME_ANIME_STANDALONE.md) を参照してください。リポジトリ更新と本番デプロイは別工程です。公開版は実際のデプロイ内容に依存します。
 
 ## クイックスタート
 
-このリポジトリに素材画像ファイルは含まれていません。`tools/fetch.py` はローカル配信サイトの画像を取得しますが、キャラDB とアニメ衣装集（`imageMode: "remote"`）は明示的にスキップします。サムネイル・原画像・線画のダウンロードやミラーは行いません。ページ・元データ・manifest はローカルに保持し、画像は元サイトの URL を直接参照するため `file://` でも接続が必要です。**Python 3.8+** が必要です。ライトボックス用の中サイズ画像を作る `tools/mid.py` だけは Pillow（`pip install pillow`）も必要で、他のスクリプトは標準ライブラリのみで動きます。
+ギャラリーの素材画像は梱包しません。`docs/screenshots/` は UI 紹介用のスクリーンショットのみです。`tools/fetch.py` はローカル配信サイトの画像を取得しますが、キャラDB とアニメ衣装集（`imageMode: "remote"`）は明示的にスキップします。サムネイル・原画像・線画のダウンロードやミラーは行いません。ページ・元データ・manifest はローカルに保持し、画像は元サイトの URL を直接参照するため `file://` でも接続が必要です。**Python 3.8+** が必要です。ライトボックス用の中サイズ画像を作る `tools/mid.py` だけは Pillow（`pip install pillow`）も必要で、他のスクリプトは標準ライブラリのみで動きます。
 
 ```bash
 git clone https://github.com/Brilliant666/ai-image-gallery.git
@@ -121,7 +129,7 @@ python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 
 ## 画像の読み込み
 
-ローカル配信ギャラリーは通常 3 段階です。グリッドはサムネイル、ライトボックスは中サイズ、原寸はダウンロード時のみ使います。キャラDB は元サイトのサムネイル・原画像・線画を参照し、`tiers: []` と `imageDirs: []` で取得・画像パッケージ化を無効にします。
+ローカル配信ギャラリーは通常 3 段階です。グリッドはサムネイル、ライトボックスは中サイズ、原寸はダウンロード時のみ使います。キャラDB は元サイトのサムネイル・原画像・線画を参照します。アニメ衣装集は元サイトのサムネイル・プレビュー・PNG リンクを使います。両方とも `tiers: []` と `imageDirs: []` でローカル取得と画像パッケージ化を無効にします。
 
 | 段階 | ポートレート | ポーズ | デプス | 衣装 |
 | --- | ---: | ---: | ---: | ---: |
@@ -129,7 +137,7 @@ python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 | 中サイズ | 約 150 KB | 約 33 KB | 約 10 KB | 約 90 KB |
 | 原寸 | 約 3.2 MB | 約 450 KB | 約 95 KB | 約 1 MB |
 
-以下の先読みと中サイズ画像の処理はローカル配信ギャラリーに適用します。キャラDB の詳細は元サイトの原画像を直接読み込みます。
+以下の先読みと中サイズ画像の処理はローカル配信ギャラリーに適用します。キャラDB の詳細は元サイトの原画像を直接読み込みます。アニメ衣装集は選択中のプレビューだけを読み込み、隣の大画像を先読みしません。原寸 PNG はリンクから元サイトで開きます。
 
 - ライトボックスは鮮明なサムネイルをすぐ表示し、中サイズが届いたらフェードインします。画像を切り替えると前の画像はすぐ消えます。
 - カードに 120 ms ホバー、タップ開始、キーボードフォーカスで中サイズを先読みします。開いた後は前後の画像も先読みします。
@@ -165,7 +173,7 @@ ai-image-gallery/
 └── docs/               # ドキュメントとスクリーンショット
 ```
 
-画像は git に入れません。6.8 GB のバイナリは clone のたびに重く、多くのサイトのライセンスでも認められていません。`release.py` は 20,751 個の画像ファイルを `dist/` にハードリンクするため、同じファイルシステム上なら容量は増えません。
+ギャラリーの素材画像は git に入れません（文書の UI スクリーンショットは除く）。6.8 GB のバイナリは clone を重くし、多くの出典では画像の再配布も禁じています。`release.py` は 20,751 個の画像ファイルを `dist/` にハードリンクするため、同じファイルシステム上なら容量は増えません。
 
 ## ドキュメント
 
@@ -180,6 +188,6 @@ ai-image-gallery/
 | コード：`tools/`、`hub/`、`shared/`、各サイトの `scripts/`、`index.html` 内の HTML/CSS/JS | [MIT](LICENSE) |
 | 画像素材 | サイトごとに異なる。`sites/<id>/NOTICE.md` を参照 |
 | 本サイト独自の中国語訳（`data/` とキャラDB の中国語名称表） | CC BY 4.0 |
-| キャラDB の元の目録データと画像 | 原作者の条件が適用され、本サイトでは再ライセンスしません。[NOTICE](sites/character/NOTICE.md) を参照 |
+| キャラDB とアニメ衣装集の元の目録フィールド・キーワード・画像 | 原作者の条件が適用され、本サイトでは再ライセンスしません。[キャラDB](sites/character/NOTICE.md) · [アニメ衣装集](sites/costume-anime/NOTICE.md) を参照 |
 
-素材は各元サイトによるものです。ポートレート集：[あぎ](https://x.com/agi_aibusi)（[元サイト](https://ai-portrait-gallery.pages.dev/)）。ポーズ集・デプス ポーズ集・衣装集：[ギア](https://x.com/giaaibusi)（[ポーズ](https://ai-pose-gallery.pages.dev/) · [デプス](https://ai-pose-depth-gallery.pages.dev/) · [衣装](https://ai-costume-gallery.pages.dev/)）。Shisei の線画は [wquguru/shisei](https://github.com/wquguru/shisei)（CC0）より。キャラDB は [たき AI](https://x.com/taki_auto) の [キャラ組み立てDB](https://charadb-2fi.pages.dev/) を出典とし、画像は元サイトからのみ読み込みます。本プロジェクトは個人学習目的の中国語インデックスです。
+素材は各元サイトによるものです。ポートレート集：[あぎ](https://x.com/agi_aibusi)（[元サイト](https://ai-portrait-gallery.pages.dev/)）。ポーズ集・デプス ポーズ集・衣装集・アニメ衣装集：[ギア](https://x.com/giaaibusi)（[ポーズ](https://ai-pose-gallery.pages.dev/) · [デプス](https://ai-pose-depth-gallery.pages.dev/) · [衣装](https://ai-costume-gallery.pages.dev/) · [アニメ衣装](https://ai-costume-anime-gallery.pages.dev/)）。Shisei の線画は [wquguru/shisei](https://github.com/wquguru/shisei)（CC0）より。キャラDB は [たき AI](https://x.com/taki_auto) の [キャラ組み立てDB](https://charadb-2fi.pages.dev/) を出典とし、画像は元サイトからのみ読み込みます。本プロジェクトは個人学習目的の中国語インデックスです。
