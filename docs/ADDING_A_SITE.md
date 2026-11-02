@@ -64,7 +64,7 @@ sites/<新站id>/
 
 ### 远程图片站点
 
-不能镜像图片的图库可参考 [角色库](../sites/character/README.md)。仅将 `imageMode` 改为 `remote` 不等于取得图片展示许可，先记录原作者条件。配置还须包含：
+不能镜像图片的图库可参考 [角色库](../sites/character/README.md) 与 [二次元服装库](../sites/costume-anime/README.md)。独立单库发布参见 [导出流程](COSTUME_ANIME_STANDALONE.md)。仅将 `imageMode` 改为 `remote` 不等于取得图片展示许可，先记录原作者条件。配置还须包含：
 
 ```json
 {

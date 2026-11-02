@@ -51,7 +51,7 @@ python3 tools/release.py
 **预期输出**（release 阶段）：
 
 ```
-发布 · 6 个站点 → /srv/ai-image-gallery/dist
+发布 · 7 个站点 → /srv/ai-image-gallery/dist
   校验通过（remote 站点仅校验元数据，未校验网络或图片文件）
   [portrait] 74 个站点文件  图片 4497 链接  → 4.8 GB
   [costume] 98 个站点文件  图片 4221 链接  → 1.4 GB
@@ -59,6 +59,7 @@ python3 tools/release.py
   [pose-depth] 22 个站点文件  图片 4317 链接  → 162.5 MB
   [shisei] 24 个站点文件  图片 3399 链接  → 59.1 MB
   [character] 36 个站点文件  remote 原站图片（不下载、不复制；仅发布页面、数据与 manifest）
+  [costume-anime] 页面、分类与标签落地页、目录和 manifest；图片仅由原站提供
   [hub] 10 个根级文件已复制（index.html, sitemap.xml, robots.txt, og-cover.jpg, llms.txt, favicon.ico, …）
 其中 20751 个图片文件为硬链接，不额外占盘
 ```
@@ -80,6 +81,7 @@ https://photoai.life/pose/       姿势集（默认线稿，可切换深度图�
 https://photoai.life/pose-depth/ 姿势集的深度图入口（同一模块，默认深度图）
 https://photoai.life/shisei/     CC0 姿势线稿
 https://photoai.life/character/  二次元角色参考（图片由原站提供）
+https://photoai.life/costume-anime/ 二次元服装参考（图片由原站提供）
 ```
 
 ### 2.1 前置：DNS 与证书
@@ -94,7 +96,7 @@ certbot --nginx -d photoai.life -d www.photoai.life
 
 ### 2.2 启用站点配置
 
-`deploy/nginx.conf` 是新环境模板；已有站点不要直接覆盖生效配置。新增 `/character/` 使用现有静态根目录即可。确需修改 nginx 时先备份，执行 `nginx -t` 通过后再平滑 reload。
+`deploy/nginx.conf` 是新环境模板；已有站点不要直接覆盖生效配置。新增 `/character/` 与 `/costume-anime/` 使用现有静态根目录即可。确需修改 nginx 时先备份，执行 `nginx -t` 通过后再平滑 reload。
 
 ```bash
 cp deploy/nginx.conf /etc/nginx/sites-available/photoai
@@ -148,7 +150,7 @@ find /srv/ai-image-gallery/dist -name '*.jpg' -o -name '*.webp' -o -name '*.png'
 # 期望 20751 张图片（含 4377 张生成的中图与 Shisei 的 1133 张上游中图）
 
 # HTTP
-for p in / /portrait/ /costume/ /pose/ /pose-depth/ /shisei/ /character/ /404.html; do
+for p in / /portrait/ /costume/ /pose/ /pose-depth/ /shisei/ /character/ /costume-anime/ /404.html; do
   printf "%-14s " "$p"; curl -s -o /dev/null -w "%{http_code}\n" "https://实际域名.com$p"
 done
 
@@ -166,7 +168,7 @@ curl -s https://实际域名.com/pose/ | grep -o 'rel="canonical" href="[^"]*"'
 
 浏览器逐站确认：
 
-- [ ] 入口页五个图库入口正常显示（姿势卡左半线稿、右半深度图）
+- [ ] 入口页六个图库入口正常显示（姿势卡左半线稿、右半深度图）
 - [ ] 点击进入各站，图片能加载
 - [ ] 顶部栏的深浅色、中 / 日、18+、`?` 都有效；在一个图库里切换后，其他图库也跟着变
 - [ ] 姿势集的「线稿 / 深度图」开关整页切换，大图里「对比」可以拖动竖线
@@ -174,6 +176,7 @@ curl -s https://实际域名.com/pose/ | grep -o 'rel="canonical" href="[^"]*"'
 - [ ] 本地图库灯箱 `←` `→` 翻页，`Esc` 关闭；连续翻页时不会闪出上一张图
 - [ ] 本地图库滚到底部自动加载；角色库用「显示更多」继续浏览
 - [ ] 角色库分类按钮、单张五色点、统一发色、复制标签、收藏及姿势线稿均可用；默认隐藏条目经18+确认后展示
+- [ ] 二次元服装库默认显示 984 套；分类、标签 AND 筛选、三语搜索、标签复制和原站图片链接可用；内衣与性感两类不进落地页
 - [ ] 角色库图片请求指向原站；暂断上游图片网络后，名称、分类与标签仍可用。metadata 校验通过不代表上游网络通过
 
 ---
@@ -201,7 +204,7 @@ python3 tools/release.py --out dist-stage
 
 ```bash
 test ! -e dist-prev || exit 1
-for x in index.html 404.html sitemap.xml robots.txt llms.txt portrait costume pose pose-depth shisei character; do
+for x in index.html 404.html sitemap.xml robots.txt llms.txt portrait costume pose pose-depth shisei character costume-anime; do
   if [ -e "dist/$x" ]; then mv -T --exchange "dist-stage/$x" "dist/$x" || break
   else mv -T "dist-stage/$x" "dist/$x"; fi
 done
@@ -210,7 +213,7 @@ mv -T dist-stage dist-prev        # 对调后暂存目录里是旧版，留作�
 
 `mv --exchange` 需要 GNU coreutils 9.5+（Debian 13 自带 9.7），而且**必须带 `-T`**，
 否则目标会被当成父目录，命令报错退出。线上还没有的项（例如第一次发布的 `404.html`）直接 `mv -T` 放进去，这时 `dist-prev` 里没有它，回滚时手动删掉即可。只更新了部分站点时，循环里只写那几个。
-首次添加角色库时，旧目录里没有 `character/`，它不会出现在 `dist-prev`。回滚整个版本时，核对备份确实没有该站后需另行移除新入口，避免留下不属于旧版的页面。
+首次添加新站时，旧目录里没有相应目录（如 `character/`、`costume-anime/`），它不会出现在 `dist-prev`。回滚整个版本时，核对备份确实没有该站后需另行移除新入口，避免留下不属于旧版的页面。
 对调完成后不需要 reload nginx。
 
 `update.py` 把改动分两类：`build.py` 会重写的构建产物直接丢弃；其他文件（源码、配置）
@@ -223,7 +226,7 @@ mv -T dist-stage dist-prev        # 对调后暂存目录里是旧版，留作�
 **不会碰图片目录**——`sites/*/{thumbs,mid,img,png,raw}` 都在 `.gitignore` 里，`dist-*/` 也不受影响。
 
 **图片不需要重新下载** —— `fetch.py` 幂等，已存在文件跳过。
-新增本地托管站点时才需要再跑一次 `python3 tools/fetch.py --site <新站id>`。角色库为 remote 模式：fetch 明确跳过，mid 不生成图片，只发布页面与元数据。
+新增本地托管站点时才需要再跑一次 `python3 tools/fetch.py --site <新站id>`。角色库和二次元服装库为 remote 模式：fetch 明确跳过，mid 不生成图片，只发布页面与元数据。
 
 漏跑 `mid.py` 也不会坏：灯箱会在中图 404 后退回加载原图，只是慢。
 
@@ -243,7 +246,7 @@ python3 tools/release.py --site pose --out dist-stage
 
 ```bash
 cd /srv/ai-image-gallery
-for x in index.html 404.html sitemap.xml robots.txt llms.txt portrait costume pose pose-depth shisei character; do
+for x in index.html 404.html sitemap.xml robots.txt llms.txt portrait costume pose pose-depth shisei character costume-anime; do
   [ -e "dist-prev/$x" ] && { mv -T --exchange "dist-prev/$x" "dist/$x" || break; }
 done
 ```
@@ -269,7 +272,7 @@ python3 tools/build.py --base https://实际域名.com
 python3 tools/release.py --out dist-stage
 ```
 
-角色库不执行图片下载或中图生成；`verify.py --site character` 仅校验 manifest，不检查网络或图片文件。首次角色库上线仍需全量构建，以同步各旧图库的顶部导航；发布所有涉及页面后逐站对调，不能只发布角色库而漏掉共享导航。
+角色库和二次元服装库都不执行图片下载或中图生成；`verify.py --site character` 仅校验 manifest，不检查网络或图片文件。首次新图库上线仍需全量构建，以同步各旧图库的顶部导航；发布所有涉及页面后逐站对调，不能只发布新图库而漏掉共享导航。二次元服装库使用 `verify.py --site costume-anime` 校验元数据；另用浏览器抽查原站图片，不做批量下载。
 
 新站在线上 `dist/` 里还不存在，直接 `mv -T dist-stage/<新站id> dist/<新站id>` 即可；入口页 `index.html` 和根级 `sitemap.xml` 也要对调，否则首页不显示新卡片。
 
@@ -297,7 +300,7 @@ python3 tools/release.py --out dist-stage
 
 ## 8. 授权提醒
 
-六个站点授权不同，**公开部署前务必确认**：
+七个站点授权不同，**公开部署前务必确认**：
 
 | 站点 | 授权 | 可否公开 |
 |---|---|---|
@@ -307,5 +310,6 @@ python3 tools/release.py --out dist-stage
 | 服装集 | 禁止再分发 | ⚠️ 同姿势集 |
 | Shisei 姿势线稿 | 图片 CC0 1.0；姿势目录仅注明出处 | ✅ 图片可自由分发；性感、双人系列和 suggestive 姿势默认隐藏，不进落地页与 sitemap |
 | 二次元角色库 | 商用作品制作与参考可；禁止再分发原图和加工图，禁止表现真实人物或未成年人 | 图片仅由原站加载，没有额外镜像/再分发授权；见 [NOTICE](../sites/character/NOTICE.md) |
+| 二次元服装库 | 禁止批量下载及再分发、转载、转售图片本身 | 仅发布目录和页面，图片由原站加载；见 [NOTICE](../sites/costume-anime/NOTICE.md) |
 
-成人向内容（姿势的双人与性感系列、服装的内衣与性感两类、Shisei 的性感/双人与 suggestive 内容、角色库泳装及审定的偏性感条目）在画廊里默认隐藏，不进任何落地页与 sitemap（`sites.json` 的 `adult` 规则）。
+成人向内容（姿势的双人与性感系列、两个服装库的内衣与性感两类、Shisei 的性感/双人与 suggestive 内容、角色库泳装及审定的偏性感条目）在画廊里默认隐藏，不进任何落地页与 sitemap（`sites.json` 的 `adult` 规则）。

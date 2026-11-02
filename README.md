@@ -2,15 +2,15 @@
 
 # AI 图片素材库 · 单仓多站
 
-**五个 AI 绘画参考图库、六个站点入口，一个仓库构建，一个目录部署**
+**六个 AI 绘画参考图库、七个站点入口，一个仓库构建，一个目录部署**
 
-人像 · 姿势（线稿与深度图） · 服装 · CC0 姿势线稿 · 二次元角色库 · 中日双语 · 浅色 / 深色
+人像 · 姿势（线稿与深度图） · 服装 · CC0 姿势线稿 · 二次元角色库 · 二次元服装库 · 中日双语 · 浅色 / 深色
 
 15,241 个本地托管图片文件（含不同尺寸）；角色库另有 843 个基础条目 + 184 个发色变体，远程图片不计入文件总数。
 
 [![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
-[![sites](https://img.shields.io/badge/sites-6-0ea5e9?style=flat-square)](#站点与图库)
+[![sites](https://img.shields.io/badge/sites-7-0ea5e9?style=flat-square)](#站点与图库)
 [![images](https://img.shields.io/badge/image_files-15%2C241-8b5cf6?style=flat-square)](#站点与图库)
 [![Python](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square&logo=python&logoColor=white)](#快速开始)
 [![License](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](#许可与致谢)
@@ -56,11 +56,12 @@
 | [服装集](https://photoai.life/costume/) | 不含真人的服装图，86 个标签分面筛选 | 1,407 件 / 4,221 张 | 禁止再分发 |
 | [Shisei 姿势线稿](https://photoai.life/shisei/) | 无脸人偶线稿，四个系列、每个姿势最多 5 个视角，成人向默认隐藏 | 280 个姿势 / 1,133 张 | **CC0** |
 | [二次元角色库](https://photoai.life/character/) | 发型、服装、姿势参考，图片从原站加载 | 843 基础条目 + 184 发色变体；281 张姿势线稿 | 禁止再分发原图及加工图 |
+| [二次元服装库](https://photoai.life/costume-anime/) | 二次元风格服装，8 个分类、86 个标签，图片从原站加载 | 1,320 套，默认可见 984 套 | 禁止批量下载及再分发 |
 
-六个物理站点对应五个顶部导航图库：姿势线稿和深度图合并为一个图库。角色库基础条目为头发与眼睛 122、服装 440、姿势 281；含发色变体共 1,027 条，线稿单独计算。这些远程条目不计入 15,241 个本地图片文件。
+七个物理站点对应六个顶部导航图库：姿势线稿和深度图合并为一个图库。角色库基础条目为头发与眼睛 122、服装 440、姿势 281；含发色变体共 1,027 条，线稿单独计算。这些远程条目不计入 15,241 个本地图片文件。
 
 每个图库都有网格分批加载、筛选与搜索、图片放大、主题与语言切换。本地托管图库还支持灯箱 `←` `→` 翻页、手机滑动和原图下载；角色库通过原站链接查看原图与线稿，`Esc` 关闭详情。页首是全站共用的顶部栏：图库切换、18+、深浅色、中 / 日都在上面，偏好全站通用；`?` 查看快捷键、`/` 跳到搜索框。姿势集用一个开关在线稿和深度图之间切换，大图里可以拖动竖线左右对比。
-姿势、深度姿势、服装、Shisei 和角色库的成人向内容默认隐藏（角色库默认可浏览 791 个基础条目，184 个发色变体通过换色预览）；顶部栏的「18+」确认一次年龄后打开，各图库通用。成人向内容不进任何静态落地页和 sitemap。页面是单个 `index.html`，数据内嵌，没有框架、CDN 和外部字体。
+姿势、深度姿势、两个服装库、Shisei 和角色库的成人向内容默认隐藏（角色库默认可浏览 791 个基础条目，184 个发色变体通过换色预览）；顶部栏的「18+」确认一次年龄后打开，各图库通用。成人向内容不进任何静态落地页和 sitemap。页面是单个 `index.html`，数据内嵌，没有框架、CDN 和外部字体。
 
 > **人像集和 Shisei 是 CC0**，其余站点的素材禁止再分发。二次元角色库允许商用作品制作、参考与修改，但禁止再分发原图或加工图，禁止用于表现真实人物或未成年人。Shisei 的姿势目录沿用 ai-pose-gallery，只注明出处。详见各站的 `sites/<id>/NOTICE.md`。
 
@@ -75,17 +76,23 @@
 
 使用和目录维护见 [角色库说明](sites/character/README.md)，图片条件见 [来源与许可](sites/character/NOTICE.md)。
 
+### 二次元服装库
+
+独立来源的 1,320 套二次元服装，不能与原有 1,407 套服装按相同编号合并。8 个分类、86 个英文标签使用中日双语与组合筛选，内衣和性感类默认隐藏且不进入落地页。图片始终从原站读取，目录搜索可离线使用。
+
+[独立公开库](https://github.com/Brilliant666/ai-costume-anime-gallery-cn) 提供单库源码、静态页面和返回本站的入口；源站字段不重新许可，详见 [来源说明](sites/costume-anime/NOTICE.md)。导出与维护见 [独立库流程](docs/COSTUME_ANIME_STANDALONE.md)。新入口随本 PR 合并和另行部署后上线。
+
 ## 快速开始
 
-本仓库不含素材图片文件。`tools/fetch.py` 下载本地托管站点的图片，遇到 `imageMode: "remote"` 的角色库会明确跳过，不下载或镜像其原图、缩略图或线稿。角色库保留本地页面、源数据和 manifest，图片 URL 直接指向原站；从 `file://` 打开也需要联网加载图片。需要 **Python 3.8+**。生成中图的 `tools/mid.py` 另需 Pillow（`pip install pillow`），其余脚本只用标准库。
+本仓库不含素材图片文件。`tools/fetch.py` 下载本地托管站点的图片，遇到 `imageMode: "remote"` 的角色库和二次元服装库会明确跳过，不下载或镜像其原图、缩略图或线稿。角色库保留本地页面、源数据和 manifest，图片 URL 直接指向原站；从 `file://` 打开也需要联网加载图片。需要 **Python 3.8+**。生成中图的 `tools/mid.py` 另需 Pillow（`pip install pillow`），其余脚本只用标准库。
 
 ```bash
 git clone https://github.com/Brilliant666/ai-image-gallery.git
 cd ai-image-gallery
 
-python tools/fetch.py      # 下载本地托管图库的图片，跳过角色库（首次约 6.8 GB，之后只补缺失）
+python tools/fetch.py      # 下载本地托管图库的图片，跳过两个远程图库（首次约 6.8 GB，之后只补缺失）
 python tools/mid.py        # 生成灯箱中图（约 290 MB）
-python tools/build.py      # 构建六个站点入口（五个图库）+ 入口页
+python tools/build.py      # 构建七个站点入口（六个图库）+ 入口页
 python tools/release.py    # 组装 dist/（图片硬链接，不额外占盘）
 python tools/serve.py      # 预览 http://127.0.0.1:8080/
 ```
@@ -101,7 +108,7 @@ python tools/serve.py      # 预览 http://127.0.0.1:8080/
 | --- | --- |
 | `python tools/fetch.py --site pose` | 只下载一个站 |
 | `python tools/mid.py --site portrait` | 只生成一个站的中图 |
-| `python tools/verify.py` | 本地图库检查图片与中图；角色库仅检查远程元数据 |
+| `python tools/verify.py` | 本地图库检查图片与中图；两个远程图库仅检查元数据 |
 | `python tools/build.py --site character` | 重建角色库及首页；不访问图片网络 |
 | `python tools/build.py --site pose` | 只重建一个站 |
 | `python tools/build.py --base https://x.com` | 指定正式域名，写入 canonical / og / sitemap |
@@ -115,7 +122,7 @@ python tools/serve.py      # 预览 http://127.0.0.1:8080/
 
 ## 图片加载
 
-本地托管图库通常有三档：网格用缩略图，灯箱用中图，原图只在下载时用到。角色库使用原站远程缩略图、原图和可用的线稿，不生成本地中图；`tiers: []`、`imageDirs: []` 阻止下载与图片打包。
+本地托管图库通常有三档：网格用缩略图，灯箱用中图，原图只在下载时用到。角色库使用原站远程缩略图、原图和可用的线稿，不生成本地中图。二次元服装库同样只引用原站缩略图、预览和 PNG，不提供批量下载；`tiers: []`、`imageDirs: []` 阻止下载与图片打包。
 
 | 档位 | 人像 | 姿势 | 深度姿势 | 服装 |
 | --- | ---: | ---: | ---: | ---: |
@@ -163,7 +170,7 @@ ai-image-gallery/
 
 ## 文档
 
-[部署手册](deploy/DEPLOY.md) · [加第 N 个站](docs/ADDING_A_SITE.md) · [nginx 模板](deploy/nginx.conf) · 各站说明：[人像](sites/portrait/README.md) · [姿势](sites/pose/README.md) · [深度姿势](sites/pose-depth/README.md) · [服装](sites/costume/README.md) · [Shisei](sites/shisei/README.md) · [角色](sites/character/README.md)
+[部署手册](deploy/DEPLOY.md) · [加第 N 个站](docs/ADDING_A_SITE.md) · [nginx 模板](deploy/nginx.conf) · 各站说明：[人像](sites/portrait/README.md) · [姿势](sites/pose/README.md) · [深度姿势](sites/pose-depth/README.md) · [服装](sites/costume/README.md) · [Shisei](sites/shisei/README.md) · [角色](sites/character/README.md) · [二次元服装](sites/costume-anime/README.md)
 
 ## 许可与致谢
 
@@ -174,4 +181,4 @@ ai-image-gallery/
 | 本站独立整理的中文译文（`data/` 及角色库中文短名表） | CC BY 4.0 |
 | 角色库原站目录字段与图片 | 依原作者条件；不随本站代码或译文重新许可，见 [NOTICE](sites/character/NOTICE.md) |
 
-素材来自各原站：人像集作者 [あぎ](https://x.com/agi_aibusi)（[原站](https://ai-portrait-gallery.pages.dev/)），姿势集、深度姿势集、服装集作者 [ギア](https://x.com/giaaibusi)（[姿势](https://ai-pose-gallery.pages.dev/) · [深度姿势](https://ai-pose-depth-gallery.pages.dev/) · [服装](https://ai-costume-gallery.pages.dev/)）。Shisei 线稿来自 [wquguru/shisei](https://github.com/wquguru/shisei)（CC0）。二次元角色库来自 [たき AI](https://x.com/taki_auto) 的 [キャラ組み立てDB](https://charadb-2fi.pages.dev/)，图片仅由原站加载。本项目是个人学习用途的中文索引。
+素材来自各原站：人像集作者 [あぎ](https://x.com/agi_aibusi)（[原站](https://ai-portrait-gallery.pages.dev/)），姿势集、深度姿势集、服装集作者 [ギア](https://x.com/giaaibusi)（[姿势](https://ai-pose-gallery.pages.dev/) · [深度姿势](https://ai-pose-depth-gallery.pages.dev/) · [服装](https://ai-costume-gallery.pages.dev/) · [二次元服装](https://ai-costume-anime-gallery.pages.dev/)）。Shisei 线稿来自 [wquguru/shisei](https://github.com/wquguru/shisei)（CC0）。二次元角色库来自 [たき AI](https://x.com/taki_auto) 的 [キャラ組み立てDB](https://charadb-2fi.pages.dev/)，图片仅由原站加载。本项目是个人学习用途的中文索引。

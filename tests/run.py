@@ -761,6 +761,7 @@ class Docs(unittest.TestCase):
         self.assertEqual(hits, [])
 
 
+from test_costume_anime import CostumeAnime
 from test_character import Character  # noqa: E402,F401 — 原生角色库专用检查也由 CI 入口运行
 
 

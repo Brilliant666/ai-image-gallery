@@ -31,6 +31,7 @@ LABELS = {
     "pose": {"zh": "姿势", "ja": "ポーズ"},
     "shisei": {"zh": "CC0 线稿", "ja": "CC0 線画"},
     "character": {"zh": "角色", "ja": "キャラ"},
+    "costume-anime": {"zh": "二次元服装", "ja": "アニメ衣装"},
 }
 
 

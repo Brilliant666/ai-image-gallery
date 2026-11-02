@@ -2,15 +2,15 @@
 
 # AI 参照画像ライブラリ
 
-**参照画像ギャラリー 5 つ、サイト入口 6 つ、1 リポジトリでビルド、1 ディレクトリで公開**
+**参照画像ギャラリー 6 つ、サイト入口 7 つ、1 リポジトリでビルド、1 ディレクトリで公開**
 
-ポートレート · ポーズ（線画とデプス） · 衣装 · CC0 ポーズ線画 · キャラ参考画像集 · 中国語 / 日本語 · ライト / ダーク
+ポートレート · ポーズ（線画とデプス） · 衣装 · CC0 ポーズ線画 · キャラ参考画像集 · アニメ衣装集 · 中国語 / 日本語 · ライト / ダーク
 
 ローカル画像ファイル 15,241 個（サイズ違いを含む）。キャラDB は基本 843 件と髪色違い 184 件を別に収録し、リモート画像はファイル総数に含めません。
 
 [![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
-[![sites](https://img.shields.io/badge/sites-6-0ea5e9?style=flat-square)](#サイト)
+[![sites](https://img.shields.io/badge/sites-7-0ea5e9?style=flat-square)](#サイト)
 [![images](https://img.shields.io/badge/image_files-15%2C241-8b5cf6?style=flat-square)](#サイト)
 [![Python](https://img.shields.io/badge/python-3.8%2B-3776ab?style=flat-square&logo=python&logoColor=white)](#クイックスタート)
 [![License](https://img.shields.io/badge/code-MIT-22c55e?style=flat-square)](#ライセンスとクレジット)
@@ -56,10 +56,11 @@
 | [衣装集](https://photoai.life/costume/) | 人物なしの衣装、86 タグで絞り込み | 1,407 着 / 4,221 枚 | 再配布禁止 |
 | [Shisei 線画](https://photoai.life/shisei/) | 顔なしマネキン線画、4 シリーズ、各最大 5 アングル。成人向けは初期状態で非表示 | 280 ポーズ / 1,133 枚 | **CC0** |
 | [キャラ参考画像集](https://photoai.life/character/) | 髪型・衣装・ポーズ参考、画像は元サイトから読み込み | 基本 843 件 + 髪色違い 184 件、ポーズ線画 281 枚 | 原画像・加工画像とも再配布禁止 |
+| [アニメ衣装集](https://photoai.life/costume-anime/) | アニメ調の衣装、8 カテゴリ・86 タグ。画像は元サイトから読み込み | 1,320 着、初期表示 984 着 | 一括取得・再配布禁止 |
 
-6 サイトを 5 つのギャラリーとしてナビゲーションに表示します。ポーズ線画とデプスは一つのギャラリーです。キャラDB は髪・目 122・衣装 440・ポーズ 281 の基本 843 件、髪色違いを含め 1,027 件で、線画は別に数えます。これらはローカル画像ファイル 15,241 個に含みません。
+7 サイトを 6 つのギャラリーとしてナビゲーションに表示します。ポーズ線画とデプスは一つのギャラリーです。キャラDB は髪・目 122・衣装 440・ポーズ 281 の基本 843 件、髪色違いを含め 1,027 件で、線画は別に数えます。これらはローカル画像ファイル 15,241 個に含みません。
 
-各ギャラリーは一覧の段階表示、絞り込み・検索、画像拡大、テーマと言語切り替えに対応します。ローカル配信ギャラリーでは矢印キー・スワイプによる移動と原寸ダウンロードも利用できます。キャラDB は原画像と線画を元サイトへリンクし、`Esc` で詳細を閉じます。ページ上部の共通バーにギャラリー切り替え・18+・ライト / ダーク・言語をまとめ、設定は全ギャラリー共通です。`?` でショートカット一覧、`/` で検索欄へ移動します。ポーズ集はスイッチ一つで線画と深度マップを切り替え、拡大表示では仕切りをドラッグして左右に比較できます。ポーズ集・深度ポーズ集・衣装集・Shisei・キャラDB の成人向け内容は初期状態で非表示です（キャラDB は基本 791 件が閲覧でき、髪色違い 184 件は色変更で確認）。上部バーの「18+」で年齢を一度確認すると表示され、全サイト共通で記憶します。成人向け内容は静的ランディングページと sitemap には載りません。ページは単一の `index.html` でデータを内蔵し、フレームワーク・CDN・Web フォントを使いません。
+各ギャラリーは一覧の段階表示、絞り込み・検索、画像拡大、テーマと言語切り替えに対応します。ローカル配信ギャラリーでは矢印キー・スワイプによる移動と原寸ダウンロードも利用できます。キャラDB は原画像と線画を元サイトへリンクし、`Esc` で詳細を閉じます。ページ上部の共通バーにギャラリー切り替え・18+・ライト / ダーク・言語をまとめ、設定は全ギャラリー共通です。`?` でショートカット一覧、`/` で検索欄へ移動します。ポーズ集はスイッチ一つで線画と深度マップを切り替え、拡大表示では仕切りをドラッグして左右に比較できます。ポーズ集・深度ポーズ集・両衣装集・Shisei・キャラDB の成人向け内容は初期状態で非表示です（キャラDB は基本 791 件が閲覧でき、髪色違い 184 件は色変更で確認）。上部バーの「18+」で年齢を一度確認すると表示され、全サイト共通で記憶します。成人向け内容は静的ランディングページと sitemap には載りません。ページは単一の `index.html` でデータを内蔵し、フレームワーク・CDN・Web フォントを使いません。
 
 > **CC0 はポートレート集と Shisei です。** 他のサイトの素材は再配布禁止です。キャラDB は商用作品制作・参考・改変を認めますが、原画像と加工画像の再配布、および実在人物や未成年者の表現への利用を禁じます。Shisei のポーズ目録は ai-pose-gallery に基づき出典表記のみです。詳しくは `sites/<id>/NOTICE.md` を参照してください。
 
@@ -74,17 +75,23 @@
 
 利用と目録更新は [キャラDB 説明](sites/character/README.md)、画像条件は [出典と利用条件](sites/character/NOTICE.md) を参照してください。
 
+### アニメ衣装集
+
+別の出典から 1,320 着、8 カテゴリ・86 タグを収録。同じ番号でも既存の衣装集 1,407 着とは異なる目録です。ランジェリー・セクシーの分類は年齢確認後に表示し、静的ページには掲載しません。画像は元サイトから読み込み、一括取得・ミラーは行いません。
+
+[独立公開リポジトリ](https://github.com/Brilliant666/ai-costume-anime-gallery-cn) に静的ギャラリー、ソース、本サイトへのリンクを用意します。[出典条件](sites/costume-anime/NOTICE.md) と [エクスポート手順](docs/COSTUME_ANIME_STANDALONE.md) を参照してください。新入口はこの PR のマージ後、別途デプロイして公開します。
+
 ## クイックスタート
 
-このリポジトリに素材画像ファイルは含まれていません。`tools/fetch.py` はローカル配信サイトの画像を取得しますが、キャラDB（`imageMode: "remote"`）は明示的にスキップします。サムネイル・原画像・線画のダウンロードやミラーは行いません。ページ・元データ・manifest はローカルに保持し、画像は元サイトの URL を直接参照するため `file://` でも接続が必要です。**Python 3.8+** が必要です。ライトボックス用の中サイズ画像を作る `tools/mid.py` だけは Pillow（`pip install pillow`）も必要で、他のスクリプトは標準ライブラリのみで動きます。
+このリポジトリに素材画像ファイルは含まれていません。`tools/fetch.py` はローカル配信サイトの画像を取得しますが、キャラDB とアニメ衣装集（`imageMode: "remote"`）は明示的にスキップします。サムネイル・原画像・線画のダウンロードやミラーは行いません。ページ・元データ・manifest はローカルに保持し、画像は元サイトの URL を直接参照するため `file://` でも接続が必要です。**Python 3.8+** が必要です。ライトボックス用の中サイズ画像を作る `tools/mid.py` だけは Pillow（`pip install pillow`）も必要で、他のスクリプトは標準ライブラリのみで動きます。
 
 ```bash
 git clone https://github.com/Brilliant666/ai-image-gallery.git
 cd ai-image-gallery
 
-python tools/fetch.py      # ローカル配信画像を取得。キャラDB はスキップ（初回約 6.8 GB、以降は不足分のみ）
+python tools/fetch.py      # ローカル配信画像を取得。リモート画像のギャラリーはスキップ（初回約 6.8 GB、以降は不足分のみ）
 python tools/mid.py        # ライトボックス用の中サイズ画像を生成（約 290 MB）
-python tools/build.py      # 6 サイト入口（5 ギャラリー）とトップをビルド
+python tools/build.py      # 7 サイト入口（6 ギャラリー）とトップをビルド
 python tools/release.py    # dist/ を組み立て（画像はハードリンク、容量は増えない）
 python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 ```
@@ -100,7 +107,7 @@ python tools/serve.py      # http://127.0.0.1:8080/ でプレビュー
 | --- | --- |
 | `python tools/fetch.py --site pose` | 1 サイトだけダウンロード |
 | `python tools/mid.py --site portrait` | 1 サイトだけ中サイズ画像を生成 |
-| `python tools/verify.py` | ローカル画像を検証。キャラDB はメタデータのみ検証 |
+| `python tools/verify.py` | ローカル画像を検証。リモート画像のギャラリーはメタデータのみ検証 |
 | `python tools/build.py --site character` | 画像へ接続せずキャラDB とトップを再ビルド |
 | `python tools/build.py --site pose` | 1 サイトだけ再ビルド |
 | `python tools/build.py --base https://x.com` | 公開ドメインを canonical / og / sitemap に反映 |
@@ -162,7 +169,7 @@ ai-image-gallery/
 
 ## ドキュメント
 
-[デプロイ手順](deploy/DEPLOY.md) · [サイトの追加](docs/ADDING_A_SITE.md) · [nginx テンプレート](deploy/nginx.conf) · 各サイト：[ポートレート](sites/portrait/README.md) · [ポーズ](sites/pose/README.md) · [デプス ポーズ](sites/pose-depth/README.md) · [衣装](sites/costume/README.md) · [Shisei](sites/shisei/README.md) · [キャラDB](sites/character/README.md)
+[デプロイ手順](deploy/DEPLOY.md) · [サイトの追加](docs/ADDING_A_SITE.md) · [nginx テンプレート](deploy/nginx.conf) · 各サイト：[ポートレート](sites/portrait/README.md) · [ポーズ](sites/pose/README.md) · [デプス ポーズ](sites/pose-depth/README.md) · [衣装](sites/costume/README.md) · [Shisei](sites/shisei/README.md) · [キャラDB](sites/character/README.md) · [アニメ衣装](sites/costume-anime/README.md)
 
 デプロイ手順とサイト追加ガイドは中国語です。
 
