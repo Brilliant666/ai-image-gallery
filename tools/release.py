@@ -54,7 +54,8 @@ def landing_dirs(sd, protected=()):
         if key in reserved or key in seen:
             raise ValueError(f"landing.json 目录重复或与站点文件冲突: {dn!r}")
         seen.add(key)
-        safe_under(sd, dn)
+        if not os.path.isdir(safe_under(sd, dn)):
+            raise ValueError(f"landing.json 声明的目录不存在或类型错误: {dn!r}")
     return dirs
 
 

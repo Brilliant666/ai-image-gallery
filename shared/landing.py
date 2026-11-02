@@ -280,6 +280,18 @@ def index_page(site, facets):
                  crumbs=[("../../", "photoai.life"), ("../", site.name), (None, "分类与标签")], body=body, ld=ld, depth=1)
 
 
+def _output_path(root, rel):
+    path = safe_under(root, rel)
+    parts = rel.split("/")
+    for i in range(1, len(parts)):
+        parent = safe_under(root, "/".join(parts[:i]))
+        if os.path.lexists(parent) and not os.path.isdir(parent):
+            raise ValueError(f"输出父路径不是目录: {parent}")
+    if os.path.lexists(path) and not os.path.isfile(path):
+        raise ValueError(f"输出目标不是文件: {path}")
+    return path
+
+
 def write_site(site, facets):
     """写出全部分面页与索引页，返回绝对 URL 列表（不含站点首页）。
     先清掉上次生成的分面目录，避免改名后留下孤儿页。"""
@@ -287,7 +299,7 @@ def write_site(site, facets):
     facets = list(facets)
     for f in facets:
         validate_slug(f.slug)
-        safe_under(site.root, f.slug + "/index.html")
+        _output_path(site.root, f.slug + "/index.html")
     all_tops = {f.slug.split("/")[0] for f in facets} | {"browse"}
     for top in all_tops:
         safe_under(site.root, top)
@@ -295,8 +307,8 @@ def write_site(site, facets):
         if os.path.islink(logical) or (os.path.lexists(logical) and
                 getattr(os.lstat(logical), "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT):
             raise ValueError(f"落地页目录不能是链接: {logical}")
-    safe_under(site.root, "browse/index.html")
-    safe_under(site.root, "data/landing.json")
+    _output_path(site.root, "browse/index.html")
+    _output_path(site.root, "data/landing.json")
     keep = [f for f in facets if len(f.items) >= MIN_ITEMS]
     slugs = [f.slug for f in keep]
     if len(slugs) != len(set(slugs)):
@@ -307,16 +319,16 @@ def write_site(site, facets):
         # Delete the logical path, not a resolved symlink target.
         shutil.rmtree(os.path.join(site.root, top), ignore_errors=True)
     for f in keep:
-        out = safe_under(site.root, f.slug + "/index.html")
+        out = _output_path(site.root, f.slug + "/index.html")
         os.makedirs(os.path.dirname(out), exist_ok=True)
-        with open(safe_under(site.root, f.slug + "/index.html"), "w", encoding="utf-8", newline="\n") as fh:
+        with open(_output_path(site.root, f.slug + "/index.html"), "w", encoding="utf-8", newline="\n") as fh:
             fh.write(facet_page(site, f, keep))
-    out = safe_under(site.root, "browse/index.html")
+    out = _output_path(site.root, "browse/index.html")
     os.makedirs(os.path.dirname(out), exist_ok=True)
-    with open(safe_under(site.root, "browse/index.html"), "w", encoding="utf-8", newline="\n") as fh:
+    with open(_output_path(site.root, "browse/index.html"), "w", encoding="utf-8", newline="\n") as fh:
         fh.write(index_page(site, keep))
     # 记录生成了哪些目录，release.py 据此复制
-    with open(safe_under(site.root, "data/landing.json"), "w", encoding="utf-8", newline="\n") as fh:
+    with open(_output_path(site.root, "data/landing.json"), "w", encoding="utf-8", newline="\n") as fh:
         json.dump({"dirs": sorted(tops), "pages": ["browse"] + slugs}, fh, ensure_ascii=False, indent=1)
     print(f"landing: {len(keep)} 个分面页 + 1 个索引页（跳过 {len(facets) - len(keep)} 个不足 {MIN_ITEMS} 张的分面）")
     return [f"{site.site_url}/browse/"] + [f"{site.site_url}/{s}/" for s in slugs]

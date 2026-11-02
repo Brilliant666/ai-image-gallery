@@ -121,6 +121,24 @@ class LandingSecurity(unittest.TestCase):
         link(self, self.outside, self.root / "data" / "landing.json", directory=False)
         self.rejected([facet()])
 
+    def test_metadata_path_type_conflicts_preserve_old_pages(self):
+        for rel in ("data", "data/landing.json", "tag", "tag/new/index.html"):
+            with self.subTest(rel=rel):
+                path = self.root / rel
+                if rel == "data":
+                    path.rmdir()
+                if rel.endswith(".json") or rel.endswith(".html"):
+                    path.mkdir(parents=True)
+                else:
+                    write(path, "not a directory")
+                self.rejected([facet("tag/new")])
+                if path.is_dir():
+                    path.rmdir()
+                else:
+                    path.unlink()
+                if not (self.root / "data").exists():
+                    (self.root / "data").mkdir()
+
     def test_valid_unicode_and_nested_slugs_keep_expected_output(self):
         with contextlib.redirect_stdout(io.StringIO()):
             urls = landing.write_site(self.site, [facet(), facet("series/全身/正面"), facet("tag/thin", 1)])
@@ -220,6 +238,14 @@ class ReleaseSecurity(unittest.TestCase):
         self.config["imageDirs"] = ["original-images"]
         write(self.sd / "data" / "landing.json", json.dumps({"dirs": ["original-images"]}))
         self.rejected()
+
+    def test_missing_or_file_landing_directory_preserves_old_release(self):
+        for rel in ("missing", "not-directory"):
+            with self.subTest(rel=rel):
+                if rel == "not-directory":
+                    write(self.sd / rel, "file instead of directory")
+                write(self.sd / "data/landing.json", json.dumps({"dirs": [rel]}))
+                self.rejected()
 
     def test_all_sites_are_validated_before_first_destination_is_cleared(self):
         write(self.base / "second" / "index.html")
