@@ -177,7 +177,7 @@ ai-image-gallery/
 
 ## ドキュメント
 
-[デプロイ手順](deploy/DEPLOY.md) · [サイトの追加](docs/ADDING_A_SITE.md) · [nginx テンプレート](deploy/nginx.conf) · 各サイト：[ポートレート](sites/portrait/README.md) · [ポーズ](sites/pose/README.md) · [デプス ポーズ](sites/pose-depth/README.md) · [衣装](sites/costume/README.md) · [Shisei](sites/shisei/README.md) · [キャラDB](sites/character/README.md) · [アニメ衣装](sites/costume-anime/README.md)
+[デプロイ手順](deploy/DEPLOY.md) · [サイトの追加](docs/ADDING_A_SITE.md) · [共有・SEO](docs/SEO.md) · [サイト案内（llms.txt）](https://photoai.life/llms.txt) · [nginx テンプレート](deploy/nginx.conf) · 各サイト：[ポートレート](sites/portrait/README.md) · [ポーズ](sites/pose/README.md) · [デプス ポーズ](sites/pose-depth/README.md) · [衣装](sites/costume/README.md) · [Shisei](sites/shisei/README.md) · [キャラDB](sites/character/README.md) · [アニメ衣装](sites/costume-anime/README.md)
 
 デプロイ手順とサイト追加ガイドは中国語です。
 

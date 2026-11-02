@@ -177,7 +177,7 @@ Gallery image assets stay out of git, apart from UI screenshots in the docs: 6.8
 
 ## Documentation
 
-[Deployment guide](deploy/DEPLOY.md) · [Adding a site](docs/ADDING_A_SITE.md) · [nginx template](deploy/nginx.conf) · Per-site notes: [Portrait](sites/portrait/README.md) · [Pose](sites/pose/README.md) · [Pose Depth](sites/pose-depth/README.md) · [Costume](sites/costume/README.md) · [Shisei](sites/shisei/README.md) · [Character](sites/character/README.md) · [Anime Costume](sites/costume-anime/README.md)
+[Deployment guide](deploy/DEPLOY.md) · [Adding a site](docs/ADDING_A_SITE.md) · [Sharing and SEO](docs/SEO.md) · [Site notes (llms.txt)](https://photoai.life/llms.txt) · [nginx template](deploy/nginx.conf) · Per-site notes: [Portrait](sites/portrait/README.md) · [Pose](sites/pose/README.md) · [Pose Depth](sites/pose-depth/README.md) · [Costume](sites/costume/README.md) · [Shisei](sites/shisei/README.md) · [Character](sites/character/README.md) · [Anime Costume](sites/costume-anime/README.md)
 
 The deployment guide and adding-a-site guide are in Chinese.
 

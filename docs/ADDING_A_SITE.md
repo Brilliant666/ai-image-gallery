@@ -78,7 +78,7 @@ sites/<新站id>/
 
 manifest 仍需非空的 `thumb_path`/`thumb_url`、`full_path`/`full_url`，线稿如有则同时提供 `line_path`/`line_url`。路径为可移植相对路径，URL 必须等于 `imageBase + path`；verify 不访问网络，不证明上游图片存在或可解码。
 
-画廊内嵌元数据与脚本；静态落地页的 `landing.Item.thumb` 使用原站 HTTPS URL。`landing.Site.share_image` 指向实际可用的原站分享图，`gallery_features` 填写本图库实际支持的功能，避免沿用本地图库的下载说明。浏览器离线时仍可检索元数据，图片无法显示。图片不得通过 fetch、mid、release 或新建的下载脚本变成本地托管。
+画廊内嵌元数据与脚本；静态落地页的 `landing.Item.thumb` 使用原站 HTTPS URL。分享封面使用本站原创、无原站素材的 1200×630 `og-cover.jpg`；不要把素材缩略图当作分享封面。`landing.Site.share_image` 可覆盖分享图地址，指定时也应保持 1200×630。`gallery_features` 填写本图库实际支持的功能，避免沿用本地图库的下载说明。浏览器离线时仍可检索元数据，图片无法显示。图片不得通过 fetch、mid、release 或新建的下载脚本变成本地托管。
 
 新增落地页目录时同步 `tools/update.py` 的 `BUILD_OUTPUT`；发布读取 `data/landing.json` 的目录清单。角色库使用 `cat/`。
 

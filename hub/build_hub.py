@@ -169,6 +169,7 @@ __UI_BAR__
   </section>
   <div class="hub-seo">__SEO_INTRO__</div>
 </main>
+<footer class="foot"><p><a href="./llms.txt" type="text/plain"><span class="zh">站点说明与素材来源（llms.txt）</span><span class="ja">サイト案内・素材の出典（llms.txt）</span></a> · <a href="./sitemap.xml"><span class="zh">站点地图</span><span class="ja">サイトマップ</span></a></p></footer>
 __UI_DIALOGS__
 __UI_JS__
 </body>
@@ -315,7 +316,7 @@ def hub_seo(cfg, base):
          f"服装集 {stat('costume', 0)} 套服装、{stat('costume', 2)} 个标签，标签保留英文关键词，可直接作提示词；"
          f"CC0 姿势线稿 {stat('shisei', 0)} 个姿势、{stat('shisei', 1)} 张，可商用、可再分发。", character_note, anime_note],
         [(("图库", "ギャラリー"), str(K)), (("本地图片文件", "ローカル画像ファイル"), N), (("语言", "言語"), "中文 / 日本語")],
-        links, faq, more_href=None, title=("关于 photoai.life", "photoai.life について"),
+        links, faq, more_href=None, notes_href=None, title=("关于 photoai.life", "photoai.life について"),
         nav_note=("深度图与姿势线稿属于同一图库。文件总数含不同尺寸，并非独立画面数；角色与二次元服装库远程图片不计入。",
                   "デプスマップとポーズ線画は同じギャラリーです。ファイル数はサイズ違いを含み、キャラ・アニメ衣装のリモート画像は含みません。"))
 
@@ -373,24 +374,23 @@ def main():
         return 1 if bad else 0
 
     shown = [s for s in cfg["sites"] if not s.get("mergedInto")]
-    by_id = {s["id"]: s for s in cfg["sites"]}
-    st = lambda sid, i=0: int(by_id[sid]["stats"][i]["v"])
     title = "photoai.life · AI 绘画参考：人像、姿势、服装、角色"
-    desc = (f"{len(shown)} 个 AI 绘画参考图库：{st('portrait'):,} 张 CC0 人像（角色脸部一致性）、"
-            f"{st('pose')} 个人体姿势的线稿与 ControlNet 深度图（各 {st('pose', 1):,} 张，五视角）、"
-            f"{st('costume'):,} 套服装、{st('shisei')} 个 CC0 姿势线稿、{st('character')} 个二次元角色基础条目、{st('costume-anime'):,} 套二次元服装。角色与二次元服装图片从原站加载。中日双语。")
+    desc = ("AI 绘画参考图库：人像、姿势线稿与 ControlNet 深度图、服装、二次元角色。"
+            "支持中日双语检索与标签筛选；含 CC0 素材，各库按原作者条件使用，部分图片由原站加载。")
     seo = hub_seo(cfg, base)
 
-    # 结构化数据：告诉搜索引擎/AI 引擎这是一组并列的子站点
+    # 区分整个网站与图库页面；父子引用使用同一组页面标识。
     ld = json.dumps({
         "@context": "https://schema.org",
         "@type": "CollectionPage",
+        "@id": base + "/#collection",
+        "isPartOf": {"@type": "WebSite", "@id": base + "/#website", "name": "photoai.life", "url": base + "/"},
         "name": title,
         "description": desc,
         "url": base + "/",
         "inLanguage": ["zh-CN", "ja"],
         "hasPart": [
-            {"@type": "WebSite", "name": s["name"]["zh"], "url": f"{base}/{s['id']}/"}
+            {"@type": "CollectionPage", "@id": f"{base}/{s['id']}/#gallery", "name": s["name"]["zh"], "url": f"{base}/{s['id']}/"}
             for s in shown
         ],
     }, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")

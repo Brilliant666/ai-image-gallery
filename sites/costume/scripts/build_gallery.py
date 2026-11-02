@@ -76,7 +76,7 @@ html = r"""<!doctype html>
 <meta name="twitter:description" content="AI 绘画服装参考图库中文版，按材质・颜色・单品标签组合筛选。">
 <meta name="twitter:image" content="__SITE__/og-cover.jpg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"ImageGallery","name":"服装集 COSTUME-DB-01","alternateName":"AI Costume Gallery 中文版","url":"__SITE__/","inLanguage":["zh-CN","ja"],"numberOfItems":1407,"about":"AI 绘画・服装设计・穿搭参考","isAccessibleForFree":true,"copyrightNotice":"© ギア (@giaaibusi)","creditText":"ギア / AI Costume Gallery","creator":{"@type":"Person","name":"ギア","url":"https://x.com/giaaibusi"}}
+{"@context":"https://schema.org","@type":"ImageGallery","@id":"__SITE__/#gallery","name":"服装集 COSTUME-DB-01","alternateName":"AI Costume Gallery 中文版","url":"__SITE__/","inLanguage":["zh-CN","ja"],"numberOfItems":1407,"about":"AI 绘画・服装设计・穿搭参考","isAccessibleForFree":true,"copyrightNotice":"© ギア (@giaaibusi)","creditText":"ギア / AI Costume Gallery","creator":{"@type":"Person","name":"ギア","url":"https://x.com/giaaibusi"}}
 </script>
 __UI_HEAD__
 __UI_CSS__

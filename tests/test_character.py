@@ -58,8 +58,8 @@ class Character(unittest.TestCase):
         for page in pages:
             text = page.read_text(encoding='utf-8')
             for field in ('og:image', 'twitter:image'):
-                self.assertIn('"%s" content="https://charadb-2fi.pages.dev/thumb/H001.webp"' % field, text, str(page))
-            self.assertNotIn('character/og-cover.jpg', text)
+                self.assertIn('"%s" content="https://example.com/character/og-cover.jpg"' % field, text, str(page))
+            self.assertNotIn('content="https://charadb-2fi.pages.dev/thumb/H001.webp"', text)
             more = re.search(r'<p class="more">(.*?)</p>', text)
             if more:
                 self.assertIn('收藏和复制标签', more.group(1))

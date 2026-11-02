@@ -207,7 +207,7 @@ TEMPLATE = r"""<!doctype html>
 <meta name="twitter:description" content="__TW_DESC__">
 <meta name="twitter:image" content="__SITE__/og-cover.jpg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"ImageGallery","name":"__SCHEMA_NAME__","alternateName":"__SCHEMA_ALT__","url":"__SITE__/","inLanguage":["zh-CN","ja"],"numberOfItems":__N_IMAGES__,"about":"__SCHEMA_ABOUT__","isAccessibleForFree":true,__LICENSE_LD__"creator":{"@type":"Person","name":"__AUTHOR__","url":"__AUTHOR_URL__"}}
+{"@context":"https://schema.org","@type":"ImageGallery","@id":"__SITE__/#gallery","name":"__SCHEMA_NAME__","alternateName":"__SCHEMA_ALT__","url":"__SITE__/","inLanguage":["zh-CN","ja"],"numberOfItems":__N_IMAGES__,"about":"__SCHEMA_ABOUT__","isAccessibleForFree":true,__LICENSE_LD__"creator":{"@type":"Person","name":"__AUTHOR__","url":"__AUTHOR_URL__"}}
 </script>
 __UI_HEAD__
 __UI_CSS__

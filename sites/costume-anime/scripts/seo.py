@@ -27,7 +27,7 @@ def build(root, site_url, items, cats):
         tagline='1320 套动漫风服装的独立参考索引，图片由原站加载，需要联网。',
         license_note='禁止批量下载（含自动获取）、再分发、转载或销售图片；原始元数据与图片按原站条款使用。',
         author='ギア', author_url=AUTHOR_URL, source=SOURCE, faq=FAQ,
-        share_image=SOURCE + 'thumbs/SPR-0001.webp', gallery_features='组合筛选、放大、复制英文标签',
+        gallery_features='组合筛选、放大、复制英文标签',
         index_title='动漫服装参考：全部公开分类与标签',
         index_intro='1320 套动漫风服装按 8 个分类、86 个标签建立中日双语索引。这里仅展示 984 套公开服装，内衣和性感分类不进入落地页。图片由原站远程加载。')
 

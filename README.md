@@ -178,7 +178,7 @@ ai-image-gallery/
 
 ## 文档
 
-[部署手册](deploy/DEPLOY.md) · [加第 N 个站](docs/ADDING_A_SITE.md) · [nginx 模板](deploy/nginx.conf) · 各站说明：[人像](sites/portrait/README.md) · [姿势](sites/pose/README.md) · [深度姿势](sites/pose-depth/README.md) · [服装](sites/costume/README.md) · [Shisei](sites/shisei/README.md) · [角色](sites/character/README.md) · [二次元服装](sites/costume-anime/README.md)
+[部署手册](deploy/DEPLOY.md) · [加第 N 个站](docs/ADDING_A_SITE.md) · [分享与 SEO](docs/SEO.md) · [站点说明（llms.txt）](https://photoai.life/llms.txt) · [nginx 模板](deploy/nginx.conf) · 各站说明：[人像](sites/portrait/README.md) · [姿势](sites/pose/README.md) · [深度姿势](sites/pose-depth/README.md) · [服装](sites/costume/README.md) · [Shisei](sites/shisei/README.md) · [角色](sites/character/README.md) · [二次元服装](sites/costume-anime/README.md)
 
 ## 许可与致谢
 
