@@ -56,7 +56,6 @@ Screenshots are taken from the live site to show the UI. The artwork belongs to 
 | [Costume](https://photoai.life/costume/) | Outfits without models, 86 faceted tags | 1,407 items / 4,221 files | No redistribution |
 | [Shisei line art](https://photoai.life/shisei/) | Faceless mannequin line art, 4 series, up to 5 angles; adult content hidden by default | 280 poses / 1,133 | **CC0** |
 | [Character](https://photoai.life/character/) | Hairstyle, outfit and pose references, loaded from the source | 843 base entries + 184 hair-color variants; 281 pose line drawings | No redistribution of original or processed images |
-
 | [Anime Costume](https://photoai.life/costume-anime/) | Anime-style outfits, 8 categories and 86 tags; source-hosted images | 1,320 outfits; 984 visible by default | No bulk downloading or redistribution |
 
 Seven physical sites appear as six galleries in navigation because Pose and Pose Depth share one gallery. Character has 122 hair and eye entries, 440 outfits and 281 poses (843 base entries); including hair-color variants there are 1,027 entries, with line art counted separately. These remote items are excluded from the 15,241 locally hosted image files.

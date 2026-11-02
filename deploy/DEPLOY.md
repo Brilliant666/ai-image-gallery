@@ -310,7 +310,6 @@ python3 tools/release.py --out dist-stage
 | 服装集 | 禁止再分发 | ⚠️ 同姿势集 |
 | Shisei 姿势线稿 | 图片 CC0 1.0；姿势目录仅注明出处 | ✅ 图片可自由分发；性感、双人系列和 suggestive 姿势默认隐藏，不进落地页与 sitemap |
 | 二次元角色库 | 商用作品制作与参考可；禁止再分发原图和加工图，禁止表现真实人物或未成年人 | 图片仅由原站加载，没有额外镜像/再分发授权；见 [NOTICE](../sites/character/NOTICE.md) |
-
 | 二次元服装库 | 禁止批量下载及再分发、转载、转售图片本身 | 仅发布目录和页面，图片由原站加载；见 [NOTICE](../sites/costume-anime/NOTICE.md) |
 
 成人向内容（姿势的双人与性感系列、两个服装库的内衣与性感两类、Shisei 的性感/双人与 suggestive 内容、角色库泳装及审定的偏性感条目）在画廊里默认隐藏，不进任何落地页与 sitemap（`sites.json` 的 `adult` 规则）。
