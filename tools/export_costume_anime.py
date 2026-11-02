@@ -18,7 +18,20 @@ README = '''# 二次元服装参考图库 · Anime Costume Gallery 中文版
 
 [photoai.life · 二次元服装入口](https://photoai.life/costume-anime/) · [全部参考图库](https://photoai.life/) · [主仓库](https://github.com/Brilliant666/ai-image-gallery) · [原站](https://ai-costume-anime-gallery.pages.dev/)
 
-> 本库是独立可用的静态目录和中文界面。图片始终由原站提供，需要联网；不附带图片，不提供批量下载。在线新入口须待主仓库 PR 合并并另行部署后生效。
+> 本库是独立可用的静态目录和中文界面。素材图片始终由原站提供，需要联网；不打包素材图片，不提供批量下载。仓库发布与 photoai.life 的生产部署是独立步骤，线上版本以实际部署为准。
+
+![二次元服装库 · 默认非成人目录](docs/screenshots/grid.jpg)
+
+<details>
+<summary>更多截图：组合筛选与手机布局</summary>
+
+![象牙白 + 针织 · 多标签 AND 筛选](docs/screenshots/filter.jpg)
+
+<img src="docs/screenshots/mobile.jpg" alt="二次元服装库 · 手机布局" width="390">
+
+</details>
+
+截图于 2026-11-02 从本库独立构建的本地页面拍摄，18+ 关闭，未额外模糊处理。`docs/screenshots/` 仅用于演示界面，不改变截图内素材的原作者条件，不能从中裁取素材另用。
 
 ## 收录内容
 
@@ -70,7 +83,7 @@ python build.py
 
 ## English
 
-An independent static Chinese/Japanese index of 1,320 anime-style outfits, with 8 categories and 86 English tags. Search, combine tag filters and copy tags; images load from the original site. The 336 lingerie/sexy entries are hidden until age confirmation and excluded from SEO landing pages. No images, batch downloader or image-generation service is included. Open `index.html`, or rebuild using Python 3.8+. Visit [photoai.life](https://photoai.life/) for the full reference collection. Original data and images remain subject to the source author's terms.
+An independent static Chinese/Japanese index of 1,320 anime-style outfits, with 8 categories and 86 English tags. Search, combine tag filters and copy tags; images load from the original site. The 336 lingerie/sexy entries are hidden until age confirmation and excluded from SEO landing pages. Only public UI screenshots are bundled; gallery image assets, a batch downloader and an image-generation service are not included. Open `index.html`, or rebuild using Python 3.8+. Visit [photoai.life](https://photoai.life/) for the full reference collection. Original data and images remain subject to the source author's terms.
 '''
 
 
@@ -96,7 +109,16 @@ def export(out):
     for name in files:
         if not (ROOT / 'shared' / name).is_file():
             raise ValueError('缺少共用组件: ' + name)
+    screenshots = ROOT / 'docs/screenshots/costume-anime-standalone'
+    screenshot_names = ('grid.jpg', 'filter.jpg', 'mobile.jpg')
+    for name in screenshot_names:
+        if not (screenshots / name).is_file():
+            raise ValueError('缺少独立库界面截图: ' + name)
     out.mkdir(parents=True)
+    target_screenshots = out / 'docs/screenshots'
+    target_screenshots.mkdir(parents=True)
+    for name in screenshot_names:
+        shutil.copy2(str(screenshots / name), str(target_screenshots / name))
     ignore = shutil.ignore_patterns('__pycache__', '*.pyc', 'raw', 'thumbs', 'img', 'png', 'mid')
     shutil.copytree(str(site_root), str(out / 'sites' / SID), ignore=ignore)
     (out / 'shared').mkdir()

@@ -6,7 +6,7 @@
 
 Portrait · Pose (line art and depth) · Costume · CC0 Pose Line Art · Character · Anime Costume · Chinese / Japanese UI · Light / Dark
 
-15,241 locally hosted image files (including size variants); Character adds 843 base entries and 184 hair-color variants. Its remote images are excluded from the file total.
+15,241 locally hosted image files (including size variants); Character adds 843 base entries and 184 hair-color variants; Anime Costume adds 1,320 outfits (984 visible by default). Images from both remote galleries are excluded from the file total.
 
 [![CI](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/Brilliant666/ai-image-gallery/actions/workflows/ci.yml)
 [![online](https://img.shields.io/badge/online-photoai.life-2563eb?style=flat-square)](https://photoai.life/)
@@ -26,7 +26,7 @@ Portrait · Pose (line art and depth) · Costume · CC0 Pose Line Art · Charact
 ![Hub](docs/screenshots/hub-light.jpg)
 
 <details>
-<summary>📷 More screenshots: portraits, poses, depth maps, costumes</summary>
+<summary>📷 All galleries: Portrait, Pose, Depth, Costume, Shisei, Character and Anime Costume</summary>
 
 ![Portrait grid](docs/screenshots/portrait-grid.jpg)
 
@@ -42,7 +42,15 @@ Portrait · Pose (line art and depth) · Costume · CC0 Pose Line Art · Charact
 
 ![Costume lightbox](docs/screenshots/costume-lightbox.jpg)
 
-Screenshots are taken from the live site to show the UI. The artwork belongs to its original authors; do not crop images out of the screenshots for other use.
+![Shisei CC0 line art](docs/screenshots/shisei-grid.jpg)
+
+![Character hairstyles and per-card hair colors](docs/screenshots/character-grid.jpg)
+
+![Anime Costume public catalog](docs/screenshots/costume-anime-grid.jpg)
+
+<img src="docs/screenshots/costume-anime-mobile.jpg" alt="Anime Costume mobile layout" width="390">
+
+Captured from a local build preview on 2026-11-02 with 18+ disabled and no added blur. These show the UI, not the production deployment status. The artwork belongs to its original authors; do not crop images out of the screenshots for other use. See [screenshot notes](docs/screenshots/README.md) for scope and updates.
 
 </details>
 
@@ -79,11 +87,11 @@ See [Character notes](sites/character/README.md) for usage and catalog maintenan
 
 A separate source catalog with 1,320 outfits, 8 categories and 86 translated tags. It is separate from the existing 1,407-item Costume gallery even where IDs overlap. Lingerie and sexy categories are hidden until age confirmation and excluded from all static landing pages. Images remain at the source; no batch downloader or image mirror is included.
 
-The [public standalone repository](https://github.com/Brilliant666/ai-costume-anime-gallery-cn) contains a working static gallery, source and links back to photoai.life. See [source terms](sites/costume-anime/NOTICE.md) and [export instructions](docs/COSTUME_ANIME_STANDALONE.md). The new site requires this PR to be merged and deployed separately.
+The [public standalone repository](https://github.com/Brilliant666/ai-costume-anime-gallery-cn) contains a working static gallery, source and links back to photoai.life. See [source terms](sites/costume-anime/NOTICE.md) and [export instructions](docs/COSTUME_ANIME_STANDALONE.md). Repository updates and production deployment are separate; the live version depends on the deployed release.
 
 ## Quick start
 
-This repo contains no source image files. `tools/fetch.py` downloads images for locally hosted sites and explicitly skips Character and Anime Costume (`imageMode: "remote"`); its thumbnails, originals and line art must not be downloaded or mirrored. Local pages, source data and manifests remain available, while image URLs point directly to the source and need a network connection even under `file://`. Requires **Python 3.8+**. `tools/mid.py`, which generates lightbox previews, also needs Pillow (`pip install pillow`); every other script uses only the standard library.
+This repo does not package gallery image assets; `docs/screenshots/` contains UI demonstrations only. `tools/fetch.py` downloads images for locally hosted sites and explicitly skips Character and Anime Costume (`imageMode: "remote"`); their images are loaded directly from the source, without local fetching or mirroring. Local pages, source data and manifests remain available, while image URLs point directly to the source and need a network connection even under `file://`. Requires **Python 3.8+**. `tools/mid.py`, which generates lightbox previews, also needs Pillow (`pip install pillow`); every other script uses only the standard library.
 
 ```bash
 git clone https://github.com/Brilliant666/ai-image-gallery.git
@@ -121,7 +129,7 @@ Check the result through `serve.py`, not by opening `dist/index.html` directly: 
 
 ## Image loading
 
-Locally hosted galleries normally have three tiers: thumbnails for the grid, previews for the lightbox, originals for download only. Character uses remote source thumbnails, originals and optional line art; `tiers: []` and `imageDirs: []` disable local fetching and image packaging.
+Locally hosted galleries normally have three tiers: thumbnails for the grid, previews for the lightbox, originals for download only. Character uses source-hosted thumbnails, originals and optional line art. Anime Costume uses source-hosted thumbnails, previews and PNG links. Both use `tiers: []` and `imageDirs: []` to disable local fetching and image packaging.
 
 | Tier | Portrait | Pose | Pose Depth | Costume |
 | --- | ---: | ---: | ---: | ---: |
@@ -129,7 +137,7 @@ Locally hosted galleries normally have three tiers: thumbnails for the grid, pre
 | Preview | ~150 KB | ~33 KB | ~10 KB | ~90 KB |
 | Original | ~3.2 MB | ~450 KB | ~95 KB | ~1 MB |
 
-The following preview and prefetch behavior applies to locally hosted galleries. Character loads source originals directly in its detail view.
+The following preview and prefetch behavior applies to locally hosted galleries. Character loads source originals directly in its detail view. Anime Costume loads only the selected preview, without prefetching adjacent large images; its original PNG opens through a source-site link.
 
 - The lightbox shows the sharp thumbnail at once and fades in the preview when it arrives. Switching images hides the previous one immediately.
 - Previews are prefetched after 120 ms of hover, on pointer down, or on keyboard focus; once open, the next and previous images are prefetched too.
@@ -165,7 +173,7 @@ ai-image-gallery/
 └── docs/               # documentation and screenshots
 ```
 
-Images stay out of git: 6.8 GB of binaries would make every clone huge, and most site licenses do not allow it. `release.py` hard-links 20,751 image files into `dist/`, which costs no extra disk on the same file system.
+Gallery image assets stay out of git, apart from UI screenshots in the docs: 6.8 GB of binaries would make every clone huge, and most source terms prohibit image redistribution. `release.py` hard-links 20,751 image files into `dist/`, which costs no extra disk on the same file system.
 
 ## Documentation
 
@@ -180,6 +188,6 @@ The deployment guide and adding-a-site guide are in Chinese.
 | Code: `tools/`, `hub/`, `shared/`, each site's `scripts/`, and the HTML/CSS/JS in `index.html` | [MIT](LICENSE) |
 | Images | Differs per site, see `sites/<id>/NOTICE.md` |
 | Independently written Chinese translations in `data/` and the Character name map | CC BY 4.0 |
-| Character source catalog fields and images | Original author terms; not relicensed by this repository. See [NOTICE](sites/character/NOTICE.md) |
+| Source catalog fields, keywords and images for Character and Anime Costume | Original author terms; not relicensed by this repository. See [Character](sites/character/NOTICE.md) · [Anime Costume](sites/costume-anime/NOTICE.md) |
 
-Images come from the original sites. Portrait by [あぎ](https://x.com/agi_aibusi) ([original](https://ai-portrait-gallery.pages.dev/)); Pose, Pose Depth and Costume by [ギア](https://x.com/giaaibusi) ([pose](https://ai-pose-gallery.pages.dev/) · [pose depth](https://ai-pose-depth-gallery.pages.dev/) · [costume](https://ai-costume-gallery.pages.dev/)). Shisei line art comes from [wquguru/shisei](https://github.com/wquguru/shisei) (CC0). Character comes from [たき AI](https://x.com/taki_auto)'s [キャラ組み立てDB](https://charadb-2fi.pages.dev/), with images loaded only from the source. This project is a personal Chinese-language index for learning.
+Images come from the original sites. Portrait by [あぎ](https://x.com/agi_aibusi) ([original](https://ai-portrait-gallery.pages.dev/)); Pose, Pose Depth, Costume and Anime Costume by [ギア](https://x.com/giaaibusi) ([pose](https://ai-pose-gallery.pages.dev/) · [pose depth](https://ai-pose-depth-gallery.pages.dev/) · [costume](https://ai-costume-gallery.pages.dev/) · [anime costume](https://ai-costume-anime-gallery.pages.dev/)). Shisei line art comes from [wquguru/shisei](https://github.com/wquguru/shisei) (CC0). Character comes from [たき AI](https://x.com/taki_auto)'s [キャラ組み立てDB](https://charadb-2fi.pages.dev/), with images loaded only from the source. This project is a personal Chinese-language index for learning.
