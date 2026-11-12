@@ -65,13 +65,13 @@ class Character(unittest.TestCase):
                 self.assertIn('收藏和复制标签', more.group(1))
                 self.assertNotIn('下载', more.group(1))
 
-    def test_manifest_remote_and_adult_rules(self):
+    def test_manifest_local_tiers_and_adult_rules(self):
         rows = json.loads((SITE / 'manifest.json').read_text(encoding='utf-8'))
         by_id = {r['id']:r for r in rows}
         config = next(s for s in json.loads((ROOT/'sites.json').read_text(encoding='utf-8'))['sites'] if s['id']=='character')
-        self.assertEqual(config['imageMode'], 'remote')
-        self.assertEqual(config['tiers'], [])
-        self.assertEqual(config['imageDirs'], [])
+        self.assertNotIn('imageMode', config)
+        self.assertEqual(config['tiers'], ['thumb', 'full', 'line'])
+        self.assertEqual(config['imageDirs'], ['thumb', 'img', 'line'])
         self.assertEqual(sum(r['rating']=='suggestive' and not r.get('parent') for r in rows),52)
         self.assertEqual(by_id['P255']['rating'],'general')
         self.assertEqual(by_id['O231']['rating'],'suggestive')

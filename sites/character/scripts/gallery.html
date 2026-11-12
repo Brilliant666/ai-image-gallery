@@ -36,7 +36,7 @@ __BAR__
 <p><span class="zh">浏览发型、服装与姿势参考，查看和复制对应标签。</span><span class="ja">髪型・衣装・ポーズの参考画像と、対応するタグを探す。</span></p></div>
 <a class="btn ghost" href="https://charadb-2fi.pages.dev/" target="_blank" rel="noopener noreferrer"><span class="zh">原作者公开版</span><span class="ja">作者の公開版</span> ↗</a>
 </section>
-<p class="ch-source"><span class="zh">原作：たき AI。图片由原站提供；允许作品制作与商用，</span><span class="ja">原作：たき AI。画像は原サイトから読み込み。作品制作・商用利用可。</span><strong><span class="zh">禁止图片再分发</span><span class="ja">画像の再配布は禁止</span></strong>。 <a href="#aboutCharacter"><span class="zh">使用说明</span><span class="ja">利用条件</span></a></p>
+<p class="ch-source"><span class="zh">原作：たき AI。允许作品制作与商用，</span><span class="ja">原作：たき AI。作品制作・商用利用可。</span><strong><span class="zh">禁止图片再分发</span><span class="ja">画像の再配布は禁止</span></strong>。 <a href="#aboutCharacter"><span class="zh">使用说明</span><span class="ja">利用条件</span></a></p>
 <section class="ch-browser" aria-label="角色参考">
 <div class="ch-tools">
 <div class="ch-sets" id="sets" role="group" aria-label="分区"></div>
@@ -56,9 +56,9 @@ __BAR__
 </main>
 <div class="dlg ch-detail" id="detail" role="dialog" aria-modal="true" aria-labelledby="detailTitle" hidden>
 <div class="dlg-card"><div class="ch-detail-top"><h2 id="detailTitle"></h2><button type="button" class="btn ghost" data-close aria-label="关闭 / 閉じる">×</button></div>
-<div class="ch-detail-image"><img id="detailImage" alt=""><p id="detailError" hidden><span class="zh">图片未能加载，可打开原站检查。标签仍可复制。</span><span class="ja">画像を読み込めません。原サイトをご確認ください。タグはコピーできます。</span></p></div>
+<div class="ch-detail-image"><img id="detailImage" alt=""><p id="detailError" hidden><span class="zh">图片未能加载，可检查本地图片是否已通过 fetch.py 下载。标签仍可复制。</span><span class="ja">画像を読み込めません。ローカル画像が取得済みかご確認ください。タグはコピーできます。</span></p></div>
 <div class="ch-detail-meta"><p id="detailName"></p><p id="detailTags"></p><label id="detailColors" hidden><span class="zh">发型预览色</span><span class="ja">髪型の色</span> <select id="detailColor" class="sel"></select></label>
-<div class="ch-actions"><button class="btn pri" id="detailCopy" type="button"><span class="zh">复制标签</span><span class="ja">タグをコピー</span></button><button class="btn ghost" id="detailFav" type="button"></button><button class="btn ghost" id="line" type="button" hidden><span class="zh">查看线稿</span><span class="ja">線画を見る</span></button><a class="btn ghost" id="original" target="_blank" rel="noopener noreferrer"><span class="zh">原图 ↗</span><span class="ja">元画像 ↗</span></a><a class="btn ghost" id="lineLink" target="_blank" rel="noopener noreferrer" hidden><span class="zh">原站线稿 ↗</span><span class="ja">原サイトの線画 ↗</span></a></div></div>
+<div class="ch-actions"><button class="btn pri" id="detailCopy" type="button"><span class="zh">复制标签</span><span class="ja">タグをコピー</span></button><button class="btn ghost" id="detailFav" type="button"></button><button class="btn ghost" id="line" type="button" hidden><span class="zh">查看线稿</span><span class="ja">線画を見る</span></button><a class="btn ghost" id="original" target="_blank" rel="noopener noreferrer"><span class="zh">原图 ↗</span><span class="ja">元画像 ↗</span></a><a class="btn ghost" id="lineLink" target="_blank" rel="noopener noreferrer" hidden><span class="zh">线稿 ↗</span><span class="ja">線画 ↗</span></a></div></div>
 </div></div>
 <div id="toast" class="ch-toast" role="status" aria-live="polite" hidden></div>
 __DIALOGS__

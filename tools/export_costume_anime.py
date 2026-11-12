@@ -99,14 +99,11 @@ def export(out):
     if resolved == site_root or site_root in resolved.parents:
         raise ValueError('导出目录不能位于图库源文件中')
     config = json.loads((ROOT / 'sites.json').read_text(encoding='utf-8'))
-    site = next(s for s in config['sites'] if s['id'] == SID)
-    if site['imageMode'] != 'remote' or site['imageDirs'] or site['tiers']:
-        raise ValueError('独立库只允许远程图片模式')
-    # The original text-only social cover is ours; source gallery assets remain forbidden.
-    cover = site_root / 'og-cover.jpg'
-    if any(p.suffix.lower() in ('.jpg', '.jpeg', '.png', '.webp', '.gif') and p != cover
-           for p in site_root.rglob('*') if p.is_file()):
-        raise ValueError('源图库中存在素材图片文件，不允许打包')
+    site = dict(next(s for s in config['sites'] if s['id'] == SID))
+    # 独立公开仓库始终保持无素材图片的 remote 模式，忽略主仓库本地 .gitignore 图片目录。
+    site['imageMode'] = 'remote'
+    site['tiers'] = []
+    site['imageDirs'] = []
     files = ['ui.py', 'landing.py', 'adult.py', 'assets.py']
     for name in files:
         if not (ROOT / 'shared' / name).is_file():
@@ -121,7 +118,7 @@ def export(out):
     target_screenshots.mkdir(parents=True)
     for name in screenshot_names:
         shutil.copy2(str(screenshots / name), str(target_screenshots / name))
-    ignore = shutil.ignore_patterns('__pycache__', '*.pyc', 'raw', 'thumbs', 'img', 'png', 'mid')
+    ignore = shutil.ignore_patterns('__pycache__', '*.pyc', 'raw', 'thumbs', 'img', 'png', 'mid', 'failed_*.json')
     shutil.copytree(str(site_root), str(out / 'sites' / SID), ignore=ignore)
     (out / 'shared').mkdir()
     for name in files:
@@ -138,7 +135,7 @@ def export(out):
         '"""Rebuild the standalone gallery with source-hosted images only."""\n'
         'import os\nfrom pathlib import Path\nimport subprocess\nimport sys\n'
         'root = Path(__file__).resolve().parent\n'
-        'env = dict(os.environ, SITE_URL="' + PUBLIC + '", PYTHONUTF8="1")\n'
+        'env = dict(os.environ, SITE_URL="' + PUBLIC + '", COSTUME_ANIME_REMOTE="1", PYTHONUTF8="1")\n'
         'subprocess.run([sys.executable, str(root / "sites/costume-anime/scripts/build_gallery.py")], env=env, check=True)\n',
         encoding='utf-8')
     # Both root and nested entry links work from file:// and ordinary static hosting.
@@ -155,6 +152,12 @@ def export(out):
     (out / 'sites/index.html').write_text(entry.replace('sites/costume-anime/index.html', 'costume-anime/index.html'), encoding='utf-8')
     subprocess.run([sys.executable, str(out / 'build.py')], check=True,
                    env=dict(os.environ, PYTHONUTF8='1', PYTHONIOENCODING='utf-8'))
+    allowed_images = {out / 'sites' / SID / 'og-cover.jpg'} | {target_screenshots / n for n in screenshot_names}
+    stray = [p for p in out.rglob('*')
+             if p.is_file() and p.suffix.lower() in ('.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif')
+             and p not in allowed_images]
+    if stray:
+        raise ValueError('导出目录中包含未授权的素材图片文件: %s' % stray[0])
     print('Exported standalone gallery:', out)
 
 

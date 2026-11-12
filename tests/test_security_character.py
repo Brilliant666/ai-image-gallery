@@ -167,7 +167,7 @@ function boot(DB) {
 const malicious = 'H001" onerror="alert(1)" injected="yes"><svg onload="alert(2)">&\'&quot;';
 const key = 'key" autofocus onfocus="alert(3)"><img src=x onerror="alert(4)">';
 const db = {cats:[['髪型','发型']],items:[[malicious,'長髪','长发','long hair',0,0]],
-  variants:[], source:'https://charadb-2fi.pages.dev/',built:'test'};
+  variants:[], built:'test'};
 const gallery = boot(db);
 const rendered = gallery.element('#grid').innerHTML;
 assert.equal(gallery.currentItems()[0].item.id, malicious);
@@ -176,18 +176,20 @@ const variantId = malicious + '-black';
 const variant = boot({...db, items:[['H001','長髪','长发','long hair',0,0]],variants:[[variantId,'H001']]});
 const variantCard = variant.card({item:variant.items.get(variantId),key:'H001'});
 const valid = boot({...db, items:[['H001','長髪','长发','long hair',0,0]],variants:[]});
+const remoteValid = boot({...db, imageBase:'https://charadb-2fi.pages.dev/', items:[['H001','長髪','长发','long hair',0,0]],variants:[]});
 console.log(JSON.stringify({malicious,key,rendered,card,variantId,variantCard,
-  valid:valid.element('#grid').innerHTML}));
+  valid:valid.element('#grid').innerHTML,remoteValid:remoteValid.element('#grid').innerHTML}));
 '''
         result = subprocess.run([node, '-e', code, str(SCRIPTS / 'gallery.js')],
                                 capture_output=True, text=True, encoding='utf-8')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         output = json.loads(result.stdout)
-        for field, expected_id, expected_key in (
-                ('rendered', output['malicious'], output['malicious']),
-                ('card', output['malicious'], output['key']),
-                ('variantCard', output['variantId'], 'H001'),
-                ('valid', 'H001', 'H001')):
+        for field, expected_id, expected_key, prefix in (
+                ('rendered', output['malicious'], output['malicious'], ''),
+                ('card', output['malicious'], output['key'], ''),
+                ('variantCard', output['variantId'], 'H001', ''),
+                ('valid', 'H001', 'H001', ''),
+                ('remoteValid', 'H001', 'H001', 'https://charadb-2fi.pages.dev/')):
             with self.subTest(markup=field):
                 markup = Markup(output[field])
                 self.assertFalse([tag for tag, _ in markup.elements if tag in ('svg', 'script')])
@@ -202,7 +204,7 @@ console.log(JSON.stringify({malicious,key,rendered,card,variantId,variantCard,
                     if 'data-key' in values:
                         self.assertEqual(values['data-key'], expected_key)
                     if 'src' in values:
-                        self.assertEqual(values['src'], 'https://charadb-2fi.pages.dev/thumb/' + expected_id + '.webp')
+                        self.assertEqual(values['src'], prefix + 'thumb/' + expected_id + '.webp')
                 self.assertIn(expected_id, markup.text, 'ID must remain literal text')
 
 
