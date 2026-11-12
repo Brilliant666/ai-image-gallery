@@ -20,7 +20,7 @@ from _common import ROOT, load_cfg, select, site_dir, dir_size, human, parse_arg
 sys.path.insert(0, os.path.join(ROOT, "shared"))
 import assets  # noqa: E402
 
-TIER_WORKERS = {"thumb": 16, "full": 14, "img": 14, "png": 14}
+TIER_WORKERS = {"thumb": 16, "full": 14, "img": 14, "png": 14, "preview": 14, "line": 14}
 
 
 def main():

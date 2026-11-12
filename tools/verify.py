@@ -80,7 +80,8 @@ def check_site(s, only_tier=None, log=print):
     total, report = assets.verify(sd, tiers, allowed_dirs=s["imageDirs"])
     missing = broken = 0
     for tier, t in report.items():
-        log("    [%-5s] 完好 %d / %d  |  %.1f MB" % (tier, t["ok"], total, t["bytes"] / 1048576))
+        tier_total = t.get("total", total)
+        log("    [%-5s] 完好 %d / %d  |  %.1f MB" % (tier, t["ok"], tier_total, t["bytes"] / 1048576))
         if t["dims"]:
             top = sorted(t["dims"].items(), key=lambda x: -x[1])[:4]
             log("            分辨率: " + ", ".join("%s×%d" % kv for kv in top))

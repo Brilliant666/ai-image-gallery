@@ -172,10 +172,11 @@ class SecurityDownloadURLs(unittest.TestCase):
             if site["id"] == "shisei":
                 self.assertIn("raw.githubusercontent.com", hosts)
             rows = assets.load_manifest(ROOT / "sites" / site["id"])
-            for row in rows:
-                for tier in site["tiers"]:
-                    assets.require_image_url(row[tier + "_url"], hosts)
-                    assets.asset_path(ROOT / "sites" / site["id"], row[tier + "_path"], site["imageDirs"])
+            for tier in site["tiers"]:
+                url_key, path_key, sub = assets.tier_rows(rows, tier)
+                for row in sub:
+                    assets.require_image_url(row[url_key], hosts)
+                    assets.asset_path(ROOT / "sites" / site["id"], row[path_key], site["imageDirs"])
         with self.assertRaises(ValueError):
             assets.image_hosts({"source": "http://source.example/"})
 
