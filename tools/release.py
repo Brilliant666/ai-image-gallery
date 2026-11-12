@@ -10,13 +10,14 @@
 
 产物结构:
   dist/
-  ├── index.html          ← 入口页
+  ├── index.html          ← 入口页（含根级 SEO 与图标文件）
   ├── portrait/
   ├── costume/
   ├── pose/
   ├── pose-depth/
   ├── shisei/
-  └── character/          ← 仅页面和元数据，图片从原站加载
+  ├── character/
+  └── costume-anime/
 
 说明:
   图片使用硬链接（同文件系统），不复制、不额外占盘。若跨文件系统则退化为复制。
