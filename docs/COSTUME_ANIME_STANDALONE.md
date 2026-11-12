@@ -28,7 +28,7 @@ python tests/run.py
 python tools/export_costume_anime.py --out _v/costume-anime/standalone-next
 ```
 
-导出脚本拒绝覆盖已有目录，并会在新目录中运行独立构建，确认没有依赖主仓库外的模块。独立库 README 与截图由主仓库统一维护；截图来自 `docs/screenshots/costume-anime-standalone/{grid,filter,mobile}.jpg`，导出时复制到独立库 `docs/screenshots/`。三张截图缺失时中止导出，避免发布缺图 README。不下载图片，图片模式必须为 `remote`，`tiers` 与 `imageDirs` 必须为空。
+导出脚本拒绝覆盖已有目录，自动忽略主仓库本地 `.gitignore` 图片目录（`thumbs/`、`img/`、`png/`），将导出目录中的 `sites.json` 设为 `imageMode: "remote"`、`tiers: []`、`imageDirs: []`，并以 `COSTUME_ANIME_REMOTE=1` 运行独立构建，随后校验导出目录中除原创 `og-cover.jpg` 与三张文档界面截图外不含任何素材图片。独立库 README 与截图由主仓库统一维护；截图来自 `docs/screenshots/costume-anime-standalone/{grid,filter,mobile}.jpg`，导出时复制到独立库 `docs/screenshots/`。三张截图缺失时中止导出，避免发布缺图 README。
 
 导出完成后，直接打开独立库 `index.html`，按链接进入图库；也可打开 `sites/costume-anime/index.html`。重新构建：
 

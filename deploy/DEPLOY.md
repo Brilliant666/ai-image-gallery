@@ -13,7 +13,7 @@
 | 系统 | Debian 13 / Ubuntu 24.10+（原子对调需要 GNU coreutils 9.5+ 的 `mv --exchange`） |
 | git | 任意版本（更新用 `tools/update.py`，见 §4） |
 | Python | 3.8+；`tools/mid.py` 需要 Pillow（`apt install python3-pil`），其余只用标准库 |
-| 磁盘 | ≥ 10 GB 可用（图片 6.8 GB + 中图约 290 MB；硬链接不额外占盘） |
+| 磁盘 | ≥ 12 GB 可用（全部七站图片约 8.5 GB + 中图约 290 MB；硬链接不额外占盘） |
 | 内存 | ≥ 512 MB |
 | 域名 | 已解析到本机 IP |
 
@@ -35,7 +35,7 @@ apt install -y git python3 python3-pil nginx
 git clone https://github.com/Brilliant666/ai-image-gallery.git /srv/ai-image-gallery
 cd /srv/ai-image-gallery
 
-# ① 下载图片（约 6.8 GB，只需一次）
+# ① 下载图片（约 8.5 GB，只需一次；之后幂等只补缺失）
 python3 tools/fetch.py
 
 # ② 生成灯箱中图（约 290 MB，几分钟；之后只补缺失）
@@ -52,19 +52,19 @@ python3 tools/release.py
 
 ```
 发布 · 7 个站点 → /srv/ai-image-gallery/dist
-  校验通过（remote 站点仅校验元数据，未校验网络或图片文件）
+  校验通过
   [portrait] 74 个站点文件  图片 4497 链接  → 4.8 GB
   [costume] 98 个站点文件  图片 4221 链接  → 1.4 GB
   [pose] 22 个站点文件  图片 4317 链接  → 710.3 MB
   [pose-depth] 22 个站点文件  图片 4317 链接  → 162.5 MB
   [shisei] 24 个站点文件  图片 3399 链接  → 59.1 MB
-  [character] 36 个站点文件  remote 原站图片（不下载、不复制；仅发布页面、数据与 manifest）
-  [costume-anime] 页面、分类与标签落地页、目录和 manifest；图片仅由原站提供
+  [character] 36 个站点文件  图片 2335 链接  → ...
+  [costume-anime] 94 个站点文件  图片 3960 链接  → ...
   [hub] 10 个根级文件已复制（index.html, sitemap.xml, robots.txt, og-cover.jpg, llms.txt, favicon.ico, …）
-其中 20751 个图片文件为硬链接，不额外占盘
+其中 27046 个图片文件为硬链接，不额外占盘
 ```
 
-> `dist/` 报告 7.0 GB，但因为是硬链接，**实际磁盘增量接近 0**。
+> `dist/` 报告约 8.8 GB，但因为是硬链接，**实际磁盘增量接近 0**。
 > 若出现「退化为复制」警告，说明 `dist/` 与 `sites/` 不在同一文件系统。
 
 ---
@@ -80,8 +80,8 @@ https://photoai.life/costume/    服装集
 https://photoai.life/pose/       姿势集（默认线稿，可切换深度图）
 https://photoai.life/pose-depth/ 姿势集的深度图入口（同一模块，默认深度图）
 https://photoai.life/shisei/     CC0 姿势线稿
-https://photoai.life/character/  二次元角色参考（图片由原站提供）
-https://photoai.life/costume-anime/ 二次元服装参考（图片由原站提供）
+https://photoai.life/character/  二次元角色参考
+https://photoai.life/costume-anime/ 二次元服装参考
 ```
 
 ### 2.1 前置：DNS 与证书
@@ -147,7 +147,7 @@ python3 tools/verify.py
 # 文件与体积
 du -sh /srv/ai-image-gallery/dist
 find /srv/ai-image-gallery/dist -name '*.jpg' -o -name '*.webp' -o -name '*.png' | wc -l
-# 期望 20751 张图片（含 4377 张生成的中图与 Shisei 的 1133 张上游中图）
+# 期望约 27046 个图片目录硬链接文件（另加根级与子站 og-cover/图标等静态文件）
 
 # HTTP
 for p in / /portrait/ /costume/ /pose/ /pose-depth/ /shisei/ /character/ /costume-anime/ /404.html; do
@@ -175,9 +175,8 @@ curl -s https://实际域名.com/pose/ | grep -o 'rel="canonical" href="[^"]*"'
 - [ ] 本地图库卡片点开灯箱：立即显示清晰缩略图，随后换成中图（开发者工具 Network 里应是 `mid/*.webp`，不是 `img/*.png`）
 - [ ] 本地图库灯箱 `←` `→` 翻页，`Esc` 关闭；连续翻页时不会闪出上一张图
 - [ ] 本地图库滚到底部自动加载；角色库用「显示更多」继续浏览
-- [ ] 角色库分类按钮、单张五色点、统一发色、复制标签、收藏及姿势线稿均可用；默认隐藏条目经18+确认后展示
-- [ ] 二次元服装库默认显示 984 套；分类、标签 AND 筛选、三语搜索、标签复制和原站图片链接可用；内衣与性感两类不进落地页
-- [ ] 角色库图片请求指向原站；暂断上游图片网络后，名称、分类与标签仍可用。metadata 校验通过不代表上游网络通过
+- [ ] 角色库分类按钮、单张五色点、统一发色、复制标签、收藏及姿势线稿均可用；默认隐藏条目经 18+ 确认后展示
+- [ ] 二次元服装库默认显示 984 套；分类、标签 AND 筛选、三语搜索、标签复制和本地预览/原寸 PNG 链接可用；内衣与性感两类不进落地页
 
 ---
 
@@ -223,10 +222,10 @@ mv -T dist-stage dist-prev        # 对调后暂存目录里是旧版，留作�
 服务器上需要的修改，**一律提交进仓库**再部署，不要只改服务器上的文件。
 
 `update.py` 底层仍是 `git reset --hard`，只作用于仓库跟踪的文件，
-**不会碰图片目录**——`sites/*/{thumbs,mid,img,png,raw}` 都在 `.gitignore` 里，`dist-*/` 也不受影响。
+**不会碰图片目录**——`sites/*/{thumbs,thumb,line,mid,img,png,raw}` 都在 `.gitignore` 里，`dist-*/` 也不受影响。
 
-**图片不需要重新下载** —— `fetch.py` 幂等，已存在文件跳过。
-新增本地托管站点时才需要再跑一次 `python3 tools/fetch.py --site <新站id>`。角色库和二次元服装库为 remote 模式：fetch 明确跳过，mid 不生成图片，只发布页面与元数据。
+**已有图片不需要重新下载** —— `fetch.py` 幂等，已存在文件跳过。
+新增本地托管站点或某站首次切换为本地图片目录时，需要跑 `python3 tools/fetch.py --site <站点id>`。
 
 漏跑 `mid.py` 也不会坏：灯箱会在中图 404 后退回加载原图，只是慢。
 
@@ -272,7 +271,7 @@ python3 tools/build.py --base https://实际域名.com
 python3 tools/release.py --out dist-stage
 ```
 
-角色库和二次元服装库都不执行图片下载或中图生成；`verify.py --site character` 仅校验 manifest，不检查网络或图片文件。首次新图库上线仍需全量构建，以同步各旧图库的顶部导航；发布所有涉及页面后逐站对调，不能只发布新图库而漏掉共享导航。二次元服装库使用 `verify.py --site costume-anime` 校验元数据；另用浏览器抽查原站图片，不做批量下载。
+首次新图库上线或切换本地图片托管后，需全量构建以同步各图库的顶部导航与首页统计；跑通 `python3 tools/verify.py` 确认全部图片档位存在且尺寸正常后，发布所有涉及页面再逐站原子对调。
 
 新站在线上 `dist/` 里还不存在，直接 `mv -T dist-stage/<新站id> dist/<新站id>` 即可；入口页 `index.html` 和根级 `sitemap.xml` 也要对调，否则首页不显示新卡片。
 
@@ -283,7 +282,7 @@ python3 tools/release.py --out dist-stage
 | 现象 | 原因 | 解决 |
 |---|---|---|
 | `dist/` 里有「退化为复制」 | 跨文件系统 | 把 `dist/` 放到 `sites/` 同盘。不要用 `--no-images` 代替：它不会保留旧图，站点目录会先被删掉 |
-| 入口页封面空白 | 本地站图片没下载，或角色库原站图片网络不可用 | 本地站运行 `python3 tools/fetch.py --site <id> --tier thumb`；角色库检查原站可达性，不用下载补图 |
+| 入口页封面空白 | 对应站点本地图片没下载 | 运行 `python3 tools/fetch.py --site <id> --tier thumb` 补齐缩略图后重新 `release.py` |
 | 子站 404 | `dist/` 未生成对应目录 | 重跑 `tools/release.py` |
 | canonical 还是 example.com | 构建时没传 `--base` | 带 `--base` 重跑 `tools/build.py` |
 | 磁盘暴涨 | 图片被复制而非硬链接 | `df -h` 对比 `du -sh dist`；确认同盘 |
@@ -309,7 +308,7 @@ python3 tools/release.py --out dist-stage
 | 姿势集 · 深度图 | 禁止再分发 + **禁止批量下载** | ⚠️ 同上，且 `fetch.py` 属被禁止行为 |
 | 服装集 | 禁止再分发 | ⚠️ 同姿势集 |
 | Shisei 姿势线稿 | 图片 CC0 1.0；姿势目录仅注明出处 | ✅ 图片可自由分发；性感、双人系列和 suggestive 姿势默认隐藏，不进落地页与 sitemap |
-| 二次元角色库 | 商用作品制作与参考可；禁止再分发原图和加工图，禁止表现真实人物或未成年人 | 图片仅由原站加载，没有额外镜像/再分发授权；见 [NOTICE](../sites/character/NOTICE.md) |
-| 二次元服装库 | 禁止批量下载及再分发、转载、转售图片本身 | 仅发布目录和页面，图片由原站加载；见 [NOTICE](../sites/costume-anime/NOTICE.md) |
+| 二次元角色库 | 商用作品制作与参考可；禁止再分发原图和加工图，禁止表现真实人物或未成年人 | ⚠️ 同姿势集；公开代码仓库不打包图片，见 [NOTICE](../sites/character/NOTICE.md) |
+| 二次元服装库 | 禁止批量下载及再分发、转载、转售图片本身 | ⚠️ 同深度图；独立导出库仍保持无素材远程模式，见 [NOTICE](../sites/costume-anime/NOTICE.md) |
 
 成人向内容（姿势的双人与性感系列、两个服装库的内衣与性感两类、Shisei 的性感/双人与 suggestive 内容、角色库泳装及审定的偏性感条目）在画廊里默认隐藏，不进任何落地页与 sitemap（`sites.json` 的 `adult` 规则）。

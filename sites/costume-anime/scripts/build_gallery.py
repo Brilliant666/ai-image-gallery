@@ -24,7 +24,10 @@ from assets import safe_under
 import seo
 
 ROOT = SCRIPTS.parent
-TERMS = (
+TERMS_LOCAL = (
+    '可免费用于作品制作与参考；禁止批量下载（含自动获取）、再分发、转载或销售图片本身。',
+    '作品制作・参考利用は無料。画像の一括ダウンロード（自動取得を含む）・再配布・転載・販売は禁止です。')
+TERMS_REMOTE = (
     '图片由原站加载，需要联网。禁止批量下载（含自动获取）、再分发、转载或销售图片。',
     '画像は元サイトから読み込み、接続が必要です。一括ダウンロード（自動取得を含む）・再配布・転載・販売は禁止です。')
 
@@ -35,24 +38,29 @@ def json_script(obj):
             .replace('\u2028', '\\u2028').replace('\u2029', '\\u2029'))
 
 
-def interface():
+def interface(remote=False):
+    terms = TERMS_REMOTE if remote else TERMS_LOCAL
     text = deepcopy(translations.UI)
     for lang, updates in {
         'zh': {'title': '二次元服装库：1320 套与标签筛选 · photoai.life',
                'eyebrow': 'COSTUME-ANIME-DB · 动漫服装参考', 'h1': '二次元服装库',
                'sub1': '1320 套不含人物的动漫风服装。86 个中日标签按颜色、单品、鞋袜、配饰、材质、长度组合筛选，保留英文关键词。',
-               'copyTags': '复制英文标签', 'openFull': '打开原站 PNG',
-               'hint': '← → 前后切换 · Esc 关闭 · 点击标签加入筛选 · 图片从原站加载'},
+               'copyTags': '复制英文标签',
+               'openFull': '打开原站 PNG' if remote else '打开原寸 PNG',
+               'hint': ('← → 前后切换 · Esc 关闭 · 点击标签加入筛选 · 图片从原站加载'
+                        if remote else '← → 前后切换 · Esc 关闭 · 点击标签加入筛选')},
         'ja': {'title': 'アニメ衣装参考集：1320 着・タグ検索 · photoai.life',
                'eyebrow': 'COSTUME-ANIME-DB · アニメ衣装参考', 'h1': 'アニメ衣装集',
                'sub1': '人物の入っていないアニメ調の衣装 1320 着。色・アイテム・素材など 86 タグで組み合わせ検索。英語キーワードをコピーできます。',
-               'copyTags': '英語タグをコピー', 'openFull': '元サイトの PNG を開く',
-               'hint': '← → 前後 · Esc 閉じる · タグで絞り込み · 画像は元サイトから読み込み'},
+               'copyTags': '英語タグをコピー',
+               'openFull': '元サイトの PNG を開く' if remote else '原寸 PNG を開く',
+               'hint': ('← → 前後 · Esc 閉じる · タグで絞り込み · 画像は元サイトから読み込み'
+                        if remote else '← → 前後 · Esc 閉じる · タグで絞り込み')},
     }.items():
         text[lang].update(updates)
         text[lang]['footer'] = (('素材来源：' if lang == 'zh' else '素材元：')
             + f'<a href="{SOURCE}" target="_blank" rel="noopener noreferrer">ai-costume-anime-gallery.pages.dev</a> · '
-            + f'<a href="{AUTHOR_URL}" rel="noopener noreferrer">ギア</a><br>' + TERMS[0 if lang == 'zh' else 1])
+            + f'<a href="{AUTHOR_URL}" rel="noopener noreferrer">ギア</a><br>' + terms[0 if lang == 'zh' else 1])
     return adult.ui(text)
 
 
@@ -78,12 +86,16 @@ def build():
     parsed = urlsplit(site_url)
     if parsed.scheme != 'https' or not parsed.netloc or parsed.query or parsed.fragment or re.search(r'[\s<>"\x00-\x1f]', site_url):
         raise ValueError('SITE_URL must be an absolute HTTPS base URL')
+    remote = os.environ.get('COSTUME_ANIME_REMOTE') == '1'
+    terms = TERMS_REMOTE if remote else TERMS_LOCAL
     items = [{'i': r['id'], 'c': r['分类'], 't': r['标签'],
               **({'x': 1} if r['分类'] in ADULT else {})} for r in manifest]
-    strings = interface()
+    strings = interface(remote=remote)
     payload = {'items': items, 'cats': CAT_ORDER, 'groups': [
         {'k': key, 'ja': ja, 'zh': zh, 'tags': tags} for key, ja, zh, tags in TAG_GROUPS],
-        'catZh': CAT_ZH, 'tagZh': TAG_ZH, 'tagJa': TAG_JA, 'ui': strings, 'source': SOURCE}
+        'catZh': CAT_ZH, 'tagZh': TAG_ZH, 'tagJa': TAG_JA, 'ui': strings}
+    if remote:
+        payload['source'] = SOURCE
     # Group keys used in metadata but not UI need not be sent to the browser.
     for group in payload['groups']:
         group.pop('k')
@@ -102,16 +114,26 @@ def build():
             raise ValueError(f'output must be a file: {path}')
         if path.parent.exists() and not path.parent.is_dir():
             raise ValueError(f'output parent must be a directory: {path.parent}')
-    urls, intro = seo.build(root, site_url, items, CAT_ORDER)
+    urls, intro = seo.build(root, site_url, items, CAT_ORDER, remote=remote)
+    meta_desc = (
+        '二次元服装库：1320 套不含人物的动漫风服装，8 个分类、86 个中日双语标签，按颜色、单品、鞋袜、配饰、材质和长度组合筛选，保留英文关键词供复制。'
+        + ('图片从原站远程加载，需要联网。' if remote else '')
+    )
+    og_desc = (
+        '8 个分类、86 个中日标签组合筛选，图片从原站加载，需要联网。'
+        if remote else
+        '1320 套不含人物的动漫风服装，8 个分类、86 个中日标签组合筛选并复制英文关键词。'
+    )
     for key, value in {
         '__SITE__': html.escape(site_url, quote=True), '__SHARE__': html.escape(site_url + '/og-cover.jpg', quote=True),
+        '__META_DESC__': html.escape(meta_desc, quote=True), '__OG_DESC__': html.escape(og_desc, quote=True),
         '__SCHEMA__': json_script(schema), '__UI_HEAD__': ui.head_script(), '__UI_CSS__': ui.head_css(),
         '__UI_BAR__': ui.bar('costume-anime'), '__UI_DIALOGS__': ui.dialogs(ui.COSTUME_KEYS), '__UI_JS__': ui.body_script(),
-        '__SEO_CSS__': landing.SEO_INTRO_CSS, '__SEO_INTRO__': intro, '__FAQ_LD__': landing.faq_ld_script(seo.FAQ),
+        '__SEO_CSS__': landing.SEO_INTRO_CSS, '__SEO_INTRO__': intro, '__FAQ_LD__': landing.faq_ld_script(seo.faq_items(remote)),
         '__EYEBROW__': ui.bi(strings['zh']['eyebrow'], strings['ja']['eyebrow']),
         '__H1__': ui.bi(strings['zh']['h1'], strings['ja']['h1']), '__LEAD__': ui.bi(strings['zh']['sub1'], strings['ja']['sub1']),
         '__STATS__': ''.join(f'<li><b>{n}</b>{ui.bi(zh, ja)}</li>' for n, zh, ja in [('1,320', '套服装', '着の衣装'), ('8', '个分类', 'カテゴリ'), ('86', '个标签', 'タグ')]),
-        '__TERMS__': ui.bi(*TERMS), '__TABS_LABEL__': '服装分类 / 衣装カテゴリ', '__SEARCH_ICON__': ui.SEARCH_ICON,
+        '__TERMS__': ui.bi(*terms), '__TABS_LABEL__': '服装分类 / 衣装カテゴリ', '__SEARCH_ICON__': ui.SEARCH_ICON,
         '__FOOTER__': '<span class="zh">' + strings['zh']['footer'] + '</span><span class="ja">' + strings['ja']['footer'] + '</span>',
     }.items():
         page = page.replace(key, value)
@@ -125,7 +147,8 @@ def build():
     translated = [dict(r, 分类_zh=CAT_ZH[r['分类']], 标签_zh=[TAG_ZH[t] for t in r['标签']],
                        标签_ja=[TAG_JA[t] for t in r['标签']]) for r in manifest]
     for name, obj in [('data/costume-anime-zh.json', translated), ('data/meta.json', {
-        'site': 'COSTUME-ANIME-DB', 'source': SOURCE, 'author': 'ギア', 'imageMode': 'remote',
+        'site': 'COSTUME-ANIME-DB', 'source': SOURCE, 'author': 'ギア',
+        'imageMode': 'remote' if remote else 'local',
         'items': 1320, 'public': 984, 'adult': 336, 'tags': 86, 'categories': catalog['meta']['counts'],
         'source_sha256': catalog['sha256'], 'metadata_terms': 'Original metadata and images retain source terms; translations/code only are original work.'})]:
         write(paths[name], json.dumps(obj, ensure_ascii=False, indent=1) + '\n')
@@ -138,7 +161,8 @@ def build():
     write(paths['robots.txt'], 'User-agent: *\nAllow: /\n\nSitemap: ' + site_url + '/sitemap.xml\n')
     landing.sitemap(site_url, urls, str(paths['sitemap.xml']), lastmod=landing.updated('costume-anime'))
     write(paths['404.html'], ui.page_404('/'))
-    print(f'costume-anime: 1320 outfits / 984 public / 336 adult; {len(page.encode("utf-8"))/1024:.1f} KB; remote-only')
+    mode_label = 'remote-only' if remote else 'local'
+    print(f'costume-anime: 1320 outfits / 984 public / 336 adult; {len(page.encode("utf-8"))/1024:.1f} KB; {mode_label}')
 
 
 if __name__ == '__main__':

@@ -97,25 +97,29 @@ class CostumeAnime(unittest.TestCase):
         self.assertEqual(len(original), 1407)
         self.assertIn('SPR-0001', {r['id'] for r in original} & set(by_id))
 
-    def test_remote_paths_and_config(self):
+    def test_local_paths_and_config(self):
         config = next(s for s in json.loads((ROOT / 'sites.json').read_text(encoding='utf-8'))['sites'] if s['id']=='costume-anime')
-        self.assertEqual(config['imageMode'], 'remote')
-        self.assertEqual(config['tiers'], [])
-        self.assertEqual(config['imageDirs'], [])
-        self.assertEqual(config['imageBase'], self.db['source'])
+        self.assertNotIn('imageMode', config)
+        self.assertEqual(config['tiers'], ['thumb', 'preview', 'full'])
+        self.assertEqual(config['imageDirs'], ['thumbs', 'img', 'png'])
+        self.assertEqual(config['imageBase'], 'https://ai-costume-anime-gallery.pages.dev/')
+        self.assertNotIn('source', self.db)
         self.assertEqual(config['adult'], {'分类':['ランジェリー','セクシー']})
         self.assertEqual(int(config['stats'][0]['public']),984)
         for row in self.manifest:
             for tier, directory, extension in [('thumb','thumbs','webp'),('preview','img','webp'),('full','png','png')]:
                 self.assertEqual(row[tier+'_path'], f'{directory}/{row["id"]}.{extension}')
                 self.assertEqual(row[tier+'_url'], config['source'] + row[tier+'_path'])
+        asset_dirs = set(config['imageDirs']) | {'mid', 'raw'}
         self.assertEqual([p.relative_to(SITE).as_posix() for p in SITE.rglob('*')
-                          if p.suffix.lower() in ('.png','.jpg','.jpeg','.webp','.gif','.avif')], ['og-cover.jpg'])
+                          if p.is_file() and p.relative_to(SITE).parts[0] not in asset_dirs
+                          and p.suffix.lower() in ('.png','.jpg','.jpeg','.webp','.gif','.avif')], ['og-cover.jpg'])
         self.assertIn('content="https://example.com/costume-anime/og-cover.jpg"', self.page)
         self.assertNotIn('new Image(', self.page)
         self.assertNotIn('IntersectionObserver', self.page)
 
     def test_adult_flags_and_public_seo(self):
+        config = next(s for s in json.loads((ROOT / 'sites.json').read_text(encoding='utf-8'))['sites'] if s['id']=='costume-anime')
         adult = {r['id'] for r in self.manifest if r['分类'] in ('ランジェリー','セクシー')}
         self.assertEqual(len(adult),336)
         self.assertEqual({x['i'] for x in self.db['items'] if x.get('x')},adult)
@@ -124,15 +128,18 @@ class CostumeAnime(unittest.TestCase):
         self.assertEqual(meta['dirs'],['browse','category','tag'])
         self.assertEqual(len([p for p in meta['pages'] if p.startswith('category/')]),6)
         self.assertGreater(len([p for p in meta['pages'] if p.startswith('tag/')]),70)
-        public_thumbs={r['thumb_url'] for r in self.manifest if r['id'] not in adult}
+        public_thumbs={r['thumb_path'] for r in self.manifest if r['id'] not in adult}
         for slug in meta['pages']:
             self.assertFalse(any(c in slug for c in ('ランジェリー','セクシー')))
             page=(SITE / slug / 'index.html').read_text(encoding='utf-8')
+            up = '../' * len(Path(slug).parts)
             thumbs=re.findall(r'<img src="([^"]+)"',page)
-            self.assertTrue(set(thumbs)<=public_thumbs,slug)
+            self.assertTrue(all(t.startswith(up) for t in thumbs), slug)
+            self.assertTrue({t[len(up):] for t in thumbs}<=public_thumbs,slug)
             self.assertNotRegex(page,r'<figcaption>(?:LNG|SXY)-')
             self.assertIn('content="https://example.com/costume-anime/og-cover.jpg"',page)
-            self.assertNotIn('content="'+self.db['source']+'thumbs/SPR-0001.webp"',page)
+            self.assertNotIn('content="'+config['imageBase']+'thumbs/SPR-0001.webp"',page)
+            self.assertNotIn('content="https://example.com/costume-anime/thumbs/SPR-0001.webp"',page)
             for text in re.findall(r'<script type="application/ld\+json">(.*?)</script>',page,re.S):
                 json.loads(text)
         self.assertNotIn('%E3%83%A9%E3%83%B3%E3%82%B8%E3%82%A7', (SITE/'sitemap.xml').read_text())
@@ -247,7 +254,7 @@ assert.equal(p.getView().length,984);assert(p.visible().every(x=>!x.x));assert(!
 const paths=p.getView().map(x=>[x.i,...p.pathOf(x)]);
 p.S.tags.add('knit');p.draw();assert(p.getView().every(x=>x.t.includes('knit')));p.S.q='SPR-0001'.toLowerCase();p.draw();assert(p.getView().every(x=>x.i==='SPR-0001'));p.S.q='';p.S.tags.clear();p.draw();
 PL.adult=true;events['pl:adult']();assert.equal(p.getView().length,1320);assert(element('#tabs').innerHTML.includes('ランジェリー'));
-const idx=p.getView().findIndex(x=>x.x);p.openM(idx,element('opener'));assert(element('#modal').classList.contains('open'));assert.match(element('#mimg').src,/\/img\/(LNG|SXY)-\d{4}\.webp$/);
+const idx=p.getView().findIndex(x=>x.x);p.openM(idx,element('opener'));assert(element('#modal').classList.contains('open'));assert.match(element('#mimg').src,/^img\/(LNG|SXY)-\d{4}\.webp$/);
 PL.adult=false;events['pl:adult']();assert(!element('#modal').classList.contains('open'));assert.equal(p.getView().length,984);assert(p.getView().every(x=>!x.x));
 p.S.tags.add('knit');p.S.q='knit';PL.lang='ja';events['pl:lang']();assert.equal(p.S.q,'knit');assert(p.S.tags.has('knit'));assert(element('#ftogT').textContent.includes('タグ'));assert(element('#mcopy').textContent.includes('英語'));
 p.S.tags.clear();p.S.q='';p.draw();const target={classList:{contains:c=>c==='card'},dataset:{i:'0'}};let prevented=false;element('#grid').on_keydown({key:'Enter',target,preventDefault(){prevented=true;}});assert(prevented);assert(element('#modal').classList.contains('open'));p.step(1);assert.equal(element('#mid').textContent.split(' ')[0],p.getView()[1].i);
@@ -266,7 +273,25 @@ const markup=p.card({i:evil,c:evil,t:[evil]},0);console.log(JSON.stringify({mark
         self.assertIn(output['evil'],markup.text)
         by_id={r['id']:r for r in self.manifest}
         for key,thumb,preview,full in output['paths']:
-            self.assertEqual([thumb,preview,full],[by_id[key][k] for k in ('thumb_url','preview_url','full_url')])
+            self.assertEqual([thumb,preview,full],[by_id[key][k] for k in ('thumb_path','preview_path','full_path')])
+
+    def test_standalone_remote_mode_build(self):
+        with tempfile.TemporaryDirectory(prefix='costume-anime-remote-') as tmp:
+            root = Path(tmp)
+            (root / 'data').mkdir()
+            shutil.copyfile(SITE / 'data/catalog.json', root / 'data/catalog.json')
+            shutil.copyfile(SITE / 'manifest.json', root / 'manifest.json')
+            with patch.object(self.builder, 'ROOT', root), \
+                    patch.dict('os.environ', {'SITE_URL': 'https://photoai.life/costume-anime', 'COSTUME_ANIME_REMOTE': '1'}), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                self.builder.build()
+            remote_page = (root / 'index.html').read_text(encoding='utf-8')
+            remote_db = db_from(remote_page)
+            self.assertEqual(remote_db.get('source'), 'https://ai-costume-anime-gallery.pages.dev/')
+            meta = json.loads((root / 'data/meta.json').read_text(encoding='utf-8'))
+            self.assertEqual(meta['imageMode'], 'remote')
+            cat_page = (root / 'category/春/index.html').read_text(encoding='utf-8')
+            self.assertIn('https://ai-costume-anime-gallery.pages.dev/thumbs/SPR-', cat_page)
 
 
 if __name__=='__main__':

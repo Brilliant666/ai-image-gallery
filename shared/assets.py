@@ -27,8 +27,12 @@ def safe_under(root, rel):
         raise ValueError("不安全的相对路径: %r" % rel)
     base = os.path.realpath(root)
     path = os.path.realpath(os.path.join(base, *parts))
+    try:
+        common = os.path.commonpath([base, path])
+    except ValueError:
+        raise ValueError("路径超出站点目录: %r" % rel)
     if (os.path.normcase(path) == os.path.normcase(base)
-            or os.path.normcase(os.path.commonpath([base, path])) != os.path.normcase(base)):
+            or os.path.normcase(common) != os.path.normcase(base)):
         raise ValueError("路径超出站点目录: %r" % rel)
     return path
 
@@ -83,9 +87,21 @@ def load_manifest(site_dir):
 
 def tier_keys(rows, tier):
     url_key, path_key = tier + "_url", tier + "_path"
-    if rows and (url_key not in rows[0] or path_key not in rows[0]):
+    if not rows or not any(url_key in r or path_key in r for r in rows):
         raise KeyError(f"manifest 里没有 {url_key} / {path_key}")
     return url_key, path_key
+
+
+def tier_rows(rows, tier):
+    url_key, path_key = tier_keys(rows, tier)
+    selected = []
+    for r in rows:
+        has_u, has_p = url_key in r, path_key in r
+        if has_u != has_p:
+            raise KeyError(f"{r.get('id', '?')}: {url_key} / {path_key} 必须成对出现")
+        if has_u:
+            selected.append(r)
+    return url_key, path_key, selected
 
 
 def rel_path(p):
@@ -97,17 +113,29 @@ def rel_path(p):
 
 def download(site_dir, tier, referer, workers=12, log=print, *, allowed_hosts, allowed_dirs):
     """下载一档图片；整档路径与来源验证通过后才开始读写。"""
-    rows = load_manifest(site_dir)
-    url_key, path_key = tier_keys(rows, tier)
+    all_rows = load_manifest(site_dir)
+    url_key, path_key, rows = tier_rows(all_rows, tier)
     allowed_hosts = frozenset(allowed_hosts)
     allowed_dirs = frozenset(allowed_dirs)
     failed_path = safe_under(site_dir, "failed_%s.json" % tier)
+    validated = []
     for row in rows:
-        asset_path(site_dir, row[path_key], allowed_dirs)
-        asset_path(site_dir, row[path_key] + ".part", allowed_dirs)
+        dst = asset_path(site_dir, row[path_key], allowed_dirs)
+        tmp = asset_path(site_dir, row[path_key] + ".part", allowed_dirs)
         require_image_url(row[url_key], allowed_hosts)
+        validated.append((row, dst, tmp))
+    jobs = []
+    seen_dirs = set()
+    for row, dst, tmp in validated:
+        parent = os.path.dirname(dst)
+        if parent not in seen_dirs:
+            os.makedirs(parent, exist_ok=True)
+            seen_dirs.add(parent)
+        dst = asset_path(site_dir, row[path_key], allowed_dirs)
+        tmp = asset_path(site_dir, row[path_key] + ".part", allowed_dirs)
+        jobs.append((row, dst, tmp))
     opener = urllib.request.build_opener(ImageRedirectHandler(allowed_hosts))
-    total = len(rows)
+    total = len(jobs)
     lock = threading.Lock()
     state = {"done": 0, "bytes": 0}
     failed = []
@@ -122,13 +150,11 @@ def download(site_dir, tier, referer, workers=12, log=print, *, allowed_hosts, a
             el = max(time.time() - t0, 0.001)
             log("  %d/%d  %.1f MB  %.1f files/s" % (n, total, state["bytes"] / 1048576, n / el))
 
-    def fetch(r):
-        dst = asset_path(site_dir, r[path_key], allowed_dirs)
+    def fetch(job):
+        r, dst, tmp = job
         if os.path.exists(dst) and os.path.getsize(dst) > MIN_BYTES:
             tick(os.path.getsize(dst))
             return
-        os.makedirs(os.path.dirname(dst), exist_ok=True)
-        tmp = asset_path(site_dir, r[path_key] + ".part", allowed_dirs)
         last = None
         for attempt in range(RETRIES):
             try:
@@ -153,7 +179,7 @@ def download(site_dir, tier, referer, workers=12, log=print, *, allowed_hosts, a
 
     log("tier=%s workers=%d total=%d" % (tier, workers, total))
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        list(ex.map(fetch, rows))
+        list(ex.map(fetch, jobs))
     log("完成 %d/%d, %.1f MB, 用时 %.0fs" % (state["done"], total, state["bytes"] / 1048576, time.time() - t0))
     if failed:
         with open(failed_path, "w", encoding="utf-8") as f:
@@ -209,13 +235,13 @@ def image_dims(path):
 
 
 def verify(site_dir, tiers, *, allowed_dirs):
-    """逐档检查存在、体积、可读宽高。返回 {tier: {ok, bytes, dims, missing, broken}}。"""
+    """逐档检查存在、体积、可读宽高。返回 {tier: {ok, total, bytes, dims, missing, broken}}。"""
     rows = load_manifest(site_dir)
     report = {}
     for tier in tiers:
-        _, path_key = tier_keys(rows, tier)
-        t = {"ok": 0, "bytes": 0, "dims": {}, "missing": [], "broken": []}
-        for r in rows:
+        _, path_key, selected = tier_rows(rows, tier)
+        t = {"ok": 0, "total": len(selected), "bytes": 0, "dims": {}, "missing": [], "broken": []}
+        for r in selected:
             rel = rel_path(r[path_key])
             p = asset_path(site_dir, rel, allowed_dirs)
             if not os.path.exists(p):

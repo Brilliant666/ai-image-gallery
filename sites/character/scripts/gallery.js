@@ -19,7 +19,7 @@ const validFav = value => new Set(Array.isArray(value) ? value.filter(id => item
 let favorites = validFav(read(favKey)), set = 'hair', category = '', query = '', color = 'brown', limit = 48, detailId = '', detailKey = '', detailLine = false, toastTimer;
 const allowed = item => item && (PL.adult || !item.adult);
 const label = item => PL.lang === 'ja' ? item.jp : item.zh;
-const image = (item, tier='thumb') => DB.source + (tier === 'thumb' ? 'thumb/'+item.id+'.webp' : tier === 'line' ? 'line/'+item.id+'.png' : 'img/'+item.id+'.jpg');
+const image = (item, tier='thumb') => (DB.imageBase || '') + (tier === 'thumb' ? 'thumb/'+item.id+'.webp' : tier === 'line' ? 'line/'+item.id+'.png' : 'img/'+item.id+'.jpg');
 function toast(text){
   $('#toast').textContent = text; $('#toast').hidden = false; clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {$('#toast').hidden=true;}, 3500);

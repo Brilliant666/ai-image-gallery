@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 sys.path.insert(0, os.path.join(ROOT, "shared"))
 
 from _common import load_cfg  # noqa: E402
+from assets import tier_rows  # noqa: E402
 from mid import mid_rel  # noqa: E402
 
 CFG = load_cfg()
@@ -80,7 +81,7 @@ class Build(unittest.TestCase):
         tmp = tempfile.mkdtemp(prefix="gallery-build-")
         try:
             # 复制源码到临时目录构建，不碰工作区；图片目录不需要
-            ignore = shutil.ignore_patterns("thumbs", "mid", "img", "png", "raw", "dist*", ".git", ".venv*", "_v",
+            ignore = shutil.ignore_patterns("thumbs", "thumb", "line", "mid", "img", "png", "raw", "dist*", ".git", ".venv*", "_v",
                                             "__pycache__", "failed_*.json")
             dst = os.path.join(tmp, "repo")
             shutil.copytree(ROOT, dst, ignore=ignore)
@@ -264,9 +265,9 @@ class Landing(unittest.TestCase):
                         self.assertIn(src[len(up):], thumbs, f"{rel} 引用了不在 manifest 的图: {src}")
 
     def test_only_thumbnails_exposed(self):
-        # 落地页只用缩略图，不暴露中图和原图（三站禁止再分发）
+        # 落地页只用缩略图，不暴露中图、原图和线稿
         for rel in self.pages:
-            self.assertFalse(re.findall(r'<img src="[^"]*/(mid|img|png)/', read(rel)), rel)
+            self.assertFalse(re.findall(r'<img src="[^"]*/(mid|img|png|line)/', read(rel)), rel)
 
     def test_gallery_hash_params_known(self):
         # 「在画廊中查看」带的 #参数必须是画廊能识别的
@@ -363,14 +364,15 @@ class Landing(unittest.TestCase):
         if not node:
             self.skipTest("没有 node")
         cases = {"pose": ("thumb_path", "full_path"), "pose-depth": ("thumb_path", "full_path"), "shisei": ("thumb_path", "full_path"),
-                 "costume": ("thumb_path", "img_path", "png_path"), "portrait": ("thumb_path", "full_path")}
+                 "costume": ("thumb_path", "img_path", "png_path"), "costume-anime": ("thumb_path", "preview_path", "full_path"),
+                 "portrait": ("thumb_path", "full_path")}
         for s, cols in cases.items():
             h = read(f"sites/{s}/index.html")
             js = [x for x in scripts(h) if "const DB = " in x][0]
             seg = re.search(r"/\*PATHS\*/(.*?)/\*END PATHS\*/", js, re.S)
             self.assertIsNotNone(seg, f"{s} 缺 PATHS 段")
             db = json.dumps(page_db(h), ensure_ascii=False)
-            if s in ("costume", "portrait"):
+            if s in ("costume", "costume-anime", "portrait"):
                 probe = "[DB.items.map(x => x.i), DB.items.map(x => pathOf(x))]"
                 key = lambda r: r["id"]
             else:
@@ -429,10 +431,18 @@ class Landing(unittest.TestCase):
             h = read(f"sites/{s}/index.html")
             db = page_db(h)
             rows = json.loads(read(f"sites/{s}/manifest.json"))
-            if s == "costume":
+            if s in ("costume", "costume-anime"):
                 want = {r["id"] for r in rows if adult.is_adult(r, rule)}
                 got = {x["i"] for x in db["items"] if x.get("x")}
                 self.assertIn("PL.adult ? ITEMS : ITEMS.filter(x => !x.x)", h)
+            elif s == "character":
+                want = {r["id"] for r in rows if not r.get("parent") and adult.is_adult(r, rule)}
+                got = {r[0] for r in db["items"] if r[5]}
+                self.assertEqual(got, want, f"{s} 的成人向标记与 sites.json 规则不一致")
+                self.assertIn("PL.adult || !item.adult", h)
+                self.assertIn("查看成人向参考", h)
+                self.assertIn("成人向け参考を見る", h)
+                continue
             else:
                 want = {(r["系列"], r["编号"]) for r in rows if adult.is_adult(r, rule)}
                 got = {(p["s"], p["p"]) for p in db["poses"] if p.get("x")}
@@ -562,20 +572,24 @@ def landing_meta_for_root(root):
 class Manifests(unittest.TestCase):
 
     def test_tier_fields_present(self):
-        # tools/fetch.py / verify.py 只靠 <tier>_url / <tier>_path 工作
+        # tools/fetch.py / verify.py 只靠 <tier>_url / <tier>_path 工作；line 为角色库姿势可选档位
         for s in CFG["sites"]:
             rows = json.loads(read(f"sites/{s['id']}/manifest.json"))
             self.assertTrue(rows, s["id"])
             for t in manifest_tiers(s):
+                _, _, sub = tier_rows(rows, t)
+                if t != "line":
+                    self.assertEqual(len(sub), len(rows), f"{s['id']} {t} 行数不完整")
                 for k in (t + "_url", t + "_path"):
-                    bad = [r.get("id") for r in rows if not r.get(k)]
+                    bad = [r.get("id") for r in sub if not r.get(k)]
                     self.assertEqual(bad, [], f"{s['id']} 缺 {k}")
 
     def test_paths_portable_and_unique(self):
         for s in CFG["sites"]:
             rows = json.loads(read(f"sites/{s['id']}/manifest.json"))
             for t in manifest_tiers(s):
-                paths = [r[t + "_path"] for r in rows]
+                _, _, sub = tier_rows(rows, t)
+                paths = [r[t + "_path"] for r in sub]
                 self.assertFalse([p for p in paths if "\\" in p or p.startswith("/") or ".." in p],
                                  f"{s['id']} {t} 有反斜杠、绝对路径或 ..")
                 self.assertEqual(len(paths), len(set(paths)), f"{s['id']} {t} 路径重复")
@@ -586,7 +600,8 @@ class Manifests(unittest.TestCase):
             base = s.get("imageBase", s["source"])
             rows = json.loads(read(f"sites/{s['id']}/manifest.json"))
             for t in manifest_tiers(s):
-                off = [r[t + "_url"] for r in rows if not r[t + "_url"].startswith(base)]
+                _, _, sub = tier_rows(rows, t)
+                off = [r[t + "_url"] for r in sub if not r[t + "_url"].startswith(base)]
                 self.assertEqual(off, [], f"{s['id']} {t} 的 URL 不在 {base} 下")
 
     def test_image_dirs_match_paths(self):
@@ -599,7 +614,8 @@ class Manifests(unittest.TestCase):
             rows = json.loads(read(f"sites/{s['id']}/manifest.json"))
             dirs = set(s["imageDirs"])
             for t in manifest_tiers(s):
-                tops = {r[t + "_path"].split("/")[0] for r in rows}
+                _, _, sub = tier_rows(rows, t)
+                tops = {r[t + "_path"].split("/")[0] for r in sub}
                 self.assertTrue(tops <= dirs, f"{s['id']} {t} 用到 {tops - dirs}，不在 imageDirs 里")
 
     def test_remote_metadata(self):

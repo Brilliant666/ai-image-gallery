@@ -2,7 +2,7 @@
  "site": "COSTUME-ANIME-DB",
  "source": "https://ai-costume-anime-gallery.pages.dev/",
  "author": "ギア",
- "imageMode": "remote",
+ "imageMode": "local",
  "items": 1320,
  "public": 984,
  "adult": 336,
